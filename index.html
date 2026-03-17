@@ -6,295 +6,134 @@
   <title>STANDARDS — Movement Methodology</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --green-dark: #0F6E56;
-      --green-mid: #1D9E75;
-      --green-light: #E1F5EE;
-      --green-pale: #F0FAF6;
-      --l1: #1A3A2A; --l1bg: #E8F2EC;
-      --l2: #1D6B45; --l2bg: #D4EDE1;
-      --l3: #1D9E75; --l3bg: #C0E8D4;
-      --l4: #5DCAA5; --l4bg: #A8DFC8;
-      --l5: #3DBFA0; --l5bg: #8FD4BC;
-      --dark: #0D0D0D;
-      --mid: #444;
-      --muted: #888;
-      --border: #E0E0DC;
-      --bg: #F8F8F6;
-      --card: #FFFFFF;
-      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--dark);
-      min-height: 100vh;
-    }
-
-    /* ── AUTH ── */
-    #auth-screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .auth-card {
-      background: var(--card);
-      border: 0.5px solid var(--border);
-      border-radius: 16px;
-      padding: 40px 36px;
-      width: 100%;
-      max-width: 400px;
-    }
-    .auth-logo {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -.5px;
-      color: var(--dark);
-      margin-bottom: 4px;
-    }
-    .auth-logo span { color: var(--green-mid); }
-    .auth-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
-    .auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border: 0.5px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .auth-tab { flex: 1; padding: 8px; font-size: 13px; font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--muted); transition: all .15s; }
-    .auth-tab.active { background: var(--dark); color: #fff; }
-    label { display: block; font-size: 12px; font-weight: 500; color: var(--mid); margin-bottom: 6px; }
-    input[type=text], input[type=email], input[type=password] {
-      width: 100%; padding: 10px 12px; border: 0.5px solid var(--border);
-      border-radius: 8px; font-size: 14px; font-family: var(--font);
-      background: var(--bg); color: var(--dark); margin-bottom: 16px;
-      outline: none; transition: border-color .15s;
-    }
-    input:focus { border-color: var(--green-mid); }
-    .btn-primary {
-      width: 100%; padding: 11px; background: var(--dark); color: #fff;
-      border: none; border-radius: 8px; font-size: 14px; font-weight: 500;
-      cursor: pointer; font-family: var(--font); transition: opacity .15s;
-    }
-    .btn-primary:hover { opacity: .85; }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
-    .auth-msg { font-size: 13px; margin-top: 12px; text-align: center; min-height: 20px; }
-    .auth-msg.error { color: #c0392b; }
-    .auth-msg.success { color: var(--green-dark); }
-
-    /* ── APP SHELL ── */
-    #app { display: none; }
-    .topbar {
-      background: var(--card);
-      border-bottom: 0.5px solid var(--border);
-      padding: 0 20px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .topbar-logo { font-size: 18px; font-weight: 700; color: var(--dark); letter-spacing: -.3px; }
-    .topbar-logo span { color: var(--green-mid); }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .topbar-user { font-size: 13px; color: var(--muted); }
-    .btn-signout { padding: 5px 12px; font-size: 12px; border: 0.5px solid var(--border); background: transparent; border-radius: 99px; cursor: pointer; color: var(--mid); font-family: var(--font); }
-    .btn-signout:hover { background: var(--bg); }
-
-    .nav-tabs {
-      display: flex;
-      gap: 0;
-      padding: 12px 20px 0;
-      border-bottom: 0.5px solid var(--border);
-      background: var(--card);
-    }
-    .nav-tab {
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      color: var(--muted);
-      border-bottom: 2px solid transparent;
-      margin-bottom: -0.5px;
-      font-family: var(--font);
-      transition: all .15s;
-    }
-    .nav-tab.active { color: var(--green-mid); border-bottom-color: var(--green-mid); }
-
-    .main { padding: 20px; max-width: 600px; margin: 0 auto; }
-
-    /* ── LOADING ── */
-    .loading { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; }
-    .spinner {
-      width: 24px; height: 24px; border: 2px solid var(--border);
-      border-top-color: var(--green-mid); border-radius: 50%;
-      animation: spin .7s linear infinite; margin: 0 auto 12px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── PROFILE VIEW ── */
-    .profile-header {
-      background: var(--card);
-      border: 0.5px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .avatar {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: var(--green-light); color: var(--green-dark);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; font-weight: 600; flex-shrink: 0;
-    }
-    .profile-name { font-size: 18px; font-weight: 600; }
-    .profile-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
-    .score-chip {
-      margin-left: auto;
-      background: var(--green-light);
-      color: var(--green-dark);
-      padding: 6px 14px;
-      border-radius: 99px;
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .section-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .patterns-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .pattern-card {
-      background: var(--card);
-      border: 0.5px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      cursor: pointer;
-      transition: border-color .15s, transform .1s;
-    }
-    .pattern-card:hover { border-color: #aaa; transform: translateY(-1px); }
-    .pattern-card.active { border-color: var(--green-mid); border-width: 1.5px; }
-
-    .pattern-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .pattern-name { font-size: 13px; font-weight: 600; }
-    .level-chip {
-      font-size: 11px; font-weight: 600; padding: 2px 8px;
-      border-radius: 99px;
-    }
-    .bar-track { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
-    .pattern-bottom { display: flex; justify-content: space-between; align-items: center; }
-    .pattern-ex { font-size: 11px; color: var(--muted); }
-    .pattern-std { font-size: 11px; font-weight: 600; color: var(--green-mid); }
-
-    /* ── EXERCISE DETAIL ── */
-    .detail-card {
-      background: var(--card);
-      border: 0.5px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      animation: fadeIn .2s ease;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-
-    .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .detail-title { font-size: 15px; font-weight: 600; }
-    .detail-close { width: 28px; height: 28px; border-radius: 50%; border: 0.5px solid var(--border); background: transparent; cursor: pointer; font-size: 14px; color: var(--muted); display: flex; align-items: center; justify-content: center; }
-
-    .ex-block { padding: 10px 0; border-bottom: 0.5px solid var(--border); }
-    .ex-block:last-of-type { border-bottom: none; }
-    .ex-type-tag {
-      display: inline-block; font-size: 10px; font-weight: 600;
-      letter-spacing: .06em; text-transform: uppercase;
-      padding: 2px 7px; border-radius: 4px; margin-bottom: 4px;
-    }
-    .tag-main { background: var(--green-light); color: var(--green-dark); }
-    .tag-bridge { background: #EEEDFE; color: #534AB7; }
-    .tag-limiter { background: #FAEEDA; color: #854F0B; }
-    .ex-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-    .ex-row-bottom { display: flex; justify-content: space-between; align-items: center; }
-    .ex-cue { font-size: 12px; color: var(--green-mid); font-style: italic; }
-    .ex-sets { font-size: 12px; color: var(--muted); }
-
-    .next-standard {
-      margin-top: 12px; padding: 10px 12px;
-      background: var(--green-light); border-radius: 8px;
-      font-size: 12px; color: var(--green-dark);
-    }
-    .next-standard strong { font-weight: 600; }
-    .max-level {
-      margin-top: 12px; padding: 10px 12px;
-      background: var(--green-mid); border-radius: 8px;
-      font-size: 12px; color: #fff; font-weight: 600;
-    }
-
-    /* ── LEADERBOARD ── */
-    .lb-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-    .lb-filter {
-      padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 500;
-      border: 0.5px solid var(--border); background: var(--card);
-      color: var(--muted); cursor: pointer; font-family: var(--font); transition: all .15s;
-    }
-    .lb-filter.active { background: var(--green-light); color: var(--green-dark); border-color: var(--green-mid); }
-
-    .lb-row {
-      background: var(--card);
-      border: 0.5px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: border-color .15s;
-    }
-    .lb-row.me { border-color: var(--green-mid); border-width: 1.5px; }
-    .lb-rank { font-size: 20px; font-weight: 700; width: 28px; text-align: center; flex-shrink: 0; }
-    .rank-1 { color: #B8860B; }
-    .rank-2 { color: #888; }
-    .rank-3 { color: #8B4513; }
-    .lb-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
-    .lb-info { flex: 1; }
-    .lb-name { font-size: 14px; font-weight: 600; }
-    .lb-name-sub { font-size: 12px; color: var(--muted); }
-    .lb-score { text-align: right; }
-    .lb-score-num { font-size: 22px; font-weight: 700; color: var(--green-mid); line-height: 1; }
-    .lb-score-den { font-size: 11px; color: var(--muted); }
-    .lb-mini-bars { display: flex; gap: 2px; margin-top: 5px; justify-content: flex-start; }
-    .lb-mini-bar { width: 9px; height: 9px; border-radius: 2px; }
-
-    /* ── EMPTY / ERROR STATES ── */
-    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
-    .empty-icon { font-size: 32px; margin-bottom: 8px; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 400px) {
-      .patterns-grid { grid-template-columns: 1fr; }
-      .auth-card { padding: 28px 20px; }
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--l1:#1A3A2A;--l1b:#E8F2EC;--l2:#1D6B45;--l2b:#D4EDE1;--l3:#1D9E75;--l3b:#C0E8D4;--l4:#5DCAA5;--l4b:#A8DFC8;--l5:#3DBFA0;--l5b:#8FD4BC;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    body{font-family:var(--fn);background:var(--bg);color:var(--dk);min-height:100vh}
+    #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .auth-card{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
+    .auth-logo{font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+    .auth-logo span{color:var(--gm)}
+    .auth-sub{font-size:14px;color:var(--mt);margin-bottom:32px}
+    .auth-tabs{display:flex;margin-bottom:24px;border:0.5px solid var(--br);border-radius:8px;overflow:hidden}
+    .auth-tab{flex:1;padding:8px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:var(--mt);font-family:var(--fn);transition:all .15s}
+    .auth-tab.active{background:var(--dk);color:#fff}
+    label{display:block;font-size:12px;font-weight:500;color:var(--md);margin-bottom:6px}
+    input[type=text],input[type=email],input[type=password],input[type=date],select,textarea{width:100%;padding:10px 12px;border:0.5px solid var(--br);border-radius:8px;font-size:14px;font-family:var(--fn);background:var(--bg);color:var(--dk);margin-bottom:16px;outline:none;transition:border-color .15s}
+    input:focus,select:focus,textarea:focus{border-color:var(--gm)}
+    textarea{resize:vertical;min-height:80px}
+    .btn{width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
+    .btn-dark{background:var(--dk);color:#fff}
+    .btn-green{background:var(--gm);color:#fff}
+    .btn:hover{opacity:.85}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .msg{font-size:13px;margin-top:12px;text-align:center;min-height:20px}
+    .msg.err{color:#c0392b}
+    .msg.ok{color:var(--gd)}
+    #app{display:none}
+    .topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .tl{font-size:18px;font-weight:700;letter-spacing:-.3px}
+    .tl span{color:var(--gm)}
+    .topbar-r{display:flex;align-items:center;gap:12px}
+    .tu{font-size:13px;color:var(--mt);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .btn-so{padding:5px 12px;font-size:12px;border:0.5px solid var(--br);background:transparent;border-radius:99px;cursor:pointer;color:var(--md);font-family:var(--fn)}
+    .nav-tabs{display:flex;padding:0 20px;border-bottom:0.5px solid var(--br);background:var(--cd);overflow-x:auto}
+    .nav-tab{padding:10px 14px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:var(--mt);border-bottom:2px solid transparent;margin-bottom:-0.5px;font-family:var(--fn);white-space:nowrap;transition:all .15s}
+    .nav-tab.active{color:var(--gm);border-bottom-color:var(--gm)}
+    .main{padding:20px;max-width:600px;margin:0 auto}
+    .view{display:none}
+    .view.active{display:block}
+    .sl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px;margin-top:20px}
+    .sl:first-child{margin-top:0}
+    .card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:16px;margin-bottom:12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
+    .ei{font-size:32px;margin-bottom:8px}
+    /* PROFILE */
+    .ph{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px}
+    .av{width:52px;height:52px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex-shrink:0}
+    .pn{font-size:18px;font-weight:600}
+    .ps{font-size:13px;color:var(--mt);margin-top:2px}
+    .sc{margin-left:auto;background:var(--gl);color:var(--gd);padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
+    .pg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s,transform .1s}
+    .pc:hover{border-color:#aaa;transform:translateY(-1px)}
+    .pc.act{border-color:var(--gm);border-width:1.5px}
+    .pt{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .pname{font-size:13px;font-weight:600}
+    .lc{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+    .bt{height:4px;background:var(--br);border-radius:2px;margin-bottom:6px;overflow:hidden}
+    .bf{height:100%;border-radius:2px;transition:width .5s ease}
+    .pb{display:flex;justify-content:space-between;align-items:center}
+    .pex{font-size:11px;color:var(--mt)}
+    .pst{font-size:11px;font-weight:600;color:var(--gm)}
+    .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:16px;margin-bottom:16px;animation:fi .2s ease}
+    .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .dt{font-size:15px;font-weight:600}
+    .dx{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;color:var(--mt);display:flex;align-items:center;justify-content:center}
+    .eb{padding:10px 0;border-bottom:0.5px solid var(--br)}
+    .eb:last-of-type{border-bottom:none}
+    .et{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;margin-bottom:4px}
+    .tm{background:var(--gl);color:var(--gd)}
+    .tb{background:#EEEDFE;color:#534AB7}
+    .tl2{background:#FAEEDA;color:#854F0B}
+    .en{font-size:14px;font-weight:600;margin-bottom:2px}
+    .er{display:flex;justify-content:space-between;align-items:center}
+    .ec{font-size:12px;color:var(--gm);font-style:italic}
+    .em{font-size:12px;color:var(--mt)}
+    .ns{margin-top:12px;padding:10px 12px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd)}
+    .ml{margin-top:12px;padding:10px 12px;background:var(--gm);border-radius:8px;font-size:12px;color:#fff;font-weight:600}
+    /* PROGRAMME */
+    .ds{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+    .db{padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-family:var(--fn);transition:all .15s}
+    .db.act{background:var(--dk);color:#fff;border-color:var(--dk)}
+    .dyc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:12px}
+    .dyh{padding:12px 16px;background:var(--dk);display:flex;justify-content:space-between;align-items:center}
+    .dyt{font-size:14px;font-weight:600;color:#fff}
+    .dyf{font-size:12px;color:#aaa}
+    .per{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid var(--br)}
+    .per:last-child{border-bottom:none}
+    .pel{flex:1}
+    .pes{font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--mt);text-transform:uppercase;margin-bottom:2px}
+    .pen{font-size:14px;font-weight:600}
+    .pep{font-size:11px;color:var(--gm);margin-top:1px}
+    .pev{text-align:right}
+    .pevs{font-size:13px;font-weight:600;color:var(--dk)}
+    .pevt{font-size:11px;color:var(--mt)}
+    /* TEST LOG */
+    .tf{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:20px;margin-bottom:20px}
+    .tft{font-size:15px;font-weight:600;margin-bottom:16px}
+    .tp{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+    .tpl{flex:1}
+    .tpn{font-size:14px;font-weight:600}
+    .tps{font-size:12px;color:var(--mt);margin-top:2px}
+    .tpr{text-align:right}
+    .td{font-size:11px;color:var(--mt)}
+    .sd{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+    .sp{background:#F0A500}
+    .spass{background:var(--gm)}
+    .sfail{background:#c0392b}
+    /* LEADERBOARD */
+    .lbf{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+    .lbfb{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);color:var(--mt);cursor:pointer;font-family:var(--fn);transition:all .15s}
+    .lbfb.act{background:var(--gl);color:var(--gd);border-color:var(--gm)}
+    .lbr{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+    .lbr.me{border-color:var(--gm);border-width:1.5px}
+    .lbrk{font-size:20px;font-weight:700;width:28px;text-align:center;flex-shrink:0}
+    .r1{color:#B8860B}.r2{color:#888}.r3{color:#8B4513}
+    .lbav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+    .lbi{flex:1}
+    .lbn{font-size:14px;font-weight:600}
+    .lbns{font-size:12px;color:var(--mt)}
+    .lbs{text-align:right}
+    .lbsn{font-size:22px;font-weight:700;color:var(--gm);line-height:1}
+    .lbsd{font-size:11px;color:var(--mt)}
+    .lbmb{display:flex;gap:2px;margin-top:5px}
+    .lbmbs{width:9px;height:9px;border-radius:2px}
+    @media(max-width:400px){.pg{grid-template-columns:1fr}.auth-card{padding:28px 20px}}
   </style>
 </head>
 <body>
-
-<!-- AUTH SCREEN -->
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">STAND<span>ARDS</span></div>
@@ -303,394 +142,214 @@
       <button class="auth-tab active" onclick="switchTab('login')">Sign in</button>
       <button class="auth-tab" onclick="switchTab('signup')">Sign up</button>
     </div>
-    <div id="login-form">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="you@email.com" />
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••" />
-      <button class="btn-primary" onclick="signIn()">Sign in</button>
+    <div id="lf">
+      <label>Email</label><input type="email" id="le" placeholder="you@email.com"/>
+      <label>Password</label><input type="password" id="lp" placeholder="••••••••"/>
+      <button class="btn btn-dark" onclick="signIn()">Sign in</button>
     </div>
-    <div id="signup-form" style="display:none">
-      <label>Full name</label>
-      <input type="text" id="signup-name" placeholder="Your name" />
-      <label>Email</label>
-      <input type="email" id="signup-email" placeholder="you@email.com" />
-      <label>Password</label>
-      <input type="password" id="signup-password" placeholder="Min 6 characters" />
-      <button class="btn-primary" onclick="signUp()">Create account</button>
+    <div id="sf" style="display:none">
+      <label>Full name</label><input type="text" id="sn" placeholder="Your name"/>
+      <label>Email</label><input type="email" id="se" placeholder="you@email.com"/>
+      <label>Password</label><input type="password" id="sp2" placeholder="Min 6 characters"/>
+      <button class="btn btn-dark" onclick="signUp()">Create account</button>
     </div>
-    <div class="auth-msg" id="auth-msg"></div>
+    <div class="msg" id="am"></div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">STAND<span>ARDS</span></div>
-    <div class="topbar-right">
-      <span class="topbar-user" id="topbar-user"></span>
-      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    <div class="tl">STAND<span>ARDS</span></div>
+    <div class="topbar-r">
+      <span class="tu" id="tu"></span>
+      <button class="btn-so" onclick="signOut()">Sign out</button>
     </div>
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showTab('profile', this)">My Profile</button>
-    <button class="nav-tab" onclick="showTab('leaderboard', this)">Leaderboard</button>
+    <button class="nav-tab active" onclick="showTab('profile',this)">Profile</button>
+    <button class="nav-tab" onclick="showTab('programme',this)">Programme</button>
+    <button class="nav-tab" onclick="showTab('testlog',this)">Log Test</button>
+    <button class="nav-tab" onclick="showTab('leaderboard',this)">Leaderboard</button>
   </div>
   <div class="main">
-    <div id="tab-profile"></div>
-    <div id="tab-leaderboard" style="display:none"></div>
+    <div id="vp" class="view active"></div>
+    <div id="vprog" class="view"></div>
+    <div id="vtl" class="view"></div>
+    <div id="vlb" class="view"></div>
   </div>
 </div>
 
 <script>
-// ── SUPABASE INIT ──
-const { createClient } = supabase;
-const sb = createClient(
-  'https://pczfamrjdwbeejoxhxnq.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjemZhbXJqZHdiZWVqb3hoeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODAzNjEsImV4cCI6MjA4OTM1NjM2MX0.trUIKdNicHPRDmleAYoF3nAg8unqQrnQCjKTPB63bI0'
-);
+const{createClient}=supabase;
+const sb=createClient('https://pczfamrjdwbeejoxhxnq.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjemZhbXJqZHdiZWVqb3hoeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODAzNjEsImV4cCI6MjA4OTM1NjM2MX0.trUIKdNicHPRDmleAYoF3nAg8unqQrnQCjKTPB63bI0');
 
-// ── STATE ──
-let currentUser = null;
-let userProfile = null;
-let standards = [];
-let exercises = [];
-let athleteProfile = {};
-let allAthleteProfiles = [];
-let selectedPattern = null;
-let lbFilter = 'all';
+let CU=null,STD=[],EX=[],AP={},AAP=[],LOGS=[],selPat=null,lbF='all',pDays=3;
+const PATS=['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
+const PL={Squat:'Squat',Hinge:'Hinge',HPush:'H. Push',VPush:'V. Push',HPull:'H. Pull',VPull:'V. Pull',Carry:'Carry',Core:'Core'};
+const PF={Squat:'Squat',Hinge:'Hinge',HPush:'Horizontal Push',VPush:'Vertical Push',HPull:'Horizontal Pull',VPull:'Vertical Pull',Carry:'Carry',Core:'Core'};
+const LC=['#ccc','#1A3A2A','#1D6B45','#1D9E75','#5DCAA5','#3DBFA0'];
+const LL=['#f4f4f2','#E8F2EC','#D4EDE1','#C0E8D4','#A8DFC8','#8FD4BC'];
+const AVC=[{bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#EEEDFE',fg:'#534AB7'},{bg:'#FAEEDA',fg:'#854F0B'},{bg:'#FAECE7',fg:'#993C1D'},{bg:'#E6F1FB',fg:'#185FA5'},{bg:'#F1EFE8',fg:'#444441'}];
+const SR={Control:'3×8–12',Unilateral:'4×6–8/side',Force:'5×3–5',Expression:'4×5–8'};
+const TM={Control:'3131',Unilateral:'3121',Force:'20X0',Expression:'10X0'};
 
-const LEVEL_COLORS = ['#ccc','#1A3A2A','#1D6B45','#1D9E75','#5DCAA5','#3DBFA0'];
-const LEVEL_LIGHT  = ['#f4f4f2','#E8F2EC','#D4EDE1','#C0E8D4','#A8DFC8','#8FD4BC'];
-const AVATAR_COLORS = [
-  {bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#EEEDFE',fg:'#534AB7'},
-  {bg:'#FAEEDA',fg:'#854F0B'},{bg:'#FAECE7',fg:'#993C1D'},
-  {bg:'#E6F1FB',fg:'#185FA5'},{bg:'#F1EFE8',fg:'#444441'},
-];
+function switchTab(t){document.getElementById('lf').style.display=t==='login'?'block':'none';document.getElementById('sf').style.display=t==='signup'?'block':'none';document.querySelectorAll('.auth-tab').forEach((x,i)=>x.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='signup')));sm('','')}
+function sm(m,t){const e=document.getElementById('am');e.textContent=m;e.className='msg'+(t?' '+t:'')}
 
-// ── AUTH ──
-function switchTab(tab) {
-  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='signup')));
-  setMsg('','');
-}
+async function signIn(){const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;if(!e||!p)return sm('Please fill in all fields.','err');sm('Signing in…','');const{error}=await sb.auth.signInWithPassword({email:e,password:p});if(error)sm(error.message,'err')}
+async function signUp(){const n=document.getElementById('sn').value.trim(),e=document.getElementById('se').value.trim(),p=document.getElementById('sp2').value;if(!n||!e||!p)return sm('Please fill in all fields.','err');if(p.length<6)return sm('Password must be at least 6 characters.','err');sm('Creating account…','');const{error}=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});if(error)sm(error.message,'err');else sm('Account created! You can sign in now.','ok')}
+async function signOut(){await sb.auth.signOut()}
 
-function setMsg(msg, type) {
-  const el = document.getElementById('auth-msg');
-  el.textContent = msg;
-  el.className = 'auth-msg' + (type ? ' '+type : '');
-}
-
-async function signIn() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  if (!email || !password) return setMsg('Please fill in all fields.', 'error');
-  setMsg('Signing in…', '');
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) setMsg(error.message, 'error');
-}
-
-async function signUp() {
-  const name = document.getElementById('signup-name').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value;
-  if (!name || !email || !password) return setMsg('Please fill in all fields.', 'error');
-  if (password.length < 6) return setMsg('Password must be at least 6 characters.', 'error');
-  setMsg('Creating account…', '');
-  const { error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
-  if (error) setMsg(error.message, 'error');
-  else setMsg('Account created! Check your email to confirm, or sign in now.', 'success');
-}
-
-async function signOut() {
-  await sb.auth.signOut();
-  currentUser = null;
-  userProfile = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('auth-screen').style.display = 'flex';
-}
-
-// ── AUTH STATE ──
-sb.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) {
-    currentUser = session.user;
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    await loadApp();
-  } else {
-    document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-  }
+sb.auth.onAuthStateChange(async(ev,sess)=>{
+  if(sess?.user){CU=sess.user;document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;await load()}
+  else{CU=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('app').style.display='none'}
 });
 
-// ── LOAD APP ──
-async function loadApp() {
-  document.getElementById('topbar-user').textContent =
-    currentUser.user_metadata?.full_name || currentUser.email;
-
-  // Load all data in parallel
-  const [stdRes, exRes, apRes, allApRes] = await Promise.all([
+async function load(){
+  const[s,e,a,aa,l]=await Promise.all([
     sb.from('standards').select('*').order('pattern_id').order('level'),
     sb.from('exercises').select('*'),
-    sb.from('athlete_profiles').select('*').eq('athlete_id', currentUser.id),
-    sb.from('athlete_profiles').select('*, profiles(full_name, email)'),
+    sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id),
+    sb.from('athlete_profiles').select('*,profiles(full_name,email)'),
+    sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})
   ]);
-
-  standards = stdRes.data || [];
-  exercises = exRes.data || [];
-
-  // Build athlete profile map
-  athleteProfile = {};
-  (apRes.data || []).forEach(r => { athleteProfile[r.pattern_id] = r.current_level; });
-
-  allAthleteProfiles = allApRes.data || [];
-
-  renderProfile();
-  renderLeaderboard();
+  STD=s.data||[];EX=e.data||[];AP={};(a.data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});AAP=aa.data||[];LOGS=l.data||[];
+  rProfile();rProg();rTestLog();rLB();
 }
 
-// ── PROFILE ──
-function renderProfile() {
-  const patterns = ['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
-  const patternLabels = {
-    Squat:'Squat', Hinge:'Hinge', HPush:'H. Push',
-    VPush:'V. Push', HPull:'H. Pull', VPull:'V. Pull',
-    Carry:'Carry', Core:'Core'
-  };
-
-  const total = patterns.reduce((s,p) => s + (athleteProfile[p]||0), 0);
-  const initials = (currentUser.user_metadata?.full_name || currentUser.email)
-    .split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const name = currentUser.user_metadata?.full_name || currentUser.email;
-
-  let html = `
-    <div class="profile-header">
-      <div class="avatar">${initials}</div>
-      <div>
-        <div class="profile-name">${name}</div>
-        <div class="profile-sub">Athlete · STANDARDS</div>
-      </div>
-      <div class="score-chip">${total} / 40</div>
-    </div>
-    <div class="section-label">Movement Standards</div>
-    <div class="patterns-grid">
-  `;
-
-  patterns.forEach(pid => {
-    const lvl = athleteProfile[pid] || 0;
-    const pct = (lvl/5)*100;
-    const col = LEVEL_COLORS[lvl];
-    const bgCol = LEVEL_LIGHT[lvl];
-    const std = standards.find(s => s.pattern_id===pid && s.level===lvl);
-    const ex = std ? std.test_exercise : '—';
-    const loadStd = std ? std.load_standard : '—';
-    const isActive = selectedPattern === pid;
-
-    html += `
-      <div class="pattern-card${isActive?' active':''}" onclick="selectPattern('${pid}')">
-        <div class="pattern-top">
-          <span class="pattern-name">${patternLabels[pid]}</span>
-          <span class="level-chip" style="background:${bgCol};color:${col}">L${lvl}</span>
-        </div>
-        <div class="bar-track">
-          <div class="bar-fill" style="width:${pct}%;background:${col}"></div>
-        </div>
-        <div class="pattern-bottom">
-          <span class="pattern-ex">${ex}</span>
-          <span class="pattern-std">${loadStd}</span>
-        </div>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-
-  if (selectedPattern) {
-    html += renderPatternDetail(selectedPattern);
-  }
-
-  document.getElementById('tab-profile').innerHTML = html;
-}
-
-function renderPatternDetail(pid) {
-  const lvl = athleteProfile[pid] || 0;
-  const patternLabels = {
-    Squat:'Squat', Hinge:'Hinge', HPush:'Horizontal Push',
-    VPush:'Vertical Push', HPull:'Horizontal Pull', VPull:'Vertical Pull',
-    Carry:'Carry', Core:'Core'
-  };
-
-  if (lvl === 0) {
-    return `<div class="detail-card">
-      <div class="detail-header">
-        <div class="detail-title">${patternLabels[pid]}</div>
-        <button class="detail-close" onclick="closeDetail()">✕</button>
-      </div>
-      <div class="empty-state"><div class="empty-icon">📋</div>Not yet assessed. Ask your coach to run your assessment.</div>
+/* PROFILE */
+function rProfile(){
+  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0);
+  const init=gi(CU.user_metadata?.full_name||CU.email);
+  const nm=CU.user_metadata?.full_name||CU.email;
+  let h=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">Athlete · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>
+  <div class="sl">Movement Standards — tap to see your exercises</div><div class="pg">`;
+  PATS.forEach(pid=>{
+    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv];
+    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
+      <div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div>
+      <div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+      <div class="pb"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div>
     </div>`;
-  }
-
-  // Get exercises for this pattern at this level
-  const patternExercises = exercises.filter(e =>
-    e.pattern_id === pid && e.level_focus === lvl
-  );
-  const mainEx = patternExercises.find(e => e.type === 'Main');
-  const bridgeEx = patternExercises.find(e => e.type === 'Bridge');
-  const limiterEx = patternExercises.find(e => e.type === 'Limiter');
-
-  const std = standards.find(s => s.pattern_id===pid && s.level===lvl);
-  const nextStd = standards.find(s => s.pattern_id===pid && s.level===lvl+1);
-
-  const reps = {
-    Control: '3×8–12', Unilateral: '3×6–8/side', Force: '5×3–5', Expression: '4×5–8'
-  };
-  const tempo = {
-    Control: '3131', Unilateral: '3121', Force: '20X0', Expression: '10X0'
-  };
-
-  function exBlock(ex, tag, tagClass) {
-    if (!ex) return '';
-    const intent = ex.intent || 'Control';
-    return `<div class="ex-block">
-      <div class="ex-type-tag ${tagClass}">${tag}</div>
-      <div class="ex-name">${ex.name}</div>
-      <div class="ex-row-bottom">
-        <span class="ex-cue">"${ex.coaching_cue || '—'}"</span>
-        <span class="ex-sets">${reps[intent]||'3×8'} · ${tempo[intent]||'31X1'}</span>
-      </div>
-    </div>`;
-  }
-
-  const nextSection = nextStd
-    ? `<div class="next-standard"><strong>Next standard →</strong> Level ${lvl+1}: ${nextStd.test_exercise} · ${nextStd.load_standard}</div>`
-    : `<div class="max-level">🏆 Maximum level achieved</div>`;
-
-  return `
-    <div class="detail-card">
-      <div class="detail-header">
-        <div class="detail-title">${patternLabels[pid]} · Level ${lvl} — ${std?.quality_focus||''}</div>
-        <button class="detail-close" onclick="closeDetail()">✕</button>
-      </div>
-      ${exBlock(mainEx, 'MAIN', 'tag-main')}
-      ${exBlock(bridgeEx, 'BRIDGE', 'tag-bridge')}
-      ${exBlock(limiterEx, 'LIMITER', 'tag-limiter')}
-      ${!mainEx && !bridgeEx && !limiterEx ? `<div style="font-size:13px;color:var(--muted);padding:8px 0">Exercise details loading — check your exercise library.</div>` : ''}
-      ${nextSection}
-    </div>
-  `;
-}
-
-function selectPattern(pid) {
-  selectedPattern = selectedPattern === pid ? null : pid;
-  renderProfile();
-  if (selectedPattern) {
-    setTimeout(() => {
-      const el = document.querySelector('.detail-card');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 50);
-  }
-}
-
-function closeDetail() {
-  selectedPattern = null;
-  renderProfile();
-}
-
-// ── LEADERBOARD ──
-function renderLeaderboard() {
-  const patterns = ['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
-
-  // Aggregate scores per athlete
-  const athleteMap = {};
-  allAthleteProfiles.forEach(row => {
-    const aid = row.athlete_id;
-    if (!athleteMap[aid]) {
-      athleteMap[aid] = {
-        id: aid,
-        name: row.profiles?.full_name || row.profiles?.email || 'Athlete',
-        scores: {}
-      };
-    }
-    athleteMap[aid].scores[row.pattern_id] = row.current_level;
   });
+  h+=`</div>`;
+  if(selPat)h+=rDetail(selPat);
+  document.getElementById('vp').innerHTML=h;
+}
 
-  let athletes = Object.values(athleteMap);
+function rDetail(pid){
+  const lv=AP[pid]||0;
+  if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty"><div class="ei">📋</div>Not yet assessed. Ask your coach to run your assessment.</div></div>`;
+  const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv);
+  const mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
+  const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+  const nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
+  function eb(x,tag,cls){if(!x)return'';const i=x.intent||'Control';return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em">${SR[i]||'3×8'} · ${TM[i]||'31X1'}</span></div></div>`}
+  return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>
+  ${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}
+  ${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}
+  ${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="ml">🏆 Maximum level achieved</div>`}
+  </div>`;
+}
+function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
+function cD(){selPat=null;rProfile()}
 
-  // Calculate display score based on filter
-  athletes = athletes.map((a, i) => ({
-    ...a,
-    displayScore: lbFilter === 'all'
-      ? patterns.reduce((s,p) => s + (a.scores[p]||0), 0)
-      : (a.scores[lbFilter]||0),
-    maxScore: lbFilter === 'all' ? 40 : 5,
-    colorIdx: i % AVATAR_COLORS.length,
-  })).sort((a,b) => b.displayScore - a.displayScore);
-
-  const filterLabels = {
-    all:'All', Squat:'Squat', Hinge:'Hinge',
-    HPush:'H.Push', VPush:'V.Push', HPull:'H.Pull', VPull:'V.Pull', Carry:'Carry', Core:'Core'
+/* PROGRAMME */
+function rProg(){
+  const DD={
+    3:[{l:'Day 1',p:['Squat','HPush','HPull','Core']},{l:'Day 2',p:['Hinge','VPush','VPull','Carry']},{l:'Day 3',p:['Squat','HPush','HPull','Core']}],
+    4:[{l:'Day 1',p:['Squat','HPush','Core']},{l:'Day 2',p:['Hinge','VPull','Carry']},{l:'Day 3',p:['HPull','VPush','Core']},{l:'Day 4',p:['Squat','Hinge','Carry']}],
+    5:[{l:'Day 1',p:['Squat','HPush','Core']},{l:'Day 2',p:['Hinge','VPull']},{l:'Day 3',p:['HPull','VPush','Carry']},{l:'Day 4',p:['Squat','Core']},{l:'Day 5',p:['Hinge','HPush','VPull']}]
   };
-
-  let html = `<div class="lb-filters">`;
-  ['all','Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'].forEach(f => {
-    html += `<button class="lb-filter${lbFilter===f?' active':''}" onclick="setLbFilter('${f}')">${filterLabels[f]}</button>`;
-  });
-  html += `</div>`;
-
-  if (athletes.length === 0) {
-    html += `<div class="empty-state"><div class="empty-icon">🏆</div>No athletes assessed yet.</div>`;
-  } else {
-    athletes.forEach((a, i) => {
-      const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
-      const isMe = a.id === currentUser.id;
-      const col = AVATAR_COLORS[a.colorIdx];
-      const initials = a.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-
-      // Mini bars for all-pattern view
-      let miniBars = '';
-      if (lbFilter === 'all') {
-        miniBars = `<div class="lb-mini-bars">`;
-        patterns.forEach(p => {
-          const lvl = a.scores[p]||0;
-          miniBars += `<div class="lb-mini-bar" style="background:${LEVEL_COLORS[lvl]}" title="${p}: L${lvl}"></div>`;
-        });
-        miniBars += `</div>`;
-      }
-
-      html += `
-        <div class="lb-row${isMe?' me':''}">
-          <div class="lb-rank ${rankClass}">${i+1}</div>
-          <div class="lb-avatar" style="background:${col.bg};color:${col.fg}">${initials}</div>
-          <div class="lb-info">
-            <div class="lb-name">${a.name}${isMe?' <span style="font-size:11px;color:var(--green-mid)">(you)</span>':''}</div>
-            <div class="lb-name-sub">${lbFilter==='all'?'Overall movement profile':filterLabels[lbFilter]+' pattern'}</div>
-            ${miniBars}
-          </div>
-          <div class="lb-score">
-            <div class="lb-score-num">${a.displayScore}</div>
-            <div class="lb-score-den">/ ${a.maxScore}</div>
-          </div>
-        </div>
-      `;
+  const slots=['A1','A2','A3','B1','B2'];
+  const days=DD[pDays];
+  let h=`<div class="sl">Training days per week</div><div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days</button>`).join('')}</div>
+  <div class="sl">Your programme — based on current levels</div>`;
+  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
+  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;document.getElementById('vprog').innerHTML=h;return}
+  days.forEach((day,di)=>{
+    h+=`<div class="dyc"><div class="dyh"><span class="dyt">${day.l}</span><span class="dyf">${day.p.map(p=>PL[p]).join(' · ')}</span></div>`;
+    day.p.forEach((pid,si)=>{
+      const lv=AP[pid]||0;
+      if(lv===0){h+=`<div class="per"><div class="pel"><div class="pes">${slots[si]}</div><div class="pen" style="color:var(--mt)">${PL[pid]} — not assessed</div></div></div>`;return}
+      const mx=EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type==='Main');
+      const nm=mx?mx.name:(STD.find(s=>s.pattern_id===pid&&s.level===lv)?.test_exercise||'—');
+      const it=mx?.intent||'Control';
+      h+=`<div class="per"><div class="pel"><div class="pes">${slots[si]}</div><div class="pen">${nm}</div><div class="pep">${PF[pid]} · Level ${lv}</div></div><div class="pev"><div class="pevs">${SR[it]||'3×8'}</div><div class="pevt">${TM[it]||'31X1'}</div></div></div>`;
     });
-  }
+    h+=`</div>`;
+  });
+  document.getElementById('vprog').innerHTML=h;
+}
+function setPD(n){pDays=n;rProg()}
 
-  document.getElementById('tab-leaderboard').innerHTML = html;
+/* TEST LOG */
+function rTestLog(){
+  let h=`<div class="sl">Log a level test</div><div class="tf"><div class="tft">Record a test attempt</div>
+  <label>Movement pattern</label>
+  <select id="tpat" onchange="uTL()"><option value="">Select pattern…</option>${PATS.map(p=>`<option value="${p}">${PF[p]}</option>`).join('')}</select>
+  <label>Level attempted</label><select id="tlvl"><option value="">Select pattern first…</option></select>
+  <label>Date</label><input type="date" id="tdate" value="${new Date().toISOString().split('T')[0]}"/>
+  <label>Notes for coach (optional)</label><textarea id="tnotes" placeholder="How did it feel? Any observations…"></textarea>
+  <button class="btn btn-green" onclick="subTest()">Submit for coach review</button>
+  <div class="msg" id="tm2"></div></div>`;
+  if(LOGS.length>0){
+    h+=`<div class="sl">Your test history</div>`;
+    LOGS.forEach(log=>{
+      const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested);
+      const sc=log.passed===true?'spass':log.passed===false?'sfail':'sp';
+      const sl2=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review';
+      const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      h+=`<div class="tp"><div class="tpl"><div class="tpn">${PF[log.pattern_id]||log.pattern_id} — Level ${log.level_tested}</div><div class="tps">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:12px;color:var(--mt);margin-top:3px">"${log.notes}"</div>`:''}</div><div class="tpr"><div><span class="sd ${sc}"></span><span style="font-size:12px;font-weight:500">${sl2}</span></div><div class="td">${dt}</div></div></div>`;
+    });
+  } else h+=`<div class="empty" style="padding:20px 0"><div class="ei">📝</div>No tests logged yet.</div>`;
+  document.getElementById('vtl').innerHTML=h;
 }
 
-function setLbFilter(f) {
-  lbFilter = f;
-  renderLeaderboard();
+function uTL(){
+  const pid=document.getElementById('tpat').value,sel=document.getElementById('tlvl');
+  if(!pid){sel.innerHTML='<option>Select pattern first…</option>';return}
+  const cur=AP[pid]||0;
+  sel.innerHTML=STD.filter(s=>s.pattern_id===pid).map(s=>`<option value="${s.level}"${s.level===cur+1?' selected':''}>${PF[pid]} Level ${s.level} — ${s.test_exercise} (${s.load_standard})</option>`).join('');
 }
 
-// ── TABS ──
-function showTab(tab, btn) {
-  document.getElementById('tab-profile').style.display = tab==='profile' ? 'block' : 'none';
-  document.getElementById('tab-leaderboard').style.display = tab==='leaderboard' ? 'block' : 'none';
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
+async function subTest(){
+  const pid=document.getElementById('tpat').value,lv=parseInt(document.getElementById('tlvl').value),dt=document.getElementById('tdate').value,nt=document.getElementById('tnotes').value.trim();
+  const me=document.getElementById('tm2');
+  if(!pid||!lv){me.textContent='Please select a pattern and level.';me.className='msg err';return}
+  me.textContent='Submitting…';me.className='msg';
+  const{error}=await sb.from('assessments').insert({athlete_id:CU.id,pattern_id:pid,level_tested:lv,passed:null,notes:nt||null,assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()});
+  if(error){me.textContent='Error: '+error.message;me.className='msg err';return}
+  me.textContent='Logged! Your coach will review it.';me.className='msg ok';
+  const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
+  LOGS=data||[];
+  setTimeout(()=>rTestLog(),1500);
 }
+
+/* LEADERBOARD */
+function rLB(){
+  const am={};
+  AAP.forEach(r=>{const id=r.athlete_id;if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};am[id].scores[r.pattern_id]=r.current_level});
+  let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
+  const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
+  let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
+  if(aths.length===0){h+=`<div class="empty"><div class="ei">🏆</div>No athletes on the board yet.</div>`}
+  else aths.forEach((a,i)=>{
+    const rc=i===0?'r1':i===1?'r2':i===2?'r3':'',me=a.id===CU.id,c=AVC[a.ci],init=gi(a.name);
+    let mb='';
+    if(lbF==='all'){mb=`<div class="lbmb">`;PATS.forEach(p=>{mb+=`<div class="lbmbs" style="background:${LC[a.scores[p]||0]}"></div>`});mb+=`</div>`}
+    h+=`<div class="lbr${me?' me':''}"><div class="lbrk ${rc}">${i+1}</div><div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div><div class="lbi"><div class="lbn">${a.name}${me?' <span style="font-size:11px;color:var(--gm)">(you)</span>':''}</div><div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>${mb}</div><div class="lbs"><div class="lbsn">${a.ds}</div><div class="lbsd">/ ${a.ms}</div></div></div>`;
+  });
+  document.getElementById('vlb').innerHTML=h;
+}
+function sLBF(f){lbF=f;rLB()}
+
+/* TABS */
+function showTab(t,btn){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('v'+t.replace('profile','p').replace('programme','prog').replace('testlog','tl').replace('leaderboard','lb')).classList.add('active');btn.classList.add('active')}
+
+/* UTILS */
+function gi(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 </script>
 </body>
 </html>
