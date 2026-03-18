@@ -1082,8 +1082,28 @@ function rCoach(){
           <div class="ccc-section-title">Standards Profile</div>
           <div class="cap-grid">`;
     PATS.forEach(pid=>{
-      const lv=a.scores[pid]||0,col=LC[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
-      h+=`<div class="cap-pat"><div class="cap-pat-top"><span class="cap-pat-name">${PL[pid]}</span><div class="cap-level-ctrl"><button class="level-btn" onclick="event.stopPropagation();setLevel('${a.id}','${pid}',${lv-1})" ${lv<=0?'disabled':''}>−</button><span class="level-num" style="color:${col}">${lv}</span><button class="level-btn" onclick="event.stopPropagation();setLevel('${a.id}','${pid}',${lv+1})" ${lv>=5?'disabled':''}>+</button></div></div><div class="cap-bar"><div class="cap-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div><div class="cap-ex">${std?std.test_exercise:'Not assessed'}</div>${nx?`<div class="cap-std">→ ${nx.test_exercise}</div>`:''}</div>`;
+      const lv=a.scores[pid]||0,col=LC[lv];
+      const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+      const pending=ALL_PENDING.find(p=>p.athlete_id===a.id&&p.pattern_id===pid);
+      const pendingStd=pending?STD.find(s=>s.pattern_id===pid&&s.level===pending.level_tested):null;
+      h+=`<div class="cap-pat">
+        <div class="cap-pat-top">
+          <span class="cap-pat-name">${PL[pid]}</span>
+          <span class="level-num" style="color:${col};font-size:13px;font-weight:700">L${lv}</span>
+        </div>
+        <div class="cap-bar"><div class="cap-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+        <div class="cap-ex">${std?std.test_exercise:'Not assessed'}</div>
+        ${pending?`<div style="margin-top:6px;padding:6px 8px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:6px">
+          <div style="font-size:11px;font-weight:600;color:var(--amber);margin-bottom:4px">⏳ L${pending.level_tested} test pending</div>
+          <div style="font-size:11px;color:var(--mt);margin-bottom:6px">${pendingStd?.test_exercise||'—'}</div>
+          ${pending.video_url?`<video style="width:100%;border-radius:4px;margin-bottom:6px;max-height:120px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
+          ${pending.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:6px">"${pending.notes}"</div>`:''}
+          <div style="display:flex;gap:5px">
+            <button class="btn-pass" style="flex:1;font-size:11px;padding:4px 8px" onclick="event.stopPropagation();judgeTest('${pending.id}','${a.id}','${pid}',${pending.level_tested},true)">✓ Pass</button>
+            <button class="btn-fail" style="flex:1;font-size:11px;padding:4px 8px" onclick="event.stopPropagation();judgeTest('${pending.id}','${a.id}','${pid}',${pending.level_tested},false)">✕ Fail</button>
+          </div>
+        </div>`:''}
+      </div>`;
     });
     h+=`</div></div>`;
 
@@ -1096,23 +1116,6 @@ function rCoach(){
         const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
         const patterns=[...new Set(sets.map(s=>PL[s.pattern_id]||s.pattern_id))].join(', ');
         h+=`<div class="workout-hist-row"><span style="font-weight:500">${label}</span><span style="color:var(--mt);font-size:12px">${sets.length} sets · ${patterns}</span></div>`;
-      });
-      h+=`</div>`;
-    }
-
-    // PENDING TESTS for this athlete
-    const clientPending=ALL_PENDING.filter(p=>p.athlete_id===a.id);
-    if(clientPending.length){
-      h+=`<div class="ccc-section"><div class="ccc-section-title">Pending Tests (${clientPending.length})</div>`;
-      clientPending.forEach(p=>{
-        const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
-        const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-        h+=`<div class="pending-card">
-          <div class="pending-top"><div><div class="pending-name">${PF[p.pattern_id]} — Level ${p.level_tested}</div><div class="pending-sub">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div></div><div class="pending-date">${dt}</div></div>
-          ${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}
-          ${p.video_url?`<video class="pending-video" src="${p.video_url}" controls playsinline></video>`:''}
-          <div class="pending-actions"><button class="btn-pass" onclick="event.stopPropagation();judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button><button class="btn-fail" onclick="event.stopPropagation();judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button></div>
-        </div>`;
       });
       h+=`</div>`;
     }
@@ -1139,9 +1142,21 @@ async function setLevel(athleteId,patId,newLevel){
 }
 async function judgeTest(assessmentId,athleteId,patId,level,pass){
   const{error}=await sb.from('assessments').update({passed:pass}).eq('id',assessmentId);
-  if(error){alert('Error: '+error.message);return}
-  if(pass){const current=ALL_ATHLETES.find(x=>x.id===athleteId)?.scores[patId]||0;if(level>current)await setLevel(athleteId,patId,level);}
-  ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);rCoach();
+  if(error){alert('Error: '+error.message);return;}
+  if(pass){
+    const current=ALL_ATHLETES.find(x=>x.id===athleteId)?.scores[patId]||0;
+    if(level>current){
+      const{error:upErr}=await sb.from('athlete_profiles').upsert({
+        athlete_id:athleteId,pattern_id:patId,current_level:level,
+        passed_at:new Date().toISOString(),updated_at:new Date().toISOString()
+      },{onConflict:'athlete_id,pattern_id'});
+      if(upErr){alert('Level update error: '+upErr.message);return;}
+      const a=ALL_ATHLETES.find(x=>x.id===athleteId);
+      if(a)a.scores[patId]=level;
+    }
+  }
+  ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);
+  rCoach();
 }
 
 // ── HISTORY ──
