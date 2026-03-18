@@ -510,51 +510,49 @@ document.addEventListener('visibilitychange',async()=>{if(document.visibilitySta
 
 // ── LOAD ──
 async function load(){
+  // Read role from JWT immediately — no query needed
+  IS_COACH=CU.app_metadata?.role==='coach';
+  document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
+  document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
+
+  // Show spinners
+  ['home','workout','profile','history','leaderboard'].forEach(t=>{
+    document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
+  });
+
+  // Safe wrapper — never throws, returns [] on failure
+  const q=async(query)=>{try{const r=await query;return r.data||[];}catch(e){console.warn('Query err:',e.message);return[];}};
+
   try{
-    // Read role from JWT app_metadata — instant, no database lookup needed
-    IS_COACH=CU.app_metadata?.role==='coach';
-    document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
-    document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
-
-    // Show loading state immediately
-    ['home','workout','profile','history','leaderboard'].forEach(t=>{
-      document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
-    });
-
-    // Safe query wrapper with 8s timeout
-    const safe=async(q)=>{
-      try{
-        const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Query timeout')),8000));
-        const r=await Promise.race([q,timeout]);
-        return r.data||[];
-      }catch(e){console.warn('Query failed:',e.message);return[];}
-    };
-    STD=await safe(sb.from('standards').select('*').order('pattern_id').order('level'));
-    EX=await safe(sb.from('exercises').select('*'));
-    const apRows=await safe(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id));
-    AP={};apRows.forEach(r=>{AP[r.pattern_id]=r.current_level});
-    AAP=await safe(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level'));
-    LOGS=await safe(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}));
-    SETS=await safe(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}));
-    CHECKINS=await safe(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30));
+    // Run all athlete queries in parallel
+    const[std,ex,myAP,aap,logs,sets,checkins]=await Promise.all([
+      q(sb.from('standards').select('*').order('pattern_id').order('level')),
+      q(sb.from('exercises').select('*')),
+      q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
+      q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
+      q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
+      q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})),
+      q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30)),
+    ]);
+    STD=std;EX=ex;AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
+    AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
 
     if(IS_COACH){
-      // Load all athletes from profiles table — catches users with no levels yet
-      const allProfiles=await safe(sb.from('profiles').select('*').neq('id',CU.id));
-      const allAP=await safe(sb.from('athlete_profiles').select('*'));
+      // Run coach queries in parallel
+      const[allProfiles,allAP,pending,allSets]=await Promise.all([
+        q(sb.from('profiles').select('id,full_name,email,role').neq('id',CU.id)),
+        q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
+        q(sb.from('assessments').select('*').is('passed',null).order('assessed_at',{ascending:false})),
+        q(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').order('logged_at',{ascending:false}).limit(300)),
+      ]);
       const am={};
-      // Start from profiles so athletes with no levels still appear
       allProfiles.forEach(p=>{
         if(p.role==='coach')return;
-        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',email:p.email||'',scores:{}};
+        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{}};
       });
-      // Merge in their scores
-      allAP.forEach(r=>{
-        if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;
-      });
+      allAP.forEach(r=>{if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;});
       ALL_ATHLETES=Object.values(am);
-      ALL_PENDING=await safe(sb.from('assessments').select('*').is('passed',null).order('assessed_at',{ascending:false}));
-      const allSets=await safe(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').order('logged_at',{ascending:false}).limit(500));
+      ALL_PENDING=pending;
       ALL_CLIENT_SETS={};
       allSets.forEach(s=>{if(!ALL_CLIENT_SETS[s.athlete_id])ALL_CLIENT_SETS[s.athlete_id]=[];ALL_CLIENT_SETS[s.athlete_id].push(s);});
     }
