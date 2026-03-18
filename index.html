@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--red:#c0392b;--redbg:#FDECEA;--amber:#854F0B;--amberbg:#FAEEDA}
+    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--red:#c0392b}
     body{font-family:var(--fn);background:var(--bg);color:var(--dk);min-height:100vh}
     #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
     .auth-card{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
@@ -23,9 +23,7 @@
     textarea{resize:vertical;min-height:72px}
     .btn{padding:11px 16px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
     .btn-full{width:100%}.btn-dk{background:var(--dk);color:#fff}.btn-gm{background:var(--gm);color:#fff}
-    .btn-sm{padding:5px 10px;font-size:12px;border-radius:6px;font-family:var(--fn);border:none;cursor:pointer;font-weight:500;transition:opacity .15s}
-    .btn-sm:hover,.btn:hover{opacity:.85}
-    .btn:disabled,.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+    .btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:var(--red)}.msg.ok{color:var(--gd)}
     #app{display:none}
@@ -46,89 +44,15 @@
     .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
     .ei{font-size:32px;margin-bottom:8px}
 
-    /* ── COACH STYLES ── */
-    .coach-section{background:var(--dk);border-radius:12px;padding:14px 16px;margin-bottom:16px}
-    .coach-section-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:12px}
-    .athlete-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#1a1a1a;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s;border:1px solid transparent}
-    .athlete-row:hover{background:#222}
-    .athlete-row.active{border-color:var(--gm)}
-    .athlete-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
-    .athlete-info{flex:1}
-    .athlete-name{font-size:13px;font-weight:600;color:#fff}
-    .athlete-sub{font-size:11px;color:#666;margin-top:1px}
-    .athlete-score{font-size:16px;font-weight:700;color:var(--gm)}
-    .athlete-bars{display:flex;gap:2px;margin-top:4px}
-    .athlete-bar{width:8px;height:8px;border-radius:2px}
-
-    /* Pending tests */
-    .pending-card{background:#1a1a1a;border-radius:8px;padding:12px;margin-bottom:6px;border-left:3px solid #F0A500}
-    .pending-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-    .pending-name{font-size:13px;font-weight:600;color:#fff}
-    .pending-sub{font-size:11px;color:#666;margin-top:2px}
-    .pending-date{font-size:11px;color:#666}
-    .pending-notes{font-size:12px;color:#aaa;font-style:italic;margin-bottom:8px}
-    .pending-actions{display:flex;gap:6px}
-    .btn-pass{background:var(--gm);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
-    .btn-fail{background:var(--red);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
-    .btn-pass:hover,.btn-fail:hover{opacity:.85}
-
-    /* Athlete profile in coach view */
-    .coach-athlete-profile{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
-    .cap-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-    .cap-name{font-size:15px;font-weight:600}
-    .cap-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
-    .cap-close{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:13px;color:var(--mt);display:flex;align-items:center;justify-content:center}
-    .cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .cap-pat{background:var(--bg);border:0.5px solid var(--br);border-radius:8px;padding:10px}
-    .cap-pat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-    .cap-pat-name{font-size:12px;font-weight:600}
-    .cap-level-ctrl{display:flex;align-items:center;gap:6px}
-    .level-btn{width:22px;height:22px;border-radius:4px;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-size:14px;font-weight:600;color:var(--dk);display:flex;align-items:center;justify-content:center;font-family:var(--fn);transition:all .15s;line-height:1}
-    .level-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
-    .level-btn:disabled{opacity:.3;cursor:not-allowed}
-    .level-num{font-size:13px;font-weight:700;color:var(--gm);min-width:16px;text-align:center}
-    .cap-ex{font-size:11px;color:var(--mt);margin-top:2px}
-    .cap-std{font-size:11px;font-weight:600;color:var(--gm)}
-    .cap-bar{height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden}
-    .cap-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
-
-    /* PROFILE */
-    .ph{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
-    .av{width:50px;height:50px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0}
-    .pn{font-size:17px;font-weight:600}.ps{font-size:13px;color:var(--mt);margin-top:2px}
-    .sc{margin-left:auto;background:var(--gl);color:var(--gd);padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
-    .pg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px;cursor:pointer;transition:border-color .15s,transform .1s}
-    .pc:hover{border-color:#bbb;transform:translateY(-1px)}.pc.act{border-color:var(--gm);border-width:1.5px}
-    .pt{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-    .pname{font-size:13px;font-weight:600}
-    .lc{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
-    .bt{height:4px;background:var(--br);border-radius:2px;margin-bottom:5px;overflow:hidden}
-    .bf{height:100%;border-radius:2px;transition:width .5s ease}
-    .pb2{display:flex;justify-content:space-between}
-    .pex{font-size:11px;color:var(--mt)}.pst{font-size:11px;font-weight:600;color:var(--gm)}
-    .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
-    .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .dt{font-size:14px;font-weight:600}
-    .dx{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:13px;color:var(--mt);display:flex;align-items:center;justify-content:center}
-    .eb{padding:9px 0;border-bottom:0.5px solid var(--br)}.eb:last-of-type{border-bottom:none}
-    .et{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-bottom:3px}
-    .tm{background:var(--gl);color:var(--gd)}.tb{background:#EEEDFE;color:#534AB7}.tl2{background:#FAEEDA;color:#854F0B}
-    .en{font-size:13px;font-weight:600;margin-bottom:1px}
-    .er2{display:flex;justify-content:space-between;align-items:center}
-    .ec{font-size:11px;color:var(--gm);font-style:italic}.em2{font-size:11px;color:var(--mt)}
-    .ns{margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd)}
-    .mlvl{margin-top:10px;padding:9px 11px;background:var(--gm);border-radius:8px;font-size:12px;color:#fff;font-weight:600}
-
-    /* PROGRAMME */
+    /* ── WORKOUT (first tab) ── */
     .week-bar{display:flex;align-items:center;justify-content:space-between;background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px 16px;margin-bottom:14px}
     .week-info{font-size:14px;font-weight:600}.week-sub{font-size:12px;color:var(--mt);margin-top:1px}
     .week-nav{display:flex;gap:6px}
     .wn-btn{padding:5px 10px;font-size:12px;border:0.5px solid var(--br);background:transparent;border-radius:6px;cursor:pointer;font-family:var(--fn);color:var(--md)}
     .wn-btn:disabled{opacity:.3;cursor:not-allowed}
-    .ds{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-    .db{padding:5px 12px;border-radius:99px;font-size:13px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-family:var(--fn);transition:all .15s}
-    .db.act{background:var(--dk);color:#fff;border-color:var(--dk)}
+    .day-sub-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+    .day-sub-tab{padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-family:var(--fn);transition:all .15s;color:var(--mt)}
+    .day-sub-tab.act{background:var(--dk);color:#fff;border-color:var(--dk)}
     .day-wrap{margin-bottom:16px}
     .day-hdr{background:var(--dk);border-radius:10px 10px 0 0;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
     .day-title{font-size:13px;font-weight:600;color:#fff}.day-vol{font-size:11px;color:#777}
@@ -155,8 +79,56 @@
     .set-btn{padding:4px 9px;font-size:11px;font-weight:600;border:none;border-radius:5px;cursor:pointer;font-family:var(--fn);background:var(--gm);color:#fff;flex-shrink:0;white-space:nowrap}
     .set-btn.done{background:var(--gl);color:var(--gd);cursor:default}
     .load-hint{font-size:11px;color:var(--mt);margin-bottom:4px}
+    .tm{background:var(--gl);color:var(--gd)}.tb{background:#EEEDFE;color:#534AB7}.tl2{background:#FAEEDA;color:#854F0B}
 
-    /* HISTORY */
+    /* ── PROFILE ── */
+    .ph{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
+    .av{width:50px;height:50px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0}
+    .pn{font-size:17px;font-weight:600}.ps{font-size:13px;color:var(--mt);margin-top:2px}
+    .sc{margin-left:auto;background:var(--gl);color:var(--gd);padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
+    .pg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px;cursor:pointer;transition:border-color .15s,transform .1s}
+    .pc:hover{border-color:#bbb;transform:translateY(-1px)}.pc.act{border-color:var(--gm);border-width:1.5px}
+    .pt{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+    .pname{font-size:13px;font-weight:600}
+    .lc{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
+    .bt{height:4px;background:var(--br);border-radius:2px;margin-bottom:5px;overflow:hidden}
+    .bf{height:100%;border-radius:2px;transition:width .5s ease}
+    .pb2{display:flex;justify-content:space-between}
+    .pex{font-size:11px;color:var(--mt)}.pst{font-size:11px;font-weight:600;color:var(--gm)}
+    .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
+    .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .dt{font-size:14px;font-weight:600}
+    .dx{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:13px;color:var(--mt);display:flex;align-items:center;justify-content:center}
+    .eb{padding:9px 0;border-bottom:0.5px solid var(--br)}.eb:last-of-type{border-bottom:none}
+    .et{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-bottom:3px}
+    .en{font-size:13px;font-weight:600;margin-bottom:1px}
+    .er2{display:flex;justify-content:space-between;align-items:center}
+    .ec{font-size:11px;color:var(--gm);font-style:italic}.em2{font-size:11px;color:var(--mt)}
+    .ns{margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd)}
+    .mlvl{margin-top:10px;padding:9px 11px;background:var(--gm);border-radius:8px;font-size:12px;color:#fff;font-weight:600}
+
+    /* Log test button on pattern card */
+    .log-test-btn{display:block;width:100%;margin-top:8px;padding:6px;background:var(--bg);border:0.5px solid var(--br);border-radius:6px;font-size:11px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);text-align:center;transition:all .15s}
+    .log-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
+
+    /* ── TEST LOG MODAL ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0}
+    .modal{background:var(--cd);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .modal-title{font-size:16px;font-weight:600}
+    .modal-close{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;color:var(--mt);display:flex;align-items:center;justify-content:center}
+    .video-upload{border:2px dashed var(--br);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px}
+    .video-upload:hover{border-color:var(--gm);background:var(--gl)}
+    .video-upload input{display:none}
+    .video-upload-icon{font-size:28px;margin-bottom:6px}
+    .video-upload-text{font-size:13px;color:var(--mt)}
+    .video-preview{width:100%;border-radius:8px;margin-bottom:14px;max-height:240px;background:#000}
+    .upload-progress{height:4px;background:var(--br);border-radius:2px;margin-bottom:14px;overflow:hidden}
+    .upload-progress-fill{height:100%;background:var(--gm);border-radius:2px;transition:width .3s ease}
+
+    /* ── HISTORY ── */
     .hist-card{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:10px}
     .hist-hdr{padding:10px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);display:flex;justify-content:space-between}
     .hist-title{font-size:13px;font-weight:600}.hist-count{font-size:12px;color:var(--mt)}
@@ -164,16 +136,48 @@
     .hist-row:last-child{border-bottom:none}
     .hist-ex{font-weight:500;color:var(--dk)}.hist-res{color:var(--gm);font-weight:600}
 
-    /* TEST LOG */
-    .tf{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:18px;margin-bottom:16px}
-    .tft{font-size:14px;font-weight:600;margin-bottom:14px}
-    .tpend{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
-    .tpl{flex:1}.tpn{font-size:13px;font-weight:600}.tps{font-size:12px;color:var(--mt);margin-top:2px}
-    .tpr{text-align:right}.td2{font-size:11px;color:var(--mt)}
-    .sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
-    .sp{background:#F0A500}.spass{background:var(--gm)}.sfail{background:var(--red)}
+    /* ── COACH ── */
+    .coach-section{background:var(--dk);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+    .coach-section-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:12px}
+    .athlete-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#1a1a1a;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s;border:1px solid transparent}
+    .athlete-row:hover{background:#222}.athlete-row.active{border-color:var(--gm)}
+    .athlete-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+    .athlete-info{flex:1}
+    .athlete-name{font-size:13px;font-weight:600;color:#fff}
+    .athlete-bars{display:flex;gap:2px;margin-top:4px}
+    .athlete-bar{width:8px;height:8px;border-radius:2px}
+    .athlete-score{font-size:16px;font-weight:700;color:var(--gm)}
+    .pending-card{background:#1a1a1a;border-radius:8px;padding:12px;margin-bottom:6px;border-left:3px solid #F0A500}
+    .pending-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+    .pending-name{font-size:13px;font-weight:600;color:#fff}
+    .pending-sub{font-size:11px;color:#666;margin-top:2px}
+    .pending-date{font-size:11px;color:#666}
+    .pending-notes{font-size:12px;color:#aaa;font-style:italic;margin-bottom:8px}
+    .pending-video{width:100%;border-radius:6px;margin-bottom:8px;max-height:200px;background:#000}
+    .pending-actions{display:flex;gap:6px}
+    .btn-pass{background:var(--gm);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
+    .btn-fail{background:var(--red);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
+    .btn-pass:hover,.btn-fail:hover{opacity:.85}
+    .coach-athlete-profile{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
+    .cap-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .cap-name{font-size:15px;font-weight:600}
+    .cap-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
+    .cap-close{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:13px;color:var(--mt);display:flex;align-items:center;justify-content:center}
+    .cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .cap-pat{background:var(--bg);border:0.5px solid var(--br);border-radius:8px;padding:10px}
+    .cap-pat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .cap-pat-name{font-size:12px;font-weight:600}
+    .cap-level-ctrl{display:flex;align-items:center;gap:6px}
+    .level-btn{width:22px;height:22px;border-radius:4px;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-size:14px;font-weight:600;color:var(--dk);display:flex;align-items:center;justify-content:center;font-family:var(--fn);transition:all .15s;line-height:1}
+    .level-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
+    .level-btn:disabled{opacity:.3;cursor:not-allowed}
+    .level-num{font-size:13px;font-weight:700;color:var(--gm);min-width:16px;text-align:center}
+    .cap-ex{font-size:11px;color:var(--mt);margin-top:2px}
+    .cap-std{font-size:11px;font-weight:600;color:var(--gm)}
+    .cap-bar{height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden}
+    .cap-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
 
-    /* LEADERBOARD */
+    /* ── LEADERBOARD ── */
     .lbf{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
     .lbfb{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);color:var(--mt);cursor:pointer;font-family:var(--fn);transition:all .15s}
     .lbfb.act{background:var(--gl);color:var(--gd);border-color:var(--gm)}
@@ -222,18 +226,44 @@
     </div>
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showTab('profile',this)">Profile</button>
-    <button class="nav-tab" onclick="showTab('programme',this)">Programme</button>
+    <button class="nav-tab active" onclick="showTab('workout',this)">Workout</button>
+    <button class="nav-tab" onclick="showTab('profile',this)">Profile</button>
     <button class="nav-tab" onclick="showTab('history',this)">History</button>
-    <button class="nav-tab" onclick="showTab('testlog',this)">Log Test</button>
     <button class="nav-tab" onclick="showTab('leaderboard',this)">Leaderboard</button>
   </div>
   <div class="main">
-    <div id="v-profile" class="view active"></div>
-    <div id="v-programme" class="view"></div>
+    <div id="v-workout" class="view active"></div>
+    <div id="v-profile" class="view"></div>
     <div id="v-history" class="view"></div>
-    <div id="v-testlog" class="view"></div>
     <div id="v-leaderboard" class="view"></div>
+  </div>
+</div>
+
+<!-- TEST LOG MODAL -->
+<div class="modal-overlay" id="test-modal" style="display:none" onclick="closeTestModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-title" id="test-modal-title">Log a Test</div>
+      <button class="modal-close" onclick="closeTestModal()">✕</button>
+    </div>
+    <label>Level attempting</label>
+    <select id="tm-level" style="margin-bottom:14px"></select>
+    <label>Upload test video</label>
+    <div class="video-upload" onclick="document.getElementById('tm-video-input').click()">
+      <input type="file" id="tm-video-input" accept="video/*" onchange="handleVideoSelect(this)"/>
+      <div class="video-upload-icon">🎥</div>
+      <div class="video-upload-text" id="tm-video-text">Tap to upload video from camera roll</div>
+    </div>
+    <video class="video-preview" id="tm-video-preview" style="display:none" controls playsinline></video>
+    <div class="upload-progress" id="tm-progress-wrap" style="display:none">
+      <div class="upload-progress-fill" id="tm-progress" style="width:0%"></div>
+    </div>
+    <label>Date</label>
+    <input type="date" id="tm-date"/>
+    <label>Notes for coach (optional)</label>
+    <textarea id="tm-notes" placeholder="How did it feel? Any form notes…"></textarea>
+    <button class="btn btn-full btn-gm" id="tm-submit" onclick="submitTest()">Submit for coach review</button>
+    <div class="msg" id="tm-msg"></div>
   </div>
 </div>
 
@@ -247,7 +277,9 @@ const sb=createClient(
 // ── STATE ──
 let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[];
 let ALL_ATHLETES=[],ALL_PENDING=[],selAthlete=null;
-let selPat=null,lbF='all',pDays=3,curWeek=1,openCircuits={};
+let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
+let testModalPat=null,selectedVideoFile=null;
+const DAYS=4;
 
 const PATS=['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
 const PL={Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
@@ -258,6 +290,7 @@ const AVC=[{bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#EEEDFE',fg:'#534AB7'},{bg:'#FAEEDA'
 const RR={Control:{lo:8,hi:12},Unilateral:{lo:6,hi:8},Force:{lo:3,hi:5},Expression:{lo:5,hi:8}};
 const TM={Control:'3131',Unilateral:'3121',Force:'20X0',Expression:'10X0'};
 const REST={Main:'90s',Bridge:'60s',Limiter:'45s'};
+
 const CIRCUIT_TEMPLATES=[
   {id:'horiz',pats:['HPush','HPull'],name:'Horizontal'},
   {id:'vert',pats:['VPush','VPull'],name:'Vertical'},
@@ -267,11 +300,13 @@ const CIRCUIT_TEMPLATES=[
   {id:'pull_core',pats:['HPull','Core'],name:'Pull & Core'},
   {id:'carry_core',pats:['Carry','Core'],name:'Carry & Brace'},
 ];
-const DAY_PLANS={
-  3:[['horiz','hinge_pull','squat_carry'],['vert','hinge_core','pull_core'],['horiz','squat_carry','carry_core']],
-  4:[['horiz','squat_carry','hinge_core'],['vert','hinge_pull','pull_core'],['horiz','carry_core','squat_carry'],['vert','hinge_core','pull_core']],
-  5:[['horiz','squat_carry','hinge_core'],['vert','hinge_pull','carry_core'],['horiz','pull_core','squat_carry'],['vert','hinge_core','hinge_pull'],['horiz','carry_core','pull_core']],
-};
+// Fixed 4-day plan
+const DAY_PLAN=[
+  ['horiz','squat_carry','hinge_core'],
+  ['vert','hinge_pull','pull_core'],
+  ['horiz','carry_core','squat_carry'],
+  ['vert','hinge_core','pull_core'],
+];
 
 // ── AUTH ──
 function switchTab(t){
@@ -299,7 +334,7 @@ async function signUp(){
 }
 async function signOut(){
   await sb.auth.signOut();
-  CU=null;IS_COACH=false;STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];ALL_ATHLETES=[];ALL_PENDING=[];selAthlete=null;
+  CU=null;IS_COACH=false;STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];ALL_ATHLETES=[];ALL_PENDING=[];
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('app').style.display='none';
   document.getElementById('am').textContent='';
@@ -312,29 +347,19 @@ function showApp(user){
   document.getElementById('app').style.display='block';
   document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
 }
-
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(ev==='SIGNED_IN'&&sess?.user){showApp(sess.user);await load();}
   else if(ev==='SIGNED_OUT'){CU=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('app').style.display='none';}
 });
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){showApp(session.user);await load();}})();
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&CU)await load();});
 
-(async()=>{
-  const{data:{session}}=await sb.auth.getSession();
-  if(session?.user){showApp(session.user);await load();}
-})();
-
-document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='visible'&&CU)await load();
-});
-
-// ── DATA ──
+// ── LOAD ──
 async function load(){
   try{
-    // Check if coach
     const{data:prof}=await sb.from('profiles').select('role').eq('id',CU.id).single();
     IS_COACH=prof?.role==='coach';
     document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
-
     const queries=[
       sb.from('standards').select('*').order('pattern_id').order('level'),
       sb.from('exercises').select('*'),
@@ -343,204 +368,31 @@ async function load(){
       sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}),
       sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}),
     ];
-
     if(IS_COACH){
       queries.push(sb.from('athlete_profiles').select('*,profiles(full_name,email,role)'));
       queries.push(sb.from('assessments').select('*,profiles(full_name)').is('passed',null).order('assessed_at',{ascending:false}));
     }
-
     const results=await Promise.all(queries);
     STD=results[0].data||[];EX=results[1].data||[];
     AP={};(results[2].data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
     AAP=results[3].data||[];LOGS=results[4].data||[];SETS=results[5].data||[];
-
     if(IS_COACH){
-      // Build athlete map from all profiles
       const athleteMap={};
       (results[6].data||[]).forEach(r=>{
-        if(r.profiles?.role==='coach')return; // exclude coaches from athlete list
+        if(r.profiles?.role==='coach')return;
         const id=r.athlete_id;
-        if(!athleteMap[id])athleteMap[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',email:r.profiles?.email||'',scores:{}};
+        if(!athleteMap[id])athleteMap[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};
         athleteMap[id].scores[r.pattern_id]=r.current_level;
       });
       ALL_ATHLETES=Object.values(athleteMap);
       ALL_PENDING=results[7].data||[];
     }
-
-    rProfile();rProg();rHistory();rTestLog();rLB();
+    rWorkout();rProfile();rHistory();rLB();
   }catch(err){
     console.error('Load error:',err);
-    document.getElementById('v-profile').innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}<br><br><button class="btn btn-dk" onclick="load()" style="margin-top:8px">Retry</button></div>`;
+    document.getElementById('v-workout').innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}<br><br><button class="btn btn-dk" onclick="load()" style="margin-top:8px">Retry</button></div>`;
   }
 }
-
-// ── COACH: SET ATHLETE LEVEL ──
-async function setLevel(athleteId,patId,newLevel){
-  if(newLevel<0||newLevel>5)return;
-  const{error}=await sb.from('athlete_profiles').upsert({
-    athlete_id:athleteId,pattern_id:patId,current_level:newLevel,
-    passed_at:newLevel>0?new Date().toISOString():null,updated_at:new Date().toISOString()
-  },{onConflict:'athlete_id,pattern_id'});
-  if(error){alert('Error: '+error.message);return;}
-  // Update local state
-  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
-  if(a)a.scores[patId]=newLevel;
-  if(athleteId===CU.id)AP[patId]=newLevel;
-  rCoachAthleteProfile(athleteId);
-  rProfile();
-}
-
-// ── COACH: APPROVE / FAIL TEST ──
-async function judgeTest(assessmentId,athleteId,patId,level,pass){
-  const{error}=await sb.from('assessments').update({passed:pass}).eq('id',assessmentId);
-  if(error){alert('Error: '+error.message);return;}
-  if(pass){
-    // Update athlete level
-    const current=ALL_ATHLETES.find(x=>x.id===athleteId)?.scores[patId]||0;
-    if(level>current)await setLevel(athleteId,patId,level);
-  }
-  // Remove from pending list
-  ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);
-  rProfile(); // re-render to update pending count
-}
-
-// ── COACH: RENDER ATHLETE ROSTER ──
-function rCoachRoster(){
-  if(!IS_COACH||!ALL_ATHLETES.length)return'';
-  const pendingCount=ALL_PENDING.length;
-  let h=`<div class="coach-section">
-    <div class="coach-section-title">Athletes (${ALL_ATHLETES.length})</div>`;
-
-  // Pending tests banner
-  if(pendingCount>0){
-    h+=`<div style="background:#2a2000;border:1px solid #F0A500;border-radius:8px;padding:10px 12px;margin-bottom:10px">
-      <div style="font-size:12px;font-weight:600;color:#F0A500;margin-bottom:8px">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</div>`;
-    ALL_PENDING.forEach(p=>{
-      const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
-      const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-      h+=`<div class="pending-card">
-        <div class="pending-top">
-          <div><div class="pending-name">${p.profiles?.full_name||'Athlete'}</div><div class="pending-sub">${PF[p.pattern_id]||p.pattern_id} — Level ${p.level_tested} · ${std?.test_exercise||'—'}</div></div>
-          <div class="pending-date">${dt}</div>
-        </div>
-        ${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}
-        <div class="pending-actions">
-          <button class="btn-pass" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button>
-          <button class="btn-fail" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button>
-        </div>
-      </div>`;
-    });
-    h+=`</div>`;
-  }
-
-  // Athlete list
-  ALL_ATHLETES.sort((a,b)=>{
-    const sa=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-    const sb2=PATS.reduce((s,p)=>s+(b.scores[p]||0),0);
-    return sb2-sa;
-  }).forEach((a,i)=>{
-    const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-    const init=gi(a.name),c=AVC[i%AVC.length];
-    const bars=PATS.map(p=>`<div class="athlete-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
-    h+=`<div class="athlete-row${selAthlete===a.id?' active':''}" onclick="selectAthlete('${a.id}')">
-      <div class="athlete-av" style="background:${c.bg};color:${c.fg}">${init}</div>
-      <div class="athlete-info">
-        <div class="athlete-name">${a.name}</div>
-        <div class="athlete-bars">${bars}</div>
-      </div>
-      <div class="athlete-score">${total}</div>
-    </div>`;
-  });
-  h+=`</div>`;
-
-  // Selected athlete profile
-  if(selAthlete)h+=rCoachAthleteProfile(selAthlete,true);
-
-  return h;
-}
-
-function selectAthlete(id){
-  selAthlete=selAthlete===id?null:id;
-  rProfile();
-  if(selAthlete)setTimeout(()=>{const el=document.querySelector('.coach-athlete-profile');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'})},50);
-}
-
-function rCoachAthleteProfile(athleteId,returnStr=false){
-  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
-  if(!a)return'';
-  const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-  let h=`<div class="coach-athlete-profile">
-    <div class="cap-header">
-      <div class="cap-name">${a.name}</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="cap-score">${total} / 40</span>
-        <button class="cap-close" onclick="selectAthlete('${athleteId}')">✕</button>
-      </div>
-    </div>
-    <div class="cap-grid">`;
-  PATS.forEach(pid=>{
-    const lv=a.scores[pid]||0,col=LC[lv],bg=LL[lv];
-    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-    const nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
-    h+=`<div class="cap-pat">
-      <div class="cap-pat-top">
-        <span class="cap-pat-name">${PL[pid]}</span>
-        <div class="cap-level-ctrl">
-          <button class="level-btn" onclick="setLevel('${athleteId}','${pid}',${lv-1})" ${lv<=0?'disabled':''}>−</button>
-          <span class="level-num" style="color:${col}">${lv}</span>
-          <button class="level-btn" onclick="setLevel('${athleteId}','${pid}',${lv+1})" ${lv>=5?'disabled':''}>+</button>
-        </div>
-      </div>
-      <div class="cap-bar"><div class="cap-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
-      <div class="cap-ex">${std?std.test_exercise:'Not assessed'}</div>
-      ${nx?`<div class="cap-std">→ ${nx.test_exercise} · ${nx.load_standard}</div>`:''}
-    </div>`;
-  });
-  h+=`</div></div>`;
-  if(returnStr)return h;
-  // If called to update in place, re-render full profile
-  rProfile();
-}
-
-// ── PROFILE ──
-function rProfile(){
-  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),init=gi(CU.user_metadata?.full_name||CU.email),nm=CU.user_metadata?.full_name||CU.email;
-  let h='';
-
-  // Coach section at top
-  if(IS_COACH)h+=rCoachRoster();
-
-  // Own profile
-  h+=`<div class="sl">${IS_COACH?'Your profile':'Movement Standards — tap to see your exercises'}</div>`;
-  h+=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`;
-  if(!IS_COACH)h+=`<div class="sl">Movement Standards — tap a pattern</div>`;
-  h+=`<div class="pg">`;
-  PATS.forEach(pid=>{
-    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
-      <div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div>
-      <div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div>
-      <div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div>
-    </div>`;
-  });
-  h+=`</div>`;
-  if(selPat)h+=rDetail(selPat);
-  document.getElementById('v-profile').innerHTML=h;
-}
-
-function rDetail(pid){
-  const lv=AP[pid]||0;
-  if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
-  const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
-  const std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
-  function eb(x,tag,cls){if(!x)return'';const i=x.intent||'Control',r=RR[i];return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`}
-  return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>
-  ${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}
-  ${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}
-  ${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
-}
-function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
-function cD(){selPat=null;rProfile()}
 
 // ── PROGRAMME ENGINE ──
 function getSetTargets(){
@@ -566,12 +418,13 @@ function suggestedLoad(exId,intent){
   if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
   return load;
 }
-function buildProgramme(){
-  const setTargets=getSetTargets(),plans=DAY_PLANS[pDays],circuitMap={};
-  CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
+function buildDay(di){
+  const setTargets=getSetTargets();
+  const circuitMap={};CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
   const patAppearances={};PATS.forEach(p=>{patAppearances[p]=0});
-  plans.forEach(dc=>dc.forEach(cid=>{const t=circuitMap[cid];if(t)t.pats.forEach(p=>{patAppearances[p]++})}));
-  return plans.map((dayCircuits,di)=>({
+  DAY_PLAN.forEach(dc=>dc.forEach(cid=>{const t=circuitMap[cid];if(t)t.pats.forEach(p=>{patAppearances[p]++})}));
+  const dayCircuits=DAY_PLAN[di];
+  return{
     label:`Day ${di+1}`,
     circuits:dayCircuits.map((cid,ci)=>{
       const tmpl=circuitMap[cid];if(!tmpl)return null;
@@ -590,50 +443,66 @@ function buildProgramme(){
         const setSplit={Main:mainSets,Bridge:bridgeSets,Limiter:limiterSets};
         const type=ta[pid];
         if(type==='Main'){
-          const ex=getExercise(pid,'Main');
-          exList.unshift({pid,type:'Main',ex,sets:mainSets});
+          exList.unshift({pid,type:'Main',ex:getExercise(pid,'Main'),sets:mainSets});
         } else {
-          const ex=getExercise(pid,type)||getExercise(pid,'Bridge');
-          exList.push({pid,type,ex,sets:setSplit[type]||2});
+          exList.push({pid,type,ex:getExercise(pid,type)||getExercise(pid,'Bridge'),sets:setSplit[type]||2});
         }
       });
       return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,totalSets:exList.reduce((s,e)=>s+e.sets,0)};
     }).filter(Boolean)
-  }));
+  };
 }
 
-function rProg(){
+// ── RENDER WORKOUT (first tab) ──
+function rWorkout(){
   const hasLvl=PATS.some(p=>(AP[p]||0)>0);
   const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
-  let h=`<div class="week-bar"><div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div><div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div></div>
-  <div class="sl">Training days</div><div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
-  <div class="sl">Your programme</div>`;
-  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;document.getElementById('v-programme').innerHTML=h;return}
-  buildProgramme().forEach((day,di)=>{
-    const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
-    h+=`<div class="day-wrap"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalDaySets} sets</span></div>`;
-    day.circuits.forEach((circuit,ci)=>{
-      const ck=`d${di}c${ci}`,isOpen=!!openCircuits[ck];
-      h+=`<div class="circuit-wrap"><div class="circuit-hdr" onclick="toggleCircuit('${ck}')"><div class="circuit-letter">${circuit.letter}</div><span class="circuit-label">${circuit.name} circuit</span><span class="circuit-sets">${circuit.totalSets} sets</span><span class="circuit-arrow">${isOpen?'▲':'▼'}</span></div><div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
-      circuit.exercises.forEach((item,xi)=>{
-        const slot=`${circuit.letter}${xi+1}`,ex=item.ex,intent=ex?.intent||'Force';
-        const rs=repStr(intent,item.sets,curWeek),tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
-        const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
-        const sug=ex?.id?suggestedLoad(ex.id,intent):null;
-        let setRows='';
-        for(let s=1;s<=rs.sets;s++){
-          const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
-          const logged=!!prev,uid=`${ck}-${ex?.id||item.pid}-${s}`;
-          setRows+=`<div class="set-row"><span class="set-num">Set ${s}</span><input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/><input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/><button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button></div>`;
-        }
-        h+=`<div class="cx"><div class="cx-top"><span class="cx-slot">${slot}</span><span class="cx-name">${exName}</span><span class="cx-badge ${tagCls}">${item.type}</span></div><div class="cx-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST[item.type]||'60s'} · ${PL[item.pid]} L${AP[item.pid]||0}</div>${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong></div>`:''}<div class="set-logger">${setRows}</div></div>`;
-      });
-      h+=`</div></div>`;
+
+  let h=`<div class="week-bar">
+    <div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div>
+    <div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div>
+  </div>`;
+
+  if(!hasLvl){
+    h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;
+    document.getElementById('v-workout').innerHTML=h;return;
+  }
+
+  // Day sub-tabs
+  h+=`<div class="day-sub-tabs">`;
+  for(let d=0;d<DAYS;d++){
+    h+=`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}</button>`;
+  }
+  h+=`</div>`;
+
+  // Current day
+  const day=buildDay(curDay);
+  const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
+  h+=`<div class="day-wrap"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalDaySets} sets</span></div>`;
+
+  day.circuits.forEach((circuit,ci)=>{
+    const ck=`d${curDay}c${ci}`,isOpen=!!openCircuits[ck];
+    h+=`<div class="circuit-wrap"><div class="circuit-hdr" onclick="toggleCircuit('${ck}')"><div class="circuit-letter">${circuit.letter}</div><span class="circuit-label">${circuit.name} circuit</span><span class="circuit-sets">${circuit.totalSets} sets</span><span class="circuit-arrow">${isOpen?'▲':'▼'}</span></div><div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
+    circuit.exercises.forEach((item,xi)=>{
+      const slot=`${circuit.letter}${xi+1}`,ex=item.ex,intent=ex?.intent||'Force';
+      const rs=repStr(intent,item.sets,curWeek),tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
+      const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
+      const sug=ex?.id?suggestedLoad(ex.id,intent):null;
+      let setRows='';
+      for(let s=1;s<=rs.sets;s++){
+        const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
+        const logged=!!prev,uid=`${ck}-${ex?.id||item.pid}-${s}`;
+        setRows+=`<div class="set-row"><span class="set-num">Set ${s}</span><input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/><input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/><button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button></div>`;
+      }
+      h+=`<div class="cx"><div class="cx-top"><span class="cx-slot">${slot}</span><span class="cx-name">${exName}</span><span class="cx-badge ${tagCls}">${item.type}</span></div><div class="cx-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST[item.type]||'60s'} · ${PL[item.pid]} L${AP[item.pid]||0}</div>${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong></div>`:''}<div class="set-logger">${setRows}</div></div>`;
     });
-    h+=`</div>`;
+    h+=`</div></div>`;
   });
-  document.getElementById('v-programme').innerHTML=h;
+  h+=`</div>`;
+  document.getElementById('v-workout').innerHTML=h;
 }
+
+function setDay(d){curDay=d;openCircuits={};rWorkout()}
 function toggleCircuit(key){
   openCircuits[key]=!openCircuits[key];
   const body=document.getElementById('cb-'+key);
@@ -641,8 +510,8 @@ function toggleCircuit(key){
   const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
   if(arr)arr.textContent=openCircuits[key]?'▲':'▼';
 }
-function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};rProg()}
-function setPD(n){pDays=n;openCircuits={};rProg()}
+function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};rWorkout()}
+
 async function logSet(uid,exId,patId,setNum,repLo,repHi){
   const rEl=document.getElementById('r-'+uid),lEl=document.getElementById('l-'+uid);
   const reps=parseInt(rEl?.value),load=parseFloat(lEl?.value)||null;
@@ -653,6 +522,176 @@ async function logSet(uid,exId,patId,setNum,repLo,repHi){
   const btn=document.querySelector(`[onclick="logSet('${uid}','${exId}','${patId}',${setNum},${repLo},${repHi})"]`);
   if(btn){btn.textContent='✓';btn.classList.add('done');btn.disabled=true}
   SETS.unshift({exercise_id:exId?parseInt(exId):null,pattern_id:patId,week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi,logged_at:new Date().toISOString()});
+}
+
+// ── PROFILE ──
+function rProfile(){
+  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),init=gi(CU.user_metadata?.full_name||CU.email),nm=CU.user_metadata?.full_name||CU.email;
+  let h='';
+  if(IS_COACH)h+=rCoachRoster();
+  h+=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`;
+  h+=`<div class="sl">Movement Standards</div><div class="pg">`;
+  PATS.forEach(pid=>{
+    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    const nextLv=lv+1,nextStd=STD.find(s=>s.pattern_id===pid&&s.level===nextLv);
+    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
+      <div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div>
+      <div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+      <div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div>
+      ${nextStd?`<button class="log-test-btn" onclick="event.stopPropagation();openTestModal('${pid}')">+ Log Level ${nextLv} Test</button>`:''}
+    </div>`;
+  });
+  h+=`</div>`;
+  if(selPat)h+=rDetail(selPat);
+
+  // Test history
+  if(LOGS.length){
+    h+=`<div class="sl">Test history</div>`;
+    LOGS.forEach(log=>{
+      const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested),sc=log.passed===true?'spass':log.passed===false?'sfail':'sp',sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review',dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${PF[log.pattern_id]} — Level ${log.level_tested}</div><div style="font-size:12px;color:var(--mt);margin-top:2px">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:2px;font-style:italic">"${log.notes}"</div>`:''}</div>
+        <div style="text-align:right"><div><span class="sdot ${sc}" style="width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;background:${sc==='spass'?'var(--gm)':sc==='sfail'?'var(--red)':'#F0A500'}"></span><span style="font-size:12px;font-weight:500">${sl}</span></div><div style="font-size:11px;color:var(--mt)">${dt}</div></div>
+      </div>`;
+    });
+  }
+  document.getElementById('v-profile').innerHTML=h;
+}
+
+function rDetail(pid){
+  const lv=AP[pid]||0;
+  if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
+  const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
+  const std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
+  function eb(x,tag,cls){if(!x)return'';const i=x.intent||'Control',r=RR[i];return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`}
+  return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>
+  ${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}
+  ${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}
+  ${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
+}
+function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
+function cD(){selPat=null;rProfile()}
+
+// ── TEST LOG MODAL ──
+function openTestModal(pid){
+  testModalPat=pid;selectedVideoFile=null;
+  const lv=AP[pid]||0;
+  document.getElementById('test-modal-title').textContent=`Log Test — ${PF[pid]}`;
+  document.getElementById('tm-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('tm-notes').value='';
+  document.getElementById('tm-msg').textContent='';
+  document.getElementById('tm-video-text').textContent='Tap to upload video from camera roll';
+  document.getElementById('tm-video-preview').style.display='none';
+  document.getElementById('tm-progress-wrap').style.display='none';
+  document.getElementById('tm-video-input').value='';
+  // Populate level select — offer next level and above
+  const sel=document.getElementById('tm-level');
+  sel.innerHTML=STD.filter(s=>s.pattern_id===pid).map(s=>`<option value="${s.level}"${s.level===lv+1?' selected':''}>${PF[pid]} Level ${s.level} — ${s.test_exercise} (${s.load_standard})</option>`).join('');
+  document.getElementById('test-modal').style.display='flex';
+}
+function closeTestModal(e){
+  if(e&&e.target!==document.getElementById('test-modal'))return;
+  document.getElementById('test-modal').style.display='none';
+  testModalPat=null;selectedVideoFile=null;
+}
+function handleVideoSelect(input){
+  const file=input.files[0];
+  if(!file)return;
+  selectedVideoFile=file;
+  document.getElementById('tm-video-text').textContent=file.name;
+  const url=URL.createObjectURL(file);
+  const preview=document.getElementById('tm-video-preview');
+  preview.src=url;preview.style.display='block';
+}
+async function submitTest(){
+  const pid=testModalPat,lv=parseInt(document.getElementById('tm-level').value);
+  const dt=document.getElementById('tm-date').value,nt=document.getElementById('tm-notes').value.trim();
+  const me=document.getElementById('tm-msg');
+  if(!pid||!lv){me.textContent='Please select a level.';me.className='msg err';return}
+  const submitBtn=document.getElementById('tm-submit');
+  submitBtn.disabled=true;me.textContent='Submitting…';me.className='msg';
+  let videoUrl=null;
+  if(selectedVideoFile){
+    try{
+      const ext=selectedVideoFile.name.split('.').pop();
+      const path=`${CU.id}/${Date.now()}.${ext}`;
+      document.getElementById('tm-progress-wrap').style.display='block';
+      document.getElementById('tm-progress').style.width='30%';
+      const{data,error:upErr}=await sb.storage.from('test-videos').upload(path,selectedVideoFile,{contentType:selectedVideoFile.type,upsert:false});
+      if(upErr)throw upErr;
+      document.getElementById('tm-progress').style.width='80%';
+      const{data:urlData}=sb.storage.from('test-videos').getPublicUrl(path);
+      videoUrl=urlData?.publicUrl||path;
+      document.getElementById('tm-progress').style.width='100%';
+    }catch(err){
+      me.textContent='Video upload failed: '+err.message;me.className='msg err';submitBtn.disabled=false;return;
+    }
+  }
+  const{error}=await sb.from('assessments').insert({athlete_id:CU.id,pattern_id:pid,level_tested:lv,passed:null,notes:nt||null,video_url:videoUrl,assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()});
+  if(error){me.textContent='Error: '+error.message;me.className='msg err';submitBtn.disabled=false;return}
+  me.textContent='✓ Submitted for coach review';me.className='msg ok';
+  const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
+  LOGS=data||[];
+  setTimeout(()=>{document.getElementById('test-modal').style.display='none';submitBtn.disabled=false;rProfile();},1500);
+}
+
+// ── COACH ROSTER ──
+function rCoachRoster(){
+  if(!IS_COACH||!ALL_ATHLETES.length)return'';
+  const pendingCount=ALL_PENDING.length;
+  let h=`<div class="coach-section"><div class="coach-section-title">Athletes (${ALL_ATHLETES.length})</div>`;
+  if(pendingCount>0){
+    h+=`<div style="background:#2a2000;border:1px solid #F0A500;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:#F0A500;margin-bottom:8px">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</div>`;
+    ALL_PENDING.forEach(p=>{
+      const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
+      const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      h+=`<div class="pending-card">
+        <div class="pending-top"><div><div class="pending-name">${p.profiles?.full_name||'Athlete'}</div><div class="pending-sub">${PF[p.pattern_id]||p.pattern_id} — Level ${p.level_tested} · ${std?.test_exercise||'—'}</div></div><div class="pending-date">${dt}</div></div>
+        ${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}
+        ${p.video_url?`<video class="pending-video" src="${p.video_url}" controls playsinline></video>`:''}
+        <div class="pending-actions">
+          <button class="btn-pass" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button>
+          <button class="btn-fail" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button>
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  ALL_ATHLETES.sort((a,b)=>PATS.reduce((s,p)=>s+(b.scores[p]||0),0)-PATS.reduce((s,p)=>s+(a.scores[p]||0),0)).forEach((a,i)=>{
+    const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0),init=gi(a.name),c=AVC[i%AVC.length];
+    const bars=PATS.map(p=>`<div class="athlete-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
+    h+=`<div class="athlete-row${selAthlete===a.id?' active':''}" onclick="selectAthlete('${a.id}')"><div class="athlete-av" style="background:${c.bg};color:${c.fg}">${init}</div><div class="athlete-info"><div class="athlete-name">${a.name}</div><div class="athlete-bars">${bars}</div></div><div class="athlete-score">${total}</div></div>`;
+  });
+  h+=`</div>`;
+  if(selAthlete){
+    const a=ALL_ATHLETES.find(x=>x.id===selAthlete);
+    if(a){
+      const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+      h+=`<div class="coach-athlete-profile"><div class="cap-header"><div class="cap-name">${a.name}</div><div style="display:flex;align-items:center;gap:8px"><span class="cap-score">${total} / 40</span><button class="cap-close" onclick="selectAthlete('${a.id}')">✕</button></div></div><div class="cap-grid">`;
+      PATS.forEach(pid=>{
+        const lv=a.scores[pid]||0,col=LC[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
+        h+=`<div class="cap-pat"><div class="cap-pat-top"><span class="cap-pat-name">${PL[pid]}</span><div class="cap-level-ctrl"><button class="level-btn" onclick="setLevel('${a.id}','${pid}',${lv-1})" ${lv<=0?'disabled':''}>−</button><span class="level-num" style="color:${col}">${lv}</span><button class="level-btn" onclick="setLevel('${a.id}','${pid}',${lv+1})" ${lv>=5?'disabled':''}>+</button></div></div><div class="cap-bar"><div class="cap-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div><div class="cap-ex">${std?std.test_exercise:'Not assessed'}</div>${nx?`<div class="cap-std">→ ${nx.test_exercise} · ${nx.load_standard}</div>`:''}</div>`;
+      });
+      h+=`</div></div>`;
+    }
+  }
+  return h;
+}
+function selectAthlete(id){selAthlete=selAthlete===id?null:id;rProfile();if(selAthlete)setTimeout(()=>{const el=document.querySelector('.coach-athlete-profile');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
+async function setLevel(athleteId,patId,newLevel){
+  if(newLevel<0||newLevel>5)return;
+  const{error}=await sb.from('athlete_profiles').upsert({athlete_id:athleteId,pattern_id:patId,current_level:newLevel,passed_at:newLevel>0?new Date().toISOString():null,updated_at:new Date().toISOString()},{onConflict:'athlete_id,pattern_id'});
+  if(error){alert('Error: '+error.message);return}
+  const a=ALL_ATHLETES.find(x=>x.id===athleteId);if(a)a.scores[patId]=newLevel;
+  if(athleteId===CU.id){AP[patId]=newLevel;rWorkout();}
+  rProfile();
+}
+async function judgeTest(assessmentId,athleteId,patId,level,pass){
+  const{error}=await sb.from('assessments').update({passed:pass}).eq('id',assessmentId);
+  if(error){alert('Error: '+error.message);return}
+  if(pass){const current=ALL_ATHLETES.find(x=>x.id===athleteId)?.scores[patId]||0;if(level>current)await setLevel(athleteId,patId,level);}
+  ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);rProfile();
 }
 
 // ── HISTORY ──
@@ -677,39 +716,29 @@ function rHistory(){
   document.getElementById('v-history').innerHTML=h;
 }
 
-// ── TEST LOG ──
-function rTestLog(){
-  let h=`<div class="sl">Log a level test</div><div class="tf"><div class="tft">Record a test attempt</div><label>Movement pattern</label><select id="tpat" onchange="uTL()"><option value="">Select pattern…</option>${PATS.map(p=>`<option value="${p}">${PF[p]}</option>`).join('')}</select><label>Level attempted</label><select id="tlvl"><option value="">Select pattern first…</option></select><label>Date</label><input type="date" id="tdate" value="${new Date().toISOString().split('T')[0]}"/><label>Notes for coach (optional)</label><textarea id="tnotes" placeholder="How did it feel? Any observations…"></textarea><button class="btn btn-full btn-gm" onclick="subTest()">Submit for coach review</button><div class="msg" id="tm2"></div></div>`;
-  if(LOGS.length){
-    h+=`<div class="sl">Your test history</div>`;
-    LOGS.forEach(log=>{
-      const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested),sc=log.passed===true?'spass':log.passed===false?'sfail':'sp',sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review',dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-      h+=`<div class="tpend"><div class="tpl"><div class="tpn">${PF[log.pattern_id]} — Level ${log.level_tested}</div><div class="tps">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:2px">"${log.notes}"</div>`:''}</div><div class="tpr"><div><span class="sdot ${sc}"></span><span style="font-size:12px;font-weight:500">${sl}</span></div><div class="td2">${dt}</div></div></div>`;
-    });
-  } else h+=`<div class="empty" style="padding:20px 0"><div class="ei">📝</div>No tests logged yet.</div>`;
-  document.getElementById('v-testlog').innerHTML=h;
-}
-function uTL(){
-  const pid=document.getElementById('tpat').value,sel=document.getElementById('tlvl');
-  if(!pid){sel.innerHTML='<option>Select pattern first…</option>';return}
-  sel.innerHTML=STD.filter(s=>s.pattern_id===pid).map(s=>`<option value="${s.level}"${s.level===(AP[pid]||0)+1?' selected':''}>Level ${s.level} — ${s.test_exercise} (${s.load_standard})</option>`).join('');
-}
-async function subTest(){
-  const pid=document.getElementById('tpat').value,lv=parseInt(document.getElementById('tlvl').value),dt=document.getElementById('tdate').value,nt=document.getElementById('tnotes').value.trim(),me=document.getElementById('tm2');
-  if(!pid||!lv){me.textContent='Please select a pattern and level.';me.className='msg err';return}
-  me.textContent='Submitting…';me.className='msg';
-  const{error}=await sb.from('assessments').insert({athlete_id:CU.id,pattern_id:pid,level_tested:lv,passed:null,notes:nt||null,assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()});
-  if(error){me.textContent='Error: '+error.message;me.className='msg err';return}
-  me.textContent='Logged! Your coach will review it.';me.className='msg ok';
-  const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
-  LOGS=data||[];setTimeout(()=>rTestLog(),1500);
-}
-
 // ── LEADERBOARD ──
 function rLB(){
+  // Build from all profiles — include everyone even score 0
   const am={};
-  AAP.forEach(r=>{const id=r.athlete_id;if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};am[id].scores[r.pattern_id]=r.current_level});
-  let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
+  // First seed everyone from profiles
+  AAP.forEach(r=>{
+    const id=r.athlete_id;
+    if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};
+    am[id].scores[r.pattern_id]=r.current_level;
+  });
+  // Also include athletes with no profiles yet (score 0 across board)
+  if(IS_COACH){
+    ALL_ATHLETES.forEach(a=>{
+      if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{}};
+    });
+  }
+  let aths=Object.values(am).map((a,i)=>({
+    ...a,
+    ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),
+    ms:lbF==='all'?40:5,
+    ci:i%AVC.length
+  })).sort((a,b)=>b.ds-a.ds);
+
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
   if(!aths.length)h+=`<div class="empty"><div class="ei">🏆</div>No athletes on the board yet.</div>`;
