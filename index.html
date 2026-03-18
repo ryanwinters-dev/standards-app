@@ -552,7 +552,7 @@ async function load(){
         if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;
       });
       ALL_ATHLETES=Object.values(am);
-      ALL_PENDING=await safe(sb.from('assessments').select('*,profiles(full_name)').is('passed',null).order('assessed_at',{ascending:false}));
+      ALL_PENDING=await safe(sb.from('assessments').select('*').is('passed',null).order('assessed_at',{ascending:false}));
       const allSets=await safe(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').order('logged_at',{ascending:false}).limit(500));
       ALL_CLIENT_SETS={};
       allSets.forEach(s=>{if(!ALL_CLIENT_SETS[s.athlete_id])ALL_CLIENT_SETS[s.athlete_id]=[];ALL_CLIENT_SETS[s.athlete_id].push(s);});
@@ -1037,7 +1037,7 @@ async function submitTest(){
 function rCoach(){
   if(!IS_COACH){document.getElementById('v-coach').innerHTML='';return;}
   const pendingCount=ALL_PENDING.length;
-  let h=`<div class="sl">Athletes (${ALL_ATHLETES.length})</div>`;
+  let h=`<div class="sl">Athletes (${ALL_ATHLETES.length}) · ${ALL_PENDING.length} pending tests</div>`;
 
   // Pending tests banner
   if(pendingCount>0){
@@ -1045,9 +1045,10 @@ function rCoach(){
       <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:10px">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</div>`;
     ALL_PENDING.forEach(p=>{
       const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
+      const athleteName=ALL_ATHLETES.find(a=>a.id===p.athlete_id)?.name||'Athlete';
       const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
       h+=`<div class="pending-card">
-        <div class="pending-top"><div><div class="pending-name">${p.profiles?.full_name||'Athlete'}</div><div class="pending-sub">${PF[p.pattern_id]||p.pattern_id} — Level ${p.level_tested} · ${std?.test_exercise||'—'}</div></div><div class="pending-date">${dt}</div></div>
+        <div class="pending-top"><div><div class="pending-name">${athleteName}</div><div class="pending-sub">${PF[p.pattern_id]||p.pattern_id} — Level ${p.level_tested} · ${std?.test_exercise||'—'}</div></div><div class="pending-date">${dt}</div></div>
         ${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}
         ${p.video_url?`<video class="pending-video" src="${p.video_url}" controls playsinline></video>`:''}
         <div class="pending-actions"><button class="btn-pass" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button><button class="btn-fail" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button></div>
