@@ -506,10 +506,17 @@ sb.auth.onAuthStateChange(async(ev,sess)=>{
   else if(ev==='SIGNED_OUT'){CU=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('app').style.display='none';}
 });
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){showApp(session.user);await load();}})();
-document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&CU)await load();});
+let lastLoad=0;
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState==='visible'&&CU){
+    const now=Date.now();
+    if(now-lastLoad>60000){lastLoad=now;await load();}
+  }
+});
 
 // ── LOAD ──
 async function load(){
+  lastLoad=Date.now();
   // Read role from JWT immediately — no query needed
   IS_COACH=CU.app_metadata?.role==='coach';
   document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
@@ -520,8 +527,14 @@ async function load(){
     document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
   });
 
-  // Safe wrapper — never throws, returns [] on failure
-  const q=async(query)=>{try{const r=await query;return r.data||[];}catch(e){console.warn('Query err:',e.message);return[];}};
+  // Safe wrapper — never throws, times out after 5s
+  const q=async(query)=>{
+    try{
+      const timeout=new Promise(resolve=>setTimeout(()=>resolve({data:[]}),5000));
+      const r=await Promise.race([query,timeout]);
+      return r.data||[];
+    }catch(e){console.warn('Query err:',e.message);return[];}
+  };;
 
   try{
     // Run all athlete queries in parallel
