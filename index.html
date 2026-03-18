@@ -204,34 +204,48 @@
     .log-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
 
     /* ── COACH TAB ── */
-    .coach-client-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
-    .coach-client-card:hover{border-color:#bbb}
-    .coach-client-card.open{border-color:var(--gm)}
-    .ccc-top{display:flex;align-items:center;gap:12px}
-    .ccc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0}
-    .ccc-info{flex:1}
+    .coach-client-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
+    .coach-client-card:hover{border-color:var(--gm);transform:translateY(-1px)}
+    .ccc-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0}
+    .ccc-info{flex:1;min-width:0}
     .ccc-name{font-size:14px;font-weight:600}
-    .ccc-bars{display:flex;gap:2px;margin-top:4px}
+    .ccc-sub{font-size:12px;color:var(--mt);margin-top:2px}
+    .ccc-bars{display:flex;gap:2px;margin-top:5px}
     .ccc-bar{width:9px;height:9px;border-radius:2px}
-    .ccc-score{font-size:20px;font-weight:700;color:var(--gm)}
-    .ccc-arrow{font-size:12px;color:var(--mt);margin-left:4px}
-    .ccc-body{display:none;margin-top:14px;border-top:0.5px solid var(--br);padding-top:14px}
-    .ccc-body.open{display:block}
-    .ccc-section{margin-bottom:14px}
-    .ccc-section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:8px}
-    .cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .cap-pat{background:var(--bg);border:0.5px solid var(--br);border-radius:8px;padding:10px}
-    .cap-pat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-    .cap-pat-name{font-size:12px;font-weight:600}
-    .cap-level-ctrl{display:flex;align-items:center;gap:6px}
-    .level-btn{width:22px;height:22px;border-radius:4px;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-size:14px;font-weight:600;color:var(--dk);display:flex;align-items:center;justify-content:center;font-family:var(--fn);transition:all .15s;line-height:1}
-    .level-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
-    .level-btn:disabled{opacity:.3;cursor:not-allowed}
-    .level-num{font-size:13px;font-weight:700;color:var(--gm);min-width:16px;text-align:center}
-    .cap-bar{height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden}
-    .cap-bar-fill{height:100%;border-radius:2px}
-    .cap-ex{font-size:11px;color:var(--mt);margin-top:2px}
-    .cap-std{font-size:11px;font-weight:600;color:var(--gm)}
+    .ccc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+    .ccc-score{font-size:22px;font-weight:700;color:var(--gm);line-height:1}
+    .ccc-arrow{font-size:16px;color:var(--mt)}
+    .ccc-pending-dot{font-size:11px;font-weight:600;color:var(--amber);background:#FFF8EC;padding:2px 7px;border-radius:99px;border:0.5px solid var(--amber)}
+
+    /* Client profile page */
+    .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;overflow-y:auto}
+    .client-page.active{display:block}
+    .client-page-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+    .back-btn{padding:6px 10px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn);display:flex;align-items:center;gap:5px;transition:all .15s}
+    .back-btn:hover{background:var(--bg)}
+    .client-page-name{font-size:16px;font-weight:600;flex:1}
+    .client-page-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
+    .client-page-body{padding:16px;max-width:640px;margin:0 auto}
+    .cp-section{margin-bottom:20px}
+    .cp-section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
+    .cp-pat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .cp-pat{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px}
+    .cp-pat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+    .cp-pat-name{font-size:13px;font-weight:600}
+    .cp-pat-lv{font-size:13px;font-weight:700}
+    .cp-bar{height:3px;background:var(--br);border-radius:2px;margin-bottom:5px;overflow:hidden}
+    .cp-bar-fill{height:100%;border-radius:2px}
+    .cp-pat-ex{font-size:11px;color:var(--mt)}
+    .cp-pending{margin-top:8px;padding:8px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:6px}
+    .cp-pending-label{font-size:11px;font-weight:600;color:var(--amber);margin-bottom:3px}
+    .cp-pending-ex{font-size:11px;color:var(--mt);margin-bottom:6px}
+    .cp-pending-actions{display:flex;gap:5px}
+    .cp-session-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--br);font-size:13px}
+    .cp-session-row:last-child{border-bottom:none}
+    .cp-ci-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--br);font-size:13px}
+    .cp-ci-row:last-child{border-bottom:none}
+    .cp-test-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--br);font-size:13px}
+    .cp-test-row:last-child{border-bottom:none}
     .pending-card{background:var(--bg);border:0.5px solid var(--br);border-left:3px solid var(--amber);border-radius:8px;padding:12px;margin-bottom:8px}
     .pending-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
     .pending-name{font-size:13px;font-weight:600}
@@ -318,6 +332,16 @@
     <div id="v-leaderboard" class="view"></div>
     <div id="v-coach" class="view"></div>
   </div>
+</div>
+
+<!-- CLIENT PROFILE PAGE -->
+<div class="client-page" id="client-page">
+  <div class="client-page-topbar">
+    <button class="back-btn" onclick="closeClientPage()">← Back</button>
+    <span class="client-page-name" id="cp-name"></span>
+    <span class="client-page-score" id="cp-score"></span>
+  </div>
+  <div class="client-page-body" id="cp-body"></div>
 </div>
 
 <!-- CHECK-IN MODAL -->
@@ -1049,110 +1073,159 @@ async function submitTest(){
 function rCoach(){
   if(!IS_COACH){document.getElementById('v-coach').innerHTML='';return;}
   const pendingCount=ALL_PENDING.length;
-  let h=`<div class="sl">Athletes (${ALL_ATHLETES.length}) · ${ALL_PENDING.length} pending tests</div>`;
+  let h='';
 
-  // Pending tests banner
+  // Pending banner at top
   if(pendingCount>0){
-    h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:12px;padding:14px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:10px">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</div>`;
-    ALL_PENDING.forEach(p=>{
-      const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
-      const athleteName=ALL_ATHLETES.find(a=>a.id===p.athlete_id)?.name||'Athlete';
-      const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-      h+=`<div class="pending-card">
-        <div class="pending-top"><div><div class="pending-name">${athleteName}</div><div class="pending-sub">${PF[p.pattern_id]||p.pattern_id} — Level ${p.level_tested} · ${std?.test_exercise||'—'}</div></div><div class="pending-date">${dt}</div></div>
-        ${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}
-        ${p.video_url?`<video class="pending-video" src="${p.video_url}" controls playsinline></video>`:''}
-        <div class="pending-actions"><button class="btn-pass" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button><button class="btn-fail" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button></div>
-      </div>`;
-    });
-    h+=`</div>`;
+    h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;font-weight:600;color:var(--amber)">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</span>
+      <span style="font-size:12px;color:var(--mt)">Open a client to review</span>
+    </div>`;
   }
 
-  // Client list
-  const sorted=[...ALL_ATHLETES].sort((a,b)=>PATS.reduce((s,p)=>s+(b.scores[p]||0),0)-PATS.reduce((s,p)=>s+(a.scores[p]||0),0));
-  sorted.forEach((a,i)=>{
-    const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-    const init=gi(a.name),c=AVC[i%AVC.length];
-    const bars=PATS.map(p=>`<div class="ccc-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
-    const isOpen=!!openClients[a.id];
-    const clientSets=ALL_CLIENT_SETS[a.id]||[];
-    const lastSession=clientSets.length?new Date(clientSets[0].logged_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):null;
+  h+=`<div class="sl">Athletes (${ALL_ATHLETES.length})</div>`;
 
-    h+=`<div class="coach-client-card${isOpen?' open':''}" onclick="toggleClient('${a.id}')">
-      <div class="ccc-top">
+  if(!ALL_ATHLETES.length){
+    h+=`<div class="empty"><div class="ei">👥</div>No athletes yet. They'll appear here once they sign up.</div>`;
+  } else {
+    const sorted=[...ALL_ATHLETES].sort((a,b)=>
+      PATS.reduce((s,p)=>s+(b.scores[p]||0),0)-PATS.reduce((s,p)=>s+(a.scores[p]||0),0)
+    );
+    sorted.forEach((a,i)=>{
+      const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+      const init=gi(a.name),c=AVC[i%AVC.length];
+      const bars=PATS.map(p=>`<div class="ccc-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
+      const clientPending=ALL_PENDING.filter(p=>p.athlete_id===a.id).length;
+      const clientSets=ALL_CLIENT_SETS[a.id]||[];
+      const lastActive=clientSets.length?new Date(clientSets[0].logged_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'No sessions';
+      h+=`<div class="coach-client-card" onclick="openClientPage('${a.id}')">
         <div class="ccc-av" style="background:${c.bg};color:${c.fg}">${init}</div>
         <div class="ccc-info">
           <div class="ccc-name">${a.name}</div>
+          <div class="ccc-sub">Last active: ${lastActive}</div>
           <div class="ccc-bars">${bars}</div>
         </div>
-        <div class="ccc-score">${total}</div>
-        <div class="ccc-arrow">${isOpen?'▲':'▼'}</div>
-      </div>
-      <div class="ccc-body${isOpen?' open':''}">
-        <!-- STANDARDS PROFILE -->
-        <div class="ccc-section">
-          <div class="ccc-section-title">Standards Profile</div>
-          <div class="cap-grid">`;
-    PATS.forEach(pid=>{
-      const lv=a.scores[pid]||0,col=LC[lv];
-      const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-      const pending=ALL_PENDING.find(p=>p.athlete_id===a.id&&p.pattern_id===pid);
-      const pendingStd=pending?STD.find(s=>s.pattern_id===pid&&s.level===pending.level_tested):null;
-      h+=`<div class="cap-pat">
-        <div class="cap-pat-top">
-          <span class="cap-pat-name">${PL[pid]}</span>
-          <span class="level-num" style="color:${col};font-size:13px;font-weight:700">L${lv}</span>
+        <div class="ccc-right">
+          <div class="ccc-score">${total}</div>
+          ${clientPending>0?`<div class="ccc-pending-dot">⏳ ${clientPending}</div>`:''}
+          <div class="ccc-arrow">›</div>
         </div>
-        <div class="cap-bar"><div class="cap-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
-        <div class="cap-ex">${std?std.test_exercise:'Not assessed'}</div>
-        ${pending?`<div style="margin-top:6px;padding:6px 8px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:6px">
-          <div style="font-size:11px;font-weight:600;color:var(--amber);margin-bottom:4px">⏳ L${pending.level_tested} test pending</div>
-          <div style="font-size:11px;color:var(--mt);margin-bottom:6px">${pendingStd?.test_exercise||'—'}</div>
-          ${pending.video_url?`<video style="width:100%;border-radius:4px;margin-bottom:6px;max-height:120px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
-          ${pending.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:6px">"${pending.notes}"</div>`:''}
-          <div style="display:flex;gap:5px">
-            <button class="btn-pass" style="flex:1;font-size:11px;padding:4px 8px" onclick="event.stopPropagation();judgeTest('${pending.id}','${a.id}','${pid}',${pending.level_tested},true)">✓ Pass</button>
-            <button class="btn-fail" style="flex:1;font-size:11px;padding:4px 8px" onclick="event.stopPropagation();judgeTest('${pending.id}','${a.id}','${pid}',${pending.level_tested},false)">✕ Fail</button>
-          </div>
-        </div>`:''}
       </div>`;
     });
-    h+=`</div></div>`;
-
-    // RECENT WORKOUTS
-    if(clientSets.length){
-      const byDate={};
-      clientSets.slice(0,30).forEach(s=>{const d=s.session_date||s.logged_at?.split('T')[0]||'?';if(!byDate[d])byDate[d]=[];byDate[d].push(s)});
-      h+=`<div class="ccc-section"><div class="ccc-section-title">Recent Workouts</div>`;
-      Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,5).forEach(([date,sets])=>{
-        const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-        const patterns=[...new Set(sets.map(s=>PL[s.pattern_id]||s.pattern_id))].join(', ');
-        h+=`<div class="workout-hist-row"><span style="font-weight:500">${label}</span><span style="color:var(--mt);font-size:12px">${sets.length} sets · ${patterns}</span></div>`;
-      });
-      h+=`</div>`;
-    }
-
-    h+=`</div></div>`;
-  });
-
-  if(!ALL_ATHLETES.length)h+=`<div class="empty"><div class="ei">👥</div>No athletes yet. Athletes will appear here once they sign up and are assessed.</div>`;
+  }
 
   document.getElementById('v-coach').innerHTML=h;
 }
 
-function toggleClient(id){
-  openClients[id]=!openClients[id];
+// ── CLIENT PROFILE PAGE ──
+function openClientPage(athleteId){
+  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
+  if(!a)return;
+  const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+  document.getElementById('cp-name').textContent=a.name;
+  document.getElementById('cp-score').textContent=`${total} / 40`;
+
+  const clientSets=ALL_CLIENT_SETS[athleteId]||[];
+  const clientPending=ALL_PENDING.filter(p=>p.athlete_id===athleteId);
+
+  let h='';
+
+  // ── STANDARDS + PENDING TESTS ──
+  h+=`<div class="cp-section"><div class="cp-section-title">Movement Standards</div><div class="cp-pat-grid">`;
+  PATS.forEach(pid=>{
+    const lv=a.scores[pid]||0,col=LC[lv];
+    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    const pending=clientPending.find(p=>p.pattern_id===pid);
+    const pendingStd=pending?STD.find(s=>s.pattern_id===pid&&s.level===pending.level_tested):null;
+    h+=`<div class="cp-pat">
+      <div class="cp-pat-top">
+        <span class="cp-pat-name">${PL[pid]}</span>
+        <span class="cp-pat-lv" style="color:${col}">L${lv}</span>
+      </div>
+      <div class="cp-bar"><div class="cp-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+      <div class="cp-pat-ex">${std?std.test_exercise:'Not assessed'}</div>
+      ${pending?`<div class="cp-pending">
+        <div class="cp-pending-label">⏳ L${pending.level_tested} test pending</div>
+        <div class="cp-pending-ex">${pendingStd?.test_exercise||'—'}</div>
+        ${pending.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:5px">"${pending.notes}"</div>`:''}
+        ${pending.video_url?`<video style="width:100%;border-radius:4px;margin-bottom:6px;max-height:140px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
+        <div class="cp-pending-actions">
+          <button class="btn-pass" style="flex:1;font-size:11px;padding:5px" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},true)">✓ Pass</button>
+          <button class="btn-fail" style="flex:1;font-size:11px;padding:5px" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},false)">✕ Fail</button>
+        </div>
+      </div>`:''}
+    </div>`;
+  });
+  h+=`</div></div>`;
+
+  // ── RECENT WORKOUTS ──
+  h+=`<div class="cp-section"><div class="cp-section-title">Recent Workouts</div>`;
+  if(clientSets.length){
+    const byDate={};
+    clientSets.slice(0,50).forEach(s=>{
+      const d=s.session_date||s.logged_at?.split('T')[0]||'?';
+      if(!byDate[d])byDate[d]=[];byDate[d].push(s);
+    });
+    const card=document.createElement('div');
+    card.style.cssText='background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden';
+    let wh='';
+    Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8).forEach(([date,sets])=>{
+      const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+      const pats=[...new Set(sets.map(s=>PL[s.pattern_id]||s.pattern_id))].join(', ');
+      wh+=`<div class="cp-session-row"><span style="font-weight:500">${label}</span><span style="color:var(--mt);font-size:12px">${sets.length} sets · ${pats}</span></div>`;
+    });
+    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:0 14px">${wh}</div>`;
+  } else {
+    h+=`<div style="color:var(--mt);font-size:13px;padding:8px 0">No sessions logged yet.</div>`;
+  }
+  h+=`</div>`;
+
+  // ── TEST HISTORY ──
+  // Load all assessments for this athlete
+  sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}).then(({data})=>{
+    const tests=data||[];
+    if(!tests.length)return;
+    let th=`<div class="cp-section"><div class="cp-section-title">Test History</div><div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:0 14px">`;
+    tests.forEach(t=>{
+      const std=STD.find(s=>s.pattern_id===t.pattern_id&&s.level===t.level_tested);
+      const sc=t.passed===true?'var(--gm)':t.passed===false?'var(--red)':'var(--amber)';
+      const sl=t.passed===true?'Passed':t.passed===false?'Failed':'Pending';
+      const dt=new Date(t.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      th+=`<div class="cp-test-row">
+        <div><div style="font-weight:500">${PF[t.pattern_id]} L${t.level_tested}</div><div style="font-size:11px;color:var(--mt)">${std?.test_exercise||'—'}</div></div>
+        <div style="text-align:right"><div style="font-size:12px;font-weight:600;color:${sc}">${sl}</div><div style="font-size:11px;color:var(--mt)">${dt}</div></div>
+      </div>`;
+    });
+    th+=`</div></div>`;
+    const cpBody=document.getElementById('cp-body');
+    if(cpBody)cpBody.innerHTML+=th;
+  });
+
+  document.getElementById('cp-body').innerHTML=h;
+  document.getElementById('client-page').classList.add('active');
+}
+
+function closeClientPage(){
+  document.getElementById('client-page').classList.remove('active');
   rCoach();
 }
+
+function toggleClient(id){openClientPage(id);}
+
 async function setLevel(athleteId,patId,newLevel){
   if(newLevel<0||newLevel>5)return;
-  const{error}=await sb.from('athlete_profiles').upsert({athlete_id:athleteId,pattern_id:patId,current_level:newLevel,passed_at:newLevel>0?new Date().toISOString():null,updated_at:new Date().toISOString()},{onConflict:'athlete_id,pattern_id'});
+  const{error}=await sb.from('athlete_profiles').upsert({
+    athlete_id:athleteId,pattern_id:patId,current_level:newLevel,
+    passed_at:newLevel>0?new Date().toISOString():null,
+    updated_at:new Date().toISOString()
+  },{onConflict:'athlete_id,pattern_id'});
   if(error){alert('Error: '+error.message);return}
-  const a=ALL_ATHLETES.find(x=>x.id===athleteId);if(a)a.scores[patId]=newLevel;
+  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
+  if(a)a.scores[patId]=newLevel;
   if(athleteId===CU.id){AP[patId]=newLevel;rWorkout();rHome();}
-  rCoach();
+  openClientPage(athleteId);
 }
+
 async function judgeTest(assessmentId,athleteId,patId,level,pass){
   const{error}=await sb.from('assessments').update({passed:pass}).eq('id',assessmentId);
   if(error){alert('Error: '+error.message);return;}
@@ -1169,7 +1242,7 @@ async function judgeTest(assessmentId,athleteId,patId,level,pass){
     }
   }
   ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);
-  rCoach();
+  openClientPage(athleteId);
 }
 
 // ── HISTORY ──
