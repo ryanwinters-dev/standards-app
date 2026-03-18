@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--red:#c0392b;--amber:#F0A500}
     body{font-family:var(--fn);background:var(--bg);color:var(--dk);min-height:100vh}
     #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
     .auth-card{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
@@ -23,14 +23,19 @@
     textarea{resize:vertical;min-height:72px}
     .btn{padding:11px 16px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
     .btn-full{width:100%}.btn-dk{background:var(--dk);color:#fff}.btn-gm{background:var(--gm);color:#fff}
-    .btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-sm{padding:5px 10px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
+    .btn-pass{background:#E1F5EE;color:#0F6E56}.btn-fail{background:#FDECEA;color:#c0392b}
+    .btn-level{width:26px;height:26px;border-radius:6px;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-size:14px;font-weight:600;color:var(--md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--fn)}
+    .btn-level:hover{background:var(--bg);border-color:var(--gm);color:var(--gm)}
+    .btn:hover,.btn-sm:hover{opacity:.85}
+    .btn:disabled,.btn-sm:disabled{opacity:.4;cursor:not-allowed}
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
-    .msg.err{color:#c0392b}.msg.ok{color:var(--gd)}
+    .msg.err{color:var(--red)}.msg.ok{color:var(--gd)}
     #app{display:none}
     .topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .tl{font-size:18px;font-weight:700;letter-spacing:-.3px}
-    .tl span{color:var(--gm)}
+    .tl{font-size:18px;font-weight:700;letter-spacing:-.3px}.tl span{color:var(--gm)}
     .tu{font-size:13px;color:var(--mt);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .coach-badge{font-size:10px;font-weight:600;background:var(--dk);color:#fff;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:.04em}
     .btn-so{padding:5px 12px;font-size:12px;border:0.5px solid var(--br);background:transparent;border-radius:99px;cursor:pointer;color:var(--md);font-family:var(--fn)}
     .nav-tabs{display:flex;padding:0 16px;border-bottom:0.5px solid var(--br);background:var(--cd);overflow-x:auto;-webkit-overflow-scrolling:touch}
     .nav-tab{padding:10px 12px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:var(--mt);border-bottom:2px solid transparent;margin-bottom:-0.5px;font-family:var(--fn);white-space:nowrap;transition:all .15s}
@@ -55,8 +60,12 @@
     .lc{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
     .bt{height:4px;background:var(--br);border-radius:2px;margin-bottom:5px;overflow:hidden}
     .bf{height:100%;border-radius:2px;transition:width .5s ease}
-    .pb2{display:flex;justify-content:space-between}
+    .pb2{display:flex;justify-content:space-between;align-items:center}
     .pex{font-size:11px;color:var(--mt)}.pst{font-size:11px;font-weight:600;color:var(--gm)}
+    /* COACH LEVEL CONTROLS ON PATTERN CARD */
+    .level-controls{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--br)}
+    .level-val{font-size:13px;font-weight:600;color:var(--dk);min-width:60px;text-align:center}
+    /* DETAIL CARD */
     .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
     .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .dt{font-size:14px;font-weight:600}
@@ -69,6 +78,25 @@
     .ec{font-size:11px;color:var(--gm);font-style:italic}.em2{font-size:11px;color:var(--mt)}
     .ns{margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd)}
     .mlvl{margin-top:10px;padding:9px 11px;background:var(--gm);border-radius:8px;font-size:12px;color:#fff;font-weight:600}
+    /* COACH — ATHLETE ROSTER */
+    .athlete-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
+    .athlete-card:hover{border-color:#bbb}
+    .athlete-card.selected{border-color:var(--gm);border-width:1.5px}
+    .ac-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+    .ac-info{flex:1}.ac-name{font-size:14px;font-weight:600}.ac-sub{font-size:12px;color:var(--mt);margin-top:1px}
+    .ac-score{text-align:right}.ac-num{font-size:18px;font-weight:700;color:var(--gm);line-height:1}.ac-den{font-size:11px;color:var(--mt)}
+    .ac-bars{display:flex;gap:2px;margin-top:4px;justify-content:flex-end}
+    .ac-bar{width:8px;height:8px;border-radius:2px}
+    /* COACH — PENDING TESTS */
+    .pending-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:8px;animation:fi .2s ease}
+    .pending-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .pending-name{font-size:13px;font-weight:600}
+    .pending-date{font-size:11px;color:var(--mt)}
+    .pending-detail{font-size:12px;color:var(--mt);margin-bottom:10px}
+    .pending-notes{font-size:12px;color:var(--dk);font-style:italic;margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:6px}
+    .pending-actions{display:flex;gap:8px}
+    .sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+    .sp{background:var(--amber)}.spass{background:var(--gm)}.sfail{background:var(--red)}
     /* PROGRAMME */
     .week-bar{display:flex;align-items:center;justify-content:space-between;background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px 16px;margin-bottom:14px}
     .week-info{font-size:14px;font-weight:600}.week-sub{font-size:12px;color:var(--mt);margin-top:1px}
@@ -87,17 +115,16 @@
     .circuit-hdr:hover{background:#f0f0ee}
     .circuit-letter{width:24px;height:24px;border-radius:6px;background:var(--dk);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .circuit-label{font-size:12px;font-weight:600;color:var(--md);flex:1}
-    .circuit-meta{font-size:12px;color:var(--mt)}
-    .circuit-arrow{font-size:11px;color:var(--mt);margin-left:6px}
+    .circuit-sets{font-size:12px;color:var(--mt)}.circuit-arrow{font-size:11px;color:var(--mt)}
     .circuit-body{display:none}.circuit-body.open{display:block}
     .cx{border-bottom:0.5px solid var(--br);padding:12px 14px}.cx:last-child{border-bottom:none}
-    .cx-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
-    .cx-slot{font-size:10px;font-weight:700;color:var(--mt);letter-spacing:.08em;flex-shrink:0;width:24px}
+    .cx-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+    .cx-slot{font-size:10px;font-weight:700;color:var(--mt);letter-spacing:.08em;margin-right:8px;flex-shrink:0}
     .cx-name{font-size:14px;font-weight:600;flex:1}
     .cx-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
     .cx-meta{font-size:12px;color:var(--mt);margin-bottom:4px}
     .cx-cue{font-size:11px;color:var(--gm);font-style:italic;margin-bottom:6px}
-    .set-logger{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+    .set-logger{display:flex;flex-direction:column;gap:3px}
     .set-row{display:flex;align-items:center;gap:5px;padding:5px 7px;background:var(--bg);border-radius:6px;border:0.5px solid var(--br)}
     .set-num{font-size:11px;font-weight:600;color:var(--mt);width:34px;flex-shrink:0}
     .set-inp{flex:1;padding:4px 7px;border:0.5px solid var(--br);border-radius:5px;font-size:13px;font-family:var(--fn);background:var(--cd);color:var(--dk);margin-bottom:0;outline:none;min-width:0}
@@ -118,8 +145,6 @@
     .tpend{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
     .tpl{flex:1}.tpn{font-size:13px;font-weight:600}.tps{font-size:12px;color:var(--mt);margin-top:2px}
     .tpr{text-align:right}.td2{font-size:11px;color:var(--mt)}
-    .sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
-    .sp{background:#F0A500}.spass{background:var(--gm)}.sfail{background:#c0392b}
     /* LEADERBOARD */
     .lbf{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
     .lbfb{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);color:var(--mt);cursor:pointer;font-family:var(--fn);transition:all .15s}
@@ -134,10 +159,6 @@
     .lbmb{display:flex;gap:2px;margin-top:4px}.lbmbs{width:8px;height:8px;border-radius:2px}
     @media(max-width:420px){.pg{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
   </style>
-  <script type="module">
-    import { injectSpeedInsights } from 'https://cdn.jsdelivr.net/npm/@vercel/speed-insights/dist/index.mjs';
-    injectSpeedInsights();
-  </script>
 </head>
 <body>
 <div id="auth-screen">
@@ -168,6 +189,7 @@
     <div class="tl">STAND<span>ARDS</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <span class="tu" id="tu"></span>
+      <span class="coach-badge" id="coach-badge" style="display:none">COACH</span>
       <button class="btn-so" onclick="signOut()">Sign out</button>
     </div>
   </div>
@@ -194,8 +216,12 @@ const sb=createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjemZhbXJqZHdiZWVqb3hoeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODAzNjEsImV4cCI6MjA4OTM1NjM2MX0.trUIKdNicHPRDmleAYoF3nAg8unqQrnQCjKTPB63bI0'
 );
 
-let CU=null,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[];
-let selPat=null,lbF='all',pDays=3,curWeek=1,openCircuits={};
+// ── STATE ──
+let CU=null, PROFILE=null, IS_COACH=false;
+let STD=[], EX=[], AP={}, AAP=[], LOGS=[], SETS=[], ALL_LOGS=[], ALL_PROFILES=[];
+let selPat=null, lbF='all', pDays=3, curWeek=1, openCircuits={};
+let viewingAthleteId=null; // null = viewing self, uuid = viewing that athlete
+let selectedAthleteId=null; // selected in roster
 
 const PATS=['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
 const PL={Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
@@ -206,289 +232,20 @@ const AVC=[{bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#EEEDFE',fg:'#534AB7'},{bg:'#FAEEDA'
 const RR={Control:{lo:8,hi:12},Unilateral:{lo:6,hi:8},Force:{lo:3,hi:5},Expression:{lo:5,hi:8}};
 const TM={Control:'3131',Unilateral:'3121',Force:'20X0',Expression:'10X0'};
 const REST={Main:'90s',Bridge:'60s',Limiter:'45s'};
-
-// ── PROGRAMME STRUCTURE ──
-// Each day is an array of circuits.
-// Each circuit has: a primary pattern (A1 = Main), a secondary pattern (A2 = Bridge),
-// and an accessory slot (A3 = Limiter — always Core or Carry where possible).
-// Format: {name, primary, secondary, accessory}
-// primary → Main exercise (5 sets for compound, 4 for unilateral/expression)
-// secondary → Bridge exercise (3-4 sets)
-// accessory → Limiter/Core/Carry (3 sets)
-
+const CIRCUIT_TEMPLATES=[
+  {id:'horiz',pats:['HPush','HPull'],name:'Horizontal'},
+  {id:'vert',pats:['VPush','VPull'],name:'Vertical'},
+  {id:'hinge_pull',pats:['Hinge','VPull'],name:'Posterior'},
+  {id:'hinge_core',pats:['Hinge','Core'],name:'Hip & Core'},
+  {id:'squat_carry',pats:['Squat','Carry'],name:'Lower & Carry'},
+  {id:'pull_core',pats:['HPull','Core'],name:'Pull & Core'},
+  {id:'carry_core',pats:['Carry','Core'],name:'Carry & Brace'},
+];
 const DAY_PLANS={
-  3:[
-    // Day 1
-    [
-      {name:'Horizontal',    primary:'HPush', secondary:'HPull',  accessory:'Core'},
-      {name:'Lower & Carry', primary:'Squat', secondary:'Carry',  accessory:'Core'},
-      {name:'Posterior',     primary:'Hinge', secondary:'VPull',  accessory:'Carry'},
-    ],
-    // Day 2
-    [
-      {name:'Vertical',      primary:'VPush', secondary:'VPull',  accessory:'Core'},
-      {name:'Pull & Brace',  primary:'HPull', secondary:'HPush',  accessory:'Core'},
-      {name:'Hip & Carry',   primary:'Hinge', secondary:'Carry',  accessory:'Core'},
-    ],
-    // Day 3
-    [
-      {name:'Horizontal',    primary:'HPush', secondary:'HPull',  accessory:'Carry'},
-      {name:'Squat & Core',  primary:'Squat', secondary:'Core',   accessory:'Carry'},
-      {name:'Vertical Pull', primary:'VPull', secondary:'VPush',  accessory:'Core'},
-    ],
-  ],
-  4:[
-    [
-      {name:'Horizontal',    primary:'HPush', secondary:'HPull',  accessory:'Core'},
-      {name:'Lower & Carry', primary:'Squat', secondary:'Carry',  accessory:'Core'},
-      {name:'Posterior',     primary:'Hinge', secondary:'VPull',  accessory:'Core'},
-    ],
-    [
-      {name:'Vertical',      primary:'VPush', secondary:'VPull',  accessory:'Core'},
-      {name:'Pull & Core',   primary:'HPull', secondary:'HPush',  accessory:'Core'},
-      {name:'Hip & Carry',   primary:'Hinge', secondary:'Carry',  accessory:'Core'},
-    ],
-    [
-      {name:'Horizontal',    primary:'HPush', secondary:'HPull',  accessory:'Carry'},
-      {name:'Squat & Pull',  primary:'Squat', secondary:'VPull',  accessory:'Core'},
-      {name:'Carry & Brace', primary:'Carry', secondary:'Core',   accessory:'HPull'},
-    ],
-    [
-      {name:'Vertical',      primary:'VPush', secondary:'VPull',  accessory:'Core'},
-      {name:'Lower & Hinge', primary:'Squat', secondary:'Hinge',  accessory:'Carry'},
-      {name:'Pull & Core',   primary:'HPull', secondary:'Core',   accessory:'Carry'},
-    ],
-  ],
-  5:[
-    [
-      {name:'Horizontal',    primary:'HPush', secondary:'HPull',  accessory:'Core'},
-      {name:'Lower & Carry', primary:'Squat', secondary:'Carry',  accessory:'Core'},
-      {name:'Posterior',     primary:'Hinge', secondary:'VPull',  accessory:'Core'},
-    ],
-    [
-      {name:'Vertical',      primary:'VPush', secondary:'VPull',  accessory:'Core'},
-      {name:'Pull & Brace',  primary:'HPull', secondary:'Core',   accessory:'Carry'},
-      {name:'Hip & Carry',   primary:'Hinge', secondary:'Carry',  accessory:'Core'},
-    ],
-    [
-      {name:'Horizontal',    primary:'HPush', secondary:'HPull',  accessory:'Carry'},
-      {name:'Squat & Core',  primary:'Squat', secondary:'Core',   accessory:'Carry'},
-      {name:'Vertical Pull', primary:'VPull', secondary:'VPush',  accessory:'Core'},
-    ],
-    [
-      {name:'Horizontal',    primary:'HPull', secondary:'HPush',  accessory:'Core'},
-      {name:'Lower & Hinge', primary:'Squat', secondary:'Hinge',  accessory:'Core'},
-      {name:'Carry & Core',  primary:'Carry', secondary:'Core',   accessory:'VPull'},
-    ],
-    [
-      {name:'Vertical',      primary:'VPush', secondary:'VPull',  accessory:'Core'},
-      {name:'Posterior',     primary:'Hinge', secondary:'HPull',  accessory:'Carry'},
-      {name:'Squat & Carry', primary:'Squat', secondary:'Carry',  accessory:'Core'},
-    ],
-  ],
+  3:[['horiz','hinge_pull','squat_carry'],['vert','hinge_core','pull_core'],['horiz','squat_carry','carry_core']],
+  4:[['horiz','squat_carry','hinge_core'],['vert','hinge_pull','pull_core'],['horiz','carry_core','squat_carry'],['vert','hinge_core','pull_core']],
+  5:[['horiz','squat_carry','hinge_core'],['vert','hinge_pull','carry_core'],['horiz','pull_core','squat_carry'],['vert','hinge_core','hinge_pull'],['horiz','carry_core','pull_core']],
 };
-
-// Sets per exercise type based on intent
-// Main: 4-5 sets, Bridge: 3-4 sets, Accessory: 3 sets
-function getSetsForSlot(slot, intent){
-  if(slot==='primary'){
-    // Force/Expression = 5 sets, Control/Unilateral = 4 sets
-    return(intent==='Force'||intent==='Expression')?5:4;
-  }
-  if(slot==='secondary'){
-    return(intent==='Force'||intent==='Expression')?4:3;
-  }
-  return 3; // accessory always 3
-}
-
-function getExercise(pid, type){
-  const lv=AP[pid]||0;
-  if(lv===0)return null;
-  return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type)||
-         EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
-}
-
-function repStr(intent, sets, week){
-  const r=RR[intent]||RR.Control,wib=((week-1)%4)+1;
-  let lo=r.lo,hi=r.hi,s=sets;
-  if(wib===2)hi++;
-  if(wib===3)hi+=2;
-  if(wib===4)s=Math.max(2,s-1);
-  return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
-}
-
-function suggestedLoad(exId, intent){
-  if(!exId)return null;
-  const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
-  if(!prev.length||!prev[0].load_kg||!prev[0].reps_achieved)return null;
-  const last=prev[0],range=RR[intent]||RR.Control;
-  let load=last.load_kg;
-  if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
-  return load;
-}
-
-function buildProgramme(){
-  const plans=DAY_PLANS[pDays];
-  return plans.map((dayCircuits,di)=>({
-    label:`Day ${di+1}`,
-    circuits:dayCircuits.map((circuit,ci)=>{
-      const letter=String.fromCharCode(65+ci);
-
-      // A1 — Primary pattern, Main exercise
-      const mainEx=getExercise(circuit.primary,'Main');
-      const mainIntent=mainEx?.intent||'Force';
-      const mainSets=getSetsForSlot('primary',mainIntent);
-
-      // A2 — Secondary pattern, Bridge exercise
-      const bridgeEx=getExercise(circuit.secondary,'Bridge')||getExercise(circuit.secondary,'Main');
-      const bridgeIntent=bridgeEx?.intent||'Control';
-      const bridgeSets=getSetsForSlot('secondary',bridgeIntent);
-
-      // A3 — Accessory pattern, Limiter exercise (Core/Carry priority)
-      const accessEx=getExercise(circuit.accessory,'Limiter')||getExercise(circuit.accessory,'Bridge');
-      const accessIntent=accessEx?.intent||'Control';
-      const accessSets=3; // always 3 for accessory slot
-
-      const totalSets=mainSets+bridgeSets+accessSets;
-
-      const exercises=[
-        {
-          pid:circuit.primary, slot:'primary', type:'Main',
-          ex:mainEx, sets:mainSets, intent:mainIntent,
-          label:`${letter}1`
-        },
-        {
-          pid:circuit.secondary, slot:'secondary', type:'Bridge',
-          ex:bridgeEx, sets:bridgeSets, intent:bridgeIntent,
-          label:`${letter}2`
-        },
-        {
-          pid:circuit.accessory, slot:'accessory', type:'Limiter',
-          ex:accessEx, sets:accessSets, intent:accessIntent,
-          label:`${letter}3`
-        },
-      ];
-
-      return{letter,name:circuit.name,exercises,totalSets};
-    })
-  }));
-}
-
-// ── RENDER PROGRAMME ──
-function rProg(){
-  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
-  const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
-  let h=`
-    <div class="week-bar">
-      <div>
-        <div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div>
-        <div class="week-sub">Block ${Math.ceil(curWeek/4)}</div>
-      </div>
-      <div class="week-nav">
-        <button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button>
-        <button class="wn-btn" onclick="changeWeek(1)">Next →</button>
-      </div>
-    </div>
-    <div class="sl">Training days</div>
-    <div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
-    <div class="sl">Your programme</div>`;
-
-  if(!hasLvl){
-    h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;
-    document.getElementById('v-programme').innerHTML=h;
-    return;
-  }
-
-  buildProgramme().forEach((day,di)=>{
-    const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
-    h+=`<div class="day-wrap"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalDaySets} sets total</span></div>`;
-
-    day.circuits.forEach((circuit,ci)=>{
-      const ck=`d${di}c${ci}`,isOpen=!!openCircuits[ck];
-      h+=`<div class="circuit-wrap">
-        <div class="circuit-hdr" onclick="toggleCircuit('${ck}')">
-          <div class="circuit-letter">${circuit.letter}</div>
-          <span class="circuit-label">${circuit.name}</span>
-          <span class="circuit-meta">${circuit.totalSets} sets · 3 exercises</span>
-          <span class="circuit-arrow">${isOpen?'▲':'▼'}</span>
-        </div>
-        <div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
-
-      circuit.exercises.forEach(item=>{
-        const ex=item.ex;
-        const intent=item.intent;
-        const rs=repStr(intent,item.sets,curWeek);
-        const tempo=TM[intent]||'31X1';
-        const rest=REST[item.type]||'60s';
-        const tagCls=item.slot==='primary'?'tm':item.slot==='secondary'?'tb':'tl2';
-        const tagLabel=item.slot==='primary'?'Main':item.slot==='secondary'?'Bridge':'Accessory';
-        const lv=AP[item.pid]||0;
-        const exName=ex
-          ?ex.name
-          :(lv===0
-            ?`${PF[item.pid]} — not assessed`
-            :(STD.find(s=>s.pattern_id===item.pid&&s.level===lv)?.test_exercise||PF[item.pid]));
-        const sug=ex?.id?suggestedLoad(ex.id,intent):null;
-
-        let setRows='';
-        for(let s=1;s<=rs.sets;s++){
-          const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
-          const logged=!!prev;
-          const uid=`${ck}-${ex?.id||item.pid+item.slot}-${s}`;
-          setRows+=`<div class="set-row">
-            <span class="set-num">Set ${s}</span>
-            <input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/>
-            <input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/>
-            <button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button>
-          </div>`;
-        }
-
-        h+=`<div class="cx">
-          <div class="cx-top">
-            <span class="cx-slot">${item.label}</span>
-            <span class="cx-name">${exName}</span>
-            <span class="cx-badge ${tagCls}">${tagLabel}</span>
-          </div>
-          <div class="cx-meta">${rs.str} · ${tempo} · Rest ${rest} · ${PL[item.pid]} L${lv}</div>
-          ${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}
-          ${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong> (based on last session)</div>`:''}
-          <div class="set-logger">${setRows}</div>
-        </div>`;
-      });
-
-      h+=`</div></div>`;
-    });
-    h+=`</div>`;
-  });
-
-  document.getElementById('v-programme').innerHTML=h;
-}
-
-function toggleCircuit(key){
-  openCircuits[key]=!openCircuits[key];
-  const body=document.getElementById('cb-'+key);
-  if(body)body.classList.toggle('open',!!openCircuits[key]);
-  const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
-  if(arr)arr.textContent=openCircuits[key]?'▲':'▼';
-}
-function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};rProg()}
-function setPD(n){pDays=n;openCircuits={};rProg()}
-
-async function logSet(uid,exId,patId,setNum,repLo,repHi){
-  const rEl=document.getElementById('r-'+uid),lEl=document.getElementById('l-'+uid);
-  const reps=parseInt(rEl?.value),load=parseFloat(lEl?.value)||null;
-  if(!reps||reps<1){alert('Enter reps achieved.');return}
-  const{error}=await sb.from('workout_sets').insert({
-    athlete_id:CU.id,exercise_id:exId?parseInt(exId):null,pattern_id:patId,
-    session_date:new Date().toISOString().split('T')[0],week_number:curWeek,
-    set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi
-  });
-  if(error){alert('Error: '+error.message);return}
-  [rEl,lEl].forEach(el=>{if(el){el.classList.add('done');el.disabled=true}});
-  const btn=document.querySelector(`[onclick="logSet('${uid}','${exId}','${patId}',${setNum},${repLo},${repHi})"]`);
-  if(btn){btn.textContent='✓';btn.classList.add('done');btn.disabled=true}
-  SETS.unshift({exercise_id:exId?parseInt(exId):null,pattern_id:patId,week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi,logged_at:new Date().toISOString()});
-}
 
 // ── AUTH ──
 function switchTab(t){
@@ -498,7 +255,6 @@ function switchTab(t){
   sm('','');
 }
 function sm(m,t){const e=document.getElementById('am');e.textContent=m;e.className='msg'+(t?' '+t:'')}
-
 async function signIn(){
   const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
   if(!e||!p)return sm('Please fill in all fields.','err');
@@ -517,48 +273,57 @@ async function signUp(){
 }
 async function signOut(){
   await sb.auth.signOut();
-  CU=null;STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];
+  CU=null;PROFILE=null;IS_COACH=false;STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];ALL_LOGS=[];ALL_PROFILES=[];
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('app').style.display='none';
+  document.getElementById('coach-badge').style.display='none';
   document.getElementById('am').textContent='';
 }
-
-// ── SESSION ──
 function showApp(user){
   CU=user;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
 }
-
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(ev==='SIGNED_IN'&&sess?.user){showApp(sess.user);await load();}
   else if(ev==='SIGNED_OUT'){CU=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('app').style.display='none';}
 });
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){showApp(session.user);await load();}})();
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&CU)await load();});
 
-(async()=>{
-  const{data:{session}}=await sb.auth.getSession();
-  if(session?.user){showApp(session.user);await load();}
-})();
-
-document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='visible'&&CU)await load();
-});
-
-// ── DATA ──
+// ── LOAD ──
 async function load(){
   try{
-    const[s,e,a,aa,l,ws]=await Promise.all([
+    // Load base data everyone needs
+    const[s,e,myAp,aa,myLogs,mySets,prof]=await Promise.all([
       sb.from('standards').select('*').order('pattern_id').order('level'),
       sb.from('exercises').select('*'),
       sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id),
       sb.from('athlete_profiles').select('*,profiles(full_name,email)'),
       sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}),
-      sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})
+      sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}),
+      sb.from('profiles').select('*').eq('id',CU.id).single()
     ]);
     STD=s.data||[];EX=e.data||[];
-    AP={};(a.data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
-    AAP=aa.data||[];LOGS=l.data||[];SETS=ws.data||[];
+    AP={};(myAp.data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
+    AAP=aa.data||[];LOGS=myLogs.data||[];SETS=mySets.data||[];
+    PROFILE=prof.data;
+    IS_COACH=PROFILE?.role==='coach'||PROFILE?.role==='admin';
+
+    // Show/hide coach badge
+    document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
+
+    // If coach, load all athlete data
+    if(IS_COACH){
+      const[allLogs,allProfs]=await Promise.all([
+        sb.from('assessments').select('*,profiles(full_name,email)').order('assessed_at',{ascending:false}),
+        sb.from('profiles').select('*').neq('role','admin'),
+      ]);
+      ALL_LOGS=allLogs.data||[];
+      ALL_PROFILES=allProfs.data||[];
+    }
+
     rProfile();rProg();rHistory();rTestLog();rLB();
   }catch(err){
     console.error('Load error:',err);
@@ -566,27 +331,304 @@ async function load(){
   }
 }
 
-// ── PROFILE ──
+// ── ACTIVE ATHLETE PROFILE (coach can view others) ──
+function getActiveAP(){
+  if(!IS_COACH||!viewingAthleteId)return AP;
+  const profile=AAP.filter(r=>r.athlete_id===viewingAthleteId);
+  const ap={};profile.forEach(r=>{ap[r.pattern_id]=r.current_level});
+  return ap;
+}
+function getActiveName(){
+  if(!IS_COACH||!viewingAthleteId)return CU.user_metadata?.full_name||CU.email;
+  const p=ALL_PROFILES.find(p=>p.id===viewingAthleteId);
+  return p?.full_name||p?.email||'Athlete';
+}
+function getActiveId(){return IS_COACH&&viewingAthleteId?viewingAthleteId:CU.id}
+
+// ── COACH: SET ATHLETE LEVEL ──
+async function setLevel(athleteId,patId,newLevel){
+  if(newLevel<0||newLevel>5)return;
+  const{data:existing}=await sb.from('athlete_profiles').select('id').eq('athlete_id',athleteId).eq('pattern_id',patId).single();
+  let error;
+  if(existing){
+    const res=await sb.from('athlete_profiles').update({current_level:newLevel,updated_at:new Date().toISOString()}).eq('athlete_id',athleteId).eq('pattern_id',patId);
+    error=res.error;
+  } else {
+    const res=await sb.from('athlete_profiles').insert({athlete_id:athleteId,pattern_id:patId,current_level:newLevel,passed_at:newLevel>0?new Date().toISOString():null});
+    error=res.error;
+  }
+  if(error){alert('Error updating level: '+error.message);return;}
+  // Update local state
+  if(athleteId===CU.id){AP[patId]=newLevel;}
+  const idx=AAP.findIndex(r=>r.athlete_id===athleteId&&r.pattern_id===patId);
+  if(idx>=0)AAP[idx].current_level=newLevel;
+  else AAP.push({athlete_id:athleteId,pattern_id:patId,current_level:newLevel});
+  selPat=null;
+  rProfile();rLB();
+}
+
+// ── COACH: APPROVE / FAIL TEST ──
+async function resolveTest(logId,passed,athleteId,patId,level){
+  const{error}=await sb.from('assessments').update({passed}).eq('id',logId);
+  if(error){alert('Error: '+error.message);return;}
+  // If passed, update athlete level
+  if(passed){
+    const currentLevel=getActiveAPForAthlete(athleteId)[patId]||0;
+    if(level>currentLevel)await setLevel(athleteId,patId,level);
+  }
+  // Update local ALL_LOGS
+  const idx=ALL_LOGS.findIndex(l=>l.id===logId);
+  if(idx>=0)ALL_LOGS[idx].passed=passed;
+  const myIdx=LOGS.findIndex(l=>l.id===logId);
+  if(myIdx>=0)LOGS[myIdx].passed=passed;
+  rProfile();rTestLog();
+}
+
+function getActiveAPForAthlete(athleteId){
+  const profile=AAP.filter(r=>r.athlete_id===athleteId);
+  const ap={};profile.forEach(r=>{ap[r.pattern_id]=r.current_level});
+  return ap;
+}
+
+// ── RENDER PROFILE ──
 function rProfile(){
-  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),init=gi(CU.user_metadata?.full_name||CU.email),nm=CU.user_metadata?.full_name||CU.email;
-  let h=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">Athlete · STANDARDS</div></div><div class="sc">${tot} / 40</div></div><div class="sl">Movement Standards — tap to see your exercises</div><div class="pg">`;
+  const activeAP=getActiveAP();
+  const activeId=getActiveId();
+  const activeName=getActiveName();
+  const tot=PATS.reduce((s,p)=>s+(activeAP[p]||0),0);
+  const init=gi(activeName);
+  let h='';
+
+  // ── COACH SECTIONS ──
+  if(IS_COACH){
+    // Pending tests across all athletes
+    const pending=ALL_LOGS.filter(l=>l.passed===null);
+    if(pending.length>0){
+      h+=`<div class="sl">Pending test reviews — ${pending.length}</div>`;
+      pending.forEach(log=>{
+        const athleteName=log.profiles?.full_name||log.profiles?.email||'Athlete';
+        const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested);
+        const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        h+=`<div class="pending-card">
+          <div class="pending-top">
+            <span class="pending-name">${athleteName} — ${PF[log.pattern_id]} Level ${log.level_tested}</span>
+            <span class="pending-date">${dt}</span>
+          </div>
+          <div class="pending-detail">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>
+          ${log.notes?`<div class="pending-notes">"${log.notes}"</div>`:''}
+          <div class="pending-actions">
+            <button class="btn-sm btn-pass" onclick="resolveTest('${log.id}',true,'${log.athlete_id}','${log.pattern_id}',${log.level_tested})">✓ Pass</button>
+            <button class="btn-sm btn-fail" onclick="resolveTest('${log.id}',false,'${log.athlete_id}','${log.pattern_id}',${log.level_tested})">✗ Fail</button>
+          </div>
+        </div>`;
+      });
+    }
+
+    // Athlete roster
+    h+=`<div class="sl">Athletes</div>`;
+    // Group AAP by athlete
+    const athleteMap={};
+    AAP.forEach(r=>{
+      if(!athleteMap[r.athlete_id])athleteMap[r.athlete_id]={id:r.athlete_id,scores:{},profile:ALL_PROFILES.find(p=>p.id===r.athlete_id)};
+      athleteMap[r.athlete_id].scores[r.pattern_id]=r.current_level;
+    });
+    // Also include athletes with no assessments yet
+    ALL_PROFILES.forEach(p=>{
+      if(p.id!==CU.id&&!athleteMap[p.id])athleteMap[p.id]={id:p.id,scores:{},profile:p};
+    });
+    const athletes=Object.values(athleteMap).filter(a=>a.id!==CU.id||ALL_PROFILES.find(p=>p.id===CU.id)?.role!=='coach');
+    if(athletes.length===0){
+      h+=`<div class="empty" style="padding:20px 0"><div class="ei">👥</div>No athletes yet. Share the app URL with your clients to get started.</div>`;
+    } else {
+      athletes.forEach((a,i)=>{
+        const name=a.profile?.full_name||a.profile?.email||'Athlete';
+        const score=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+        const col=AVC[i%AVC.length];
+        const isSelected=selectedAthleteId===a.id;
+        const bars=PATS.map(p=>`<div class="ac-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
+        h+=`<div class="athlete-card${isSelected?' selected':''}" onclick="selectAthlete('${a.id}')">
+          <div class="ac-av" style="background:${col.bg};color:${col.fg}">${gi(name)}</div>
+          <div class="ac-info">
+            <div class="ac-name">${name}</div>
+            <div class="ac-sub">${a.profile?.email||''}</div>
+          </div>
+          <div class="ac-score">
+            <div class="ac-num">${score}</div>
+            <div class="ac-den">/ 40</div>
+            <div class="ac-bars">${bars}</div>
+          </div>
+        </div>`;
+      });
+    }
+    h+=`<div style="height:1px;background:var(--br);margin:16px 0"></div>`;
+  }
+
+  // ── ATHLETE PROFILE (self or viewing athlete as coach) ──
+  const viewLabel=IS_COACH&&viewingAthleteId?`Viewing: ${activeName}`:'My Profile';
+  h+=`<div class="sl">${viewLabel}</div>`;
+  if(IS_COACH&&viewingAthleteId){
+    h+=`<button class="btn-sm" style="background:var(--bg);border:0.5px solid var(--br);margin-bottom:12px" onclick="clearViewingAthlete()">← Back to roster</button>`;
+  }
+  h+=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${activeName}</div><div class="ps">${IS_COACH&&viewingAthleteId?'Athlete · STANDARDS':'Athlete · STANDARDS'}</div></div><div class="sc">${tot} / 40</div></div>
+  <div class="sl">Movement Standards${IS_COACH&&viewingAthleteId?' — tap to adjust levels':' — tap to see exercises'}</div>
+  <div class="pg">`;
+
   PATS.forEach(pid=>{
-    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')"><div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div><div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div><div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div></div>`;
+    const lv=activeAP[pid]||0,col=LC[lv],bg=LL[lv];
+    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
+      <div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div>
+      <div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+      <div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div>
+      ${IS_COACH&&viewingAthleteId?`<div class="level-controls" onclick="event.stopPropagation()">
+        <button class="btn-level" onclick="setLevel('${activeId}','${pid}',${lv-1})" ${lv<=0?'disabled':''}>−</button>
+        <span class="level-val">Level ${lv}</span>
+        <button class="btn-level" onclick="setLevel('${activeId}','${pid}',${lv+1})" ${lv>=5?'disabled':''}>+</button>
+      </div>`:''}
+    </div>`;
   });
-  h+=`</div>`;if(selPat)h+=rDetail(selPat);
+  h+=`</div>`;
+  if(selPat&&(!IS_COACH||!viewingAthleteId))h+=rDetail(selPat,activeAP);
   document.getElementById('v-profile').innerHTML=h;
 }
-function rDetail(pid){
-  const lv=AP[pid]||0;
+
+function selectAthlete(id){
+  selectedAthleteId=id;
+  viewingAthleteId=id;
+  selPat=null;
+  rProfile();
+  // Scroll to athlete profile
+  setTimeout(()=>{const el=document.querySelector('.pg');if(el)el.scrollIntoView({behavior:'smooth',block:'start'})},50);
+}
+function clearViewingAthlete(){viewingAthleteId=null;selectedAthleteId=null;selPat=null;rProfile();}
+
+function rDetail(pid,activeAP){
+  const lv=activeAP[pid]||0;
   if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
   const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
   const std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
   function eb(x,tag,cls){if(!x)return'';const i=x.intent||'Control',r=RR[i];return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`}
-  return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
+  return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>
+  ${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}
+  ${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}
+  ${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
 }
-function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
+function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat&&(!IS_COACH||!viewingAthleteId))setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
 function cD(){selPat=null;rProfile()}
+
+// ── PROGRAMME ENGINE ──
+function getSetTargets(activeAP){
+  const ranked=[...PATS].sort((a,b)=>(activeAP[a]||0)-(activeAP[b]||0));
+  const t={};ranked.forEach((p,i)=>{t[p]=i<2?20:i<6?15:10});return t;
+}
+function getExercise(pid,type,activeAP){
+  const lv=activeAP[pid]||0;if(lv===0)return null;
+  return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type)||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
+}
+function repStr(intent,sets,week){
+  const r=RR[intent]||RR.Control,wib=((week-1)%4)+1;
+  let lo=r.lo,hi=r.hi,s=sets;
+  if(wib===2)hi++;if(wib===3)hi+=2;if(wib===4)s=Math.max(2,s-1);
+  return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
+}
+function suggestedLoad(exId,intent){
+  if(!exId)return null;
+  const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+  if(!prev.length||!prev[0].load_kg||!prev[0].reps_achieved)return null;
+  const last=prev[0],range=RR[intent]||RR.Control;
+  let load=last.load_kg;
+  if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
+  return load;
+}
+function buildProgramme(activeAP){
+  const setTargets=getSetTargets(activeAP),plans=DAY_PLANS[pDays],circuitMap={};
+  CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
+  const patAppearances={};PATS.forEach(p=>{patAppearances[p]=0});
+  plans.forEach(dc=>dc.forEach(cid=>{const t=circuitMap[cid];if(t)t.pats.forEach(p=>{patAppearances[p]++})}));
+  return plans.map((dayCircuits,di)=>({
+    label:`Day ${di+1}`,
+    circuits:dayCircuits.map((cid,ci)=>{
+      const tmpl=circuitMap[cid];if(!tmpl)return null;
+      const pwl=tmpl.pats.map(p=>({pid:p,lv:activeAP[p]||0}));
+      pwl.sort((a,b)=>a.lv-b.lv);
+      const types=['Main','Bridge','Limiter'],ta={};
+      pwl.forEach((p,i)=>{ta[p.pid]=types[Math.min(i,2)]});
+      const exList=[];
+      pwl.forEach(({pid})=>{
+        const weeklyTarget=setTargets[pid]||15;
+        const appearances=Math.max(1,patAppearances[pid]);
+        const sessionSets=Math.round(weeklyTarget/appearances);
+        const mainSets=Math.min(4,Math.max(2,Math.round(sessionSets*0.4)));
+        const bridgeSets=Math.min(4,Math.max(2,Math.round(sessionSets*0.35)));
+        const limiterSets=Math.min(4,Math.max(2,sessionSets-mainSets-bridgeSets));
+        const setSplit={Main:mainSets,Bridge:bridgeSets,Limiter:limiterSets};
+        const type=ta[pid];
+        if(type==='Main'){
+          const ex=getExercise(pid,'Main',activeAP);
+          exList.unshift({pid,type:'Main',ex,sets:mainSets});
+        } else {
+          const ex=getExercise(pid,type,activeAP)||getExercise(pid,'Bridge',activeAP);
+          exList.push({pid,type,ex,sets:setSplit[type]||2});
+        }
+      });
+      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,totalSets:exList.reduce((s,e)=>s+e.sets,0)};
+    }).filter(Boolean)
+  }));
+}
+
+function rProg(){
+  const activeAP=getActiveAP();
+  const hasLvl=PATS.some(p=>(activeAP[p]||0)>0);
+  const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
+  let h=`<div class="week-bar"><div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div><div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div></div>
+  <div class="sl">Training days</div><div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
+  <div class="sl">Your programme</div>`;
+  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet.</div>`;document.getElementById('v-programme').innerHTML=h;return}
+  buildProgramme(activeAP).forEach((day,di)=>{
+    const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
+    h+=`<div class="day-wrap"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalDaySets} sets</span></div>`;
+    day.circuits.forEach((circuit,ci)=>{
+      const ck=`d${di}c${ci}`,isOpen=!!openCircuits[ck];
+      h+=`<div class="circuit-wrap"><div class="circuit-hdr" onclick="toggleCircuit('${ck}')"><div class="circuit-letter">${circuit.letter}</div><span class="circuit-label">${circuit.name} circuit</span><span class="circuit-sets">${circuit.totalSets} sets</span><span class="circuit-arrow">${isOpen?'▲':'▼'}</span></div><div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
+      circuit.exercises.forEach((item,xi)=>{
+        const slot=`${circuit.letter}${xi+1}`,ex=item.ex,intent=ex?.intent||'Force';
+        const rs=repStr(intent,item.sets,curWeek),tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
+        const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(activeAP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
+        const sug=ex?.id?suggestedLoad(ex.id,intent):null;
+        let setRows='';
+        for(let s=1;s<=rs.sets;s++){
+          const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
+          const logged=!!prev,uid=`${ck}-${ex?.id||item.pid}-${s}`;
+          setRows+=`<div class="set-row"><span class="set-num">Set ${s}</span><input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/><input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/><button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button></div>`;
+        }
+        h+=`<div class="cx"><div class="cx-top"><span class="cx-slot">${slot}</span><span class="cx-name">${exName}</span><span class="cx-badge ${tagCls}">${item.type}</span></div><div class="cx-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST[item.type]||'60s'} · ${PL[item.pid]} L${activeAP[item.pid]||0}</div>${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong></div>`:''}<div class="set-logger">${setRows}</div></div>`;
+      });
+      h+=`</div></div>`;
+    });
+    h+=`</div>`;
+  });
+  document.getElementById('v-programme').innerHTML=h;
+}
+function toggleCircuit(key){
+  openCircuits[key]=!openCircuits[key];
+  const body=document.getElementById('cb-'+key);
+  if(body)body.classList.toggle('open',!!openCircuits[key]);
+  const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
+  if(arr)arr.textContent=openCircuits[key]?'▲':'▼';
+}
+function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};rProg()}
+function setPD(n){pDays=n;openCircuits={};rProg()}
+async function logSet(uid,exId,patId,setNum,repLo,repHi){
+  const rEl=document.getElementById('r-'+uid),lEl=document.getElementById('l-'+uid);
+  const reps=parseInt(rEl?.value),load=parseFloat(lEl?.value)||null;
+  if(!reps||reps<1){alert('Enter reps achieved.');return}
+  const{error}=await sb.from('workout_sets').insert({athlete_id:CU.id,exercise_id:exId?parseInt(exId):null,pattern_id:patId,session_date:new Date().toISOString().split('T')[0],week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi});
+  if(error){alert('Error: '+error.message);return}
+  [rEl,lEl].forEach(el=>{if(el){el.classList.add('done');el.disabled=true}});
+  const btn=document.querySelector(`[onclick="logSet('${uid}','${exId}','${patId}',${setNum},${repLo},${repHi})"]`);
+  if(btn){btn.textContent='✓';btn.classList.add('done');btn.disabled=true}
+  SETS.unshift({exercise_id:exId?parseInt(exId):null,pattern_id:patId,week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi,logged_at:new Date().toISOString()});
+}
 
 // ── HISTORY ──
 function rHistory(){
@@ -619,7 +661,7 @@ function rTestLog(){
       const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested),sc=log.passed===true?'spass':log.passed===false?'sfail':'sp',sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review',dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
       h+=`<div class="tpend"><div class="tpl"><div class="tpn">${PF[log.pattern_id]} — Level ${log.level_tested}</div><div class="tps">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:2px">"${log.notes}"</div>`:''}</div><div class="tpr"><div><span class="sdot ${sc}"></span><span style="font-size:12px;font-weight:500">${sl}</span></div><div class="td2">${dt}</div></div></div>`;
     });
-  }else h+=`<div class="empty" style="padding:20px 0"><div class="ei">📝</div>No tests logged yet.</div>`;
+  } else h+=`<div class="empty" style="padding:20px 0"><div class="ei">📝</div>No tests logged yet.</div>`;
   document.getElementById('v-testlog').innerHTML=h;
 }
 function uTL(){
