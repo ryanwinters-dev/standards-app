@@ -9,13 +9,12 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
       --gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;
-      --l1:#1A3A2A;--l1b:#E8F2EC;--l2:#1D6B45;--l2b:#D4EDE1;
-      --l3:#1D9E75;--l3b:#C0E8D4;--l4:#5DCAA5;--l4b:#A8DFC8;--l5:#3DBFA0;--l5b:#8FD4BC;
+      --l1:#1A3A2A;--l2:#1D6B45;--l3:#1D9E75;--l4:#5DCAA5;--l5:#3DBFA0;
+      --l1b:#E8F2EC;--l2b:#D4EDE1;--l3b:#C0E8D4;--l4b:#A8DFC8;--l5b:#8FD4BC;
       --dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;
       --fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
     }
     body{font-family:var(--fn);background:var(--bg);color:var(--dk);min-height:100vh}
-    /* AUTH */
     #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
     .auth-card{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
     .auth-logo{font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
@@ -25,20 +24,17 @@
     .auth-tab{flex:1;padding:8px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:var(--mt);font-family:var(--fn);transition:all .15s}
     .auth-tab.active{background:var(--dk);color:#fff}
     label{display:block;font-size:12px;font-weight:500;color:var(--md);margin-bottom:6px}
-    input[type=text],input[type=email],input[type=password],input[type=date],input[type=number],select,textarea{width:100%;padding:10px 12px;border:0.5px solid var(--br);border-radius:8px;font-size:14px;font-family:var(--fn);background:var(--bg);color:var(--dk);margin-bottom:16px;outline:none;transition:border-color .15s}
+    input[type=text],input[type=email],input[type=password],input[type=date],input[type=number],select,textarea{width:100%;padding:10px 12px;border:0.5px solid var(--br);border-radius:8px;font-size:14px;font-family:var(--fn);background:var(--bg);color:var(--dk);margin-bottom:14px;outline:none;transition:border-color .15s}
     input:focus,select:focus,textarea:focus{border-color:var(--gm)}
     textarea{resize:vertical;min-height:72px}
     .btn{padding:11px 16px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
     .btn-full{width:100%}
     .btn-dk{background:var(--dk);color:#fff}
     .btn-gm{background:var(--gm);color:#fff}
-    .btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
-    .btn-outline{background:transparent;border:0.5px solid var(--br);color:var(--dk)}
     .btn:hover{opacity:.85}
     .btn:disabled{opacity:.4;cursor:not-allowed}
-    .msg{font-size:13px;margin-top:12px;text-align:center;min-height:18px}
+    .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:#c0392b}.msg.ok{color:var(--gd)}
-    /* SHELL */
     #app{display:none}
     .topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
     .tl{font-size:18px;font-weight:700;letter-spacing:-.3px}
@@ -50,16 +46,11 @@
     .nav-tab.active{color:var(--gm);border-bottom-color:var(--gm)}
     .main{padding:16px;max-width:640px;margin:0 auto}
     .view{display:none}.view.active{display:block}
-    /* UTILITIES */
-    .sl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin:20px 0 10px}
+    .sl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin:18px 0 10px}
     .sl:first-child{margin-top:0}
-    .card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:16px;margin-bottom:10px}
-    .divider{border:none;border-top:0.5px solid var(--br);margin:10px 0}
+    @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
     .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
     .ei{font-size:32px;margin-bottom:8px}
-    @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .spinner{width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:30px auto;display:block}
     /* PROFILE */
     .ph{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
     .av{width:50px;height:50px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0}
@@ -97,52 +88,55 @@
     .week-info{font-size:14px;font-weight:600}
     .week-sub{font-size:12px;color:var(--mt);margin-top:1px}
     .week-nav{display:flex;gap:6px}
-    .wn-btn{padding:5px 11px;font-size:12px;border:0.5px solid var(--br);background:transparent;border-radius:6px;cursor:pointer;font-family:var(--fn);color:var(--md)}
-    .wn-btn:hover{background:var(--bg)}
+    .wn-btn{padding:5px 10px;font-size:12px;border:0.5px solid var(--br);background:transparent;border-radius:6px;cursor:pointer;font-family:var(--fn);color:var(--md)}
+    .wn-btn:disabled{opacity:.3;cursor:not-allowed}
     .ds{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
     .db{padding:5px 12px;border-radius:99px;font-size:13px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-family:var(--fn);transition:all .15s}
     .db.act{background:var(--dk);color:#fff;border-color:var(--dk)}
-    /* DAY CARD */
-    .day-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:12px}
-    .day-hdr{padding:11px 14px;background:var(--dk);display:flex;justify-content:space-between;align-items:center}
+    /* DAY */
+    .day-wrap{margin-bottom:16px}
+    .day-hdr{background:var(--dk);border-radius:10px 10px 0 0;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
     .day-title{font-size:13px;font-weight:600;color:#fff}
-    .day-vol{font-size:11px;color:#888}
-    /* EXERCISE BLOCK IN PROGRAMME */
-    .prog-pat{border-bottom:0.5px solid var(--br)}
-    .prog-pat:last-child{border-bottom:none}
-    .prog-pat-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;transition:background .1s}
-    .prog-pat-hdr:hover{background:var(--bg)}
-    .prog-pat-name{font-size:12px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em}
-    .prog-pat-sets{font-size:12px;color:var(--mt)}
-    .prog-pat-body{padding:0 14px 12px;display:none;animation:fi .15s ease}
-    .prog-pat-body.open{display:block}
-    .prog-ex{padding:9px 0;border-bottom:0.5px solid var(--br)}
-    .prog-ex:last-child{border-bottom:none}
-    .prog-ex-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-    .prog-ex-name{font-size:13px;font-weight:600}
-    .prog-ex-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em}
-    .prog-ex-meta{font-size:12px;color:var(--mt);margin-bottom:6px}
+    .day-vol{font-size:11px;color:#777}
+    /* CIRCUIT */
+    .circuit-wrap{border:0.5px solid var(--br);border-top:none;background:var(--cd)}
+    .circuit-wrap:last-child{border-radius:0 0 10px 10px;overflow:hidden}
+    .circuit-hdr{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);cursor:pointer;user-select:none}
+    .circuit-hdr:hover{background:#f0f0ee}
+    .circuit-letter{width:24px;height:24px;border-radius:6px;background:var(--dk);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .circuit-label{font-size:12px;font-weight:600;color:var(--md);flex:1}
+    .circuit-sets{font-size:12px;color:var(--mt)}
+    .circuit-arrow{font-size:11px;color:var(--mt)}
+    .circuit-body{display:none}
+    .circuit-body.open{display:block}
+    /* EXERCISE IN CIRCUIT */
+    .cx{border-bottom:0.5px solid var(--br);padding:12px 14px}
+    .cx:last-child{border-bottom:none}
+    .cx-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+    .cx-slot{font-size:10px;font-weight:700;color:var(--mt);letter-spacing:.08em;margin-right:8px;flex-shrink:0}
+    .cx-name{font-size:14px;font-weight:600;flex:1}
+    .cx-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+    .cx-meta{font-size:12px;color:var(--mt);margin-bottom:4px}
+    .cx-cue{font-size:11px;color:var(--gm);font-style:italic;margin-bottom:6px}
     /* SET LOGGER */
-    .set-logger{display:flex;flex-direction:column;gap:4px;margin-top:6px}
-    .set-row{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg);border-radius:6px;border:0.5px solid var(--br)}
-    .set-num{font-size:11px;font-weight:600;color:var(--mt);width:36px;flex-shrink:0}
-    .set-input{flex:1;padding:5px 8px;border:0.5px solid var(--br);border-radius:5px;font-size:13px;font-family:var(--fn);background:var(--cd);color:var(--dk);margin-bottom:0;outline:none;min-width:0}
-    .set-input:focus{border-color:var(--gm)}
-    .set-input.logged{background:var(--gl);border-color:var(--gm);color:var(--gd)}
-    .set-log-btn{padding:5px 10px;font-size:11px;font-weight:600;border:none;border-radius:5px;cursor:pointer;font-family:var(--fn);background:var(--gm);color:#fff;flex-shrink:0;transition:opacity .15s}
-    .set-log-btn:hover{opacity:.85}
-    .set-log-btn.done{background:var(--gl);color:var(--gd)}
-    .prog-cue{font-size:11px;color:var(--gm);font-style:italic;margin-top:2px}
-    .load-hint{font-size:11px;color:var(--mt);margin-top:2px}
+    .set-logger{display:flex;flex-direction:column;gap:3px}
+    .set-row{display:flex;align-items:center;gap:5px;padding:5px 7px;background:var(--bg);border-radius:6px;border:0.5px solid var(--br)}
+    .set-num{font-size:11px;font-weight:600;color:var(--mt);width:34px;flex-shrink:0}
+    .set-inp{flex:1;padding:4px 7px;border:0.5px solid var(--br);border-radius:5px;font-size:13px;font-family:var(--fn);background:var(--cd);color:var(--dk);margin-bottom:0;outline:none;min-width:0}
+    .set-inp:focus{border-color:var(--gm)}
+    .set-inp.done{background:var(--gl);border-color:var(--gm);color:var(--gd)}
+    .set-btn{padding:4px 9px;font-size:11px;font-weight:600;border:none;border-radius:5px;cursor:pointer;font-family:var(--fn);background:var(--gm);color:#fff;flex-shrink:0;white-space:nowrap}
+    .set-btn.done{background:var(--gl);color:var(--gd);cursor:default}
+    .load-hint{font-size:11px;color:var(--mt);margin-bottom:4px}
     /* HISTORY */
-    .hist-day{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:10px}
-    .hist-day-hdr{padding:10px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);display:flex;justify-content:space-between}
-    .hist-day-title{font-size:13px;font-weight:600}
-    .hist-day-date{font-size:12px;color:var(--mt)}
-    .hist-set{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:0.5px solid var(--br);font-size:13px}
-    .hist-set:last-child{border-bottom:none}
-    .hist-ex{font-weight:500}
-    .hist-result{color:var(--gm);font-weight:600}
+    .hist-card{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:10px}
+    .hist-hdr{padding:10px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);display:flex;justify-content:space-between}
+    .hist-title{font-size:13px;font-weight:600}
+    .hist-count{font-size:12px;color:var(--mt)}
+    .hist-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:0.5px solid var(--br);font-size:13px}
+    .hist-row:last-child{border-bottom:none}
+    .hist-ex{font-weight:500;color:var(--dk)}
+    .hist-res{color:var(--gm);font-weight:600}
     /* TEST LOG */
     .tf{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:18px;margin-bottom:16px}
     .tft{font-size:14px;font-weight:600;margin-bottom:14px}
@@ -171,12 +165,11 @@
     .lbsd{font-size:11px;color:var(--mt)}
     .lbmb{display:flex;gap:2px;margin-top:4px}
     .lbmbs{width:8px;height:8px;border-radius:2px}
-    @media(max-width:400px){.pg{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
+    @media(max-width:420px){.pg{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
   </style>
 </head>
 <body>
 
-<!-- AUTH -->
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">STAND<span>ARDS</span></div>
@@ -200,7 +193,6 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="topbar">
     <div class="tl">STAND<span>ARDS</span></div>
@@ -232,10 +224,8 @@ const sb=createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjemZhbXJqZHdiZWVqb3hoeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODAzNjEsImV4cCI6MjA4OTM1NjM2MX0.trUIKdNicHPRDmleAYoF3nAg8unqQrnQCjKTPB63bI0'
 );
 
-// ── STATE ──
-let CU=null, STD=[], EX=[], AP={}, AAP=[], LOGS=[], SETS=[];
-let selPat=null, lbF='all', pDays=3, curWeek=1;
-let openPats={}; // which pattern blocks are open in programme
+let CU=null,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[];
+let selPat=null,lbF='all',pDays=3,curWeek=1,openCircuits={};
 
 const PATS=['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
 const PL={Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
@@ -243,11 +233,295 @@ const PF={Squat:'Squat',Hinge:'Hinge',HPush:'Horizontal Push',VPush:'Vertical Pu
 const LC=['#ccc','#1A3A2A','#1D6B45','#1D9E75','#5DCAA5','#3DBFA0'];
 const LL=['#f4f4f2','#E8F2EC','#D4EDE1','#C0E8D4','#A8DFC8','#8FD4BC'];
 const AVC=[{bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#EEEDFE',fg:'#534AB7'},{bg:'#FAEEDA',fg:'#854F0B'},{bg:'#FAECE7',fg:'#993C1D'},{bg:'#E6F1FB',fg:'#185FA5'},{bg:'#F1EFE8',fg:'#444441'}];
+const RR={Control:{lo:8,hi:12},Unilateral:{lo:6,hi:8},Force:{lo:3,hi:5},Expression:{lo:5,hi:8}};
+const TM={Control:'3131',Unilateral:'3121',Force:'20X0',Expression:'10X0'};
+const REST={Main:'90s',Bridge:'60s',Limiter:'45s'};
 
-// Rep ranges by intent
-const REP_RANGES={Control:{lo:8,hi:12},Unilateral:{lo:6,hi:8},Force:{lo:3,hi:5},Expression:{lo:5,hi:8}};
-const TEMPO_MAP={Control:'3131',Unilateral:'3121',Force:'20X0',Expression:'10X0'};
-const REST_MAP={Main:'90s',Bridge:'60s',Limiter:'45s'};
+// ── CIRCUIT PAIRING RULES ──
+// Each circuit template: array of {pid, preferredType}
+// Main always goes first in its circuit slot
+const CIRCUIT_TEMPLATES=[
+  // Horizontal superset
+  {id:'horiz',pats:['HPush','HPull'],name:'Horizontal'},
+  // Vertical superset  
+  {id:'vert',pats:['VPush','VPull'],name:'Vertical'},
+  // Hip hinge + posterior
+  {id:'hinge_pull',pats:['Hinge','VPull'],name:'Posterior'},
+  // Hinge + core anti-extension
+  {id:'hinge_core',pats:['Hinge','Core'],name:'Hip & Core'},
+  // Squat + carry
+  {id:'squat_carry',pats:['Squat','Carry'],name:'Lower & Carry'},
+  // Pull + core anti-rotation
+  {id:'pull_core',pats:['HPull','Core'],name:'Pull & Core'},
+  // Carry + core bracing
+  {id:'carry_core',pats:['Carry','Core'],name:'Carry & Brace'},
+];
+
+// Day structures per training frequency
+// Each day is an array of circuit template IDs
+const DAY_PLANS={
+  3:[
+    // Day 1: Horizontal + Hinge/VPull + Squat/Carry
+    ['horiz','hinge_pull','squat_carry'],
+    // Day 2: Vertical + Hinge/Core + Pull/Core
+    ['vert','hinge_core','pull_core'],
+    // Day 3: Horizontal + Squat/Carry + Carry/Core
+    ['horiz','squat_carry','carry_core'],
+  ],
+  4:[
+    ['horiz','squat_carry','hinge_core'],
+    ['vert','hinge_pull','pull_core'],
+    ['horiz','carry_core','squat_carry'],
+    ['vert','hinge_core','pull_core'],
+  ],
+  5:[
+    ['horiz','squat_carry','hinge_core'],
+    ['vert','hinge_pull','carry_core'],
+    ['horiz','pull_core','squat_carry'],
+    ['vert','hinge_core','hinge_pull'],
+    ['horiz','carry_core','pull_core'],
+  ],
+};
+
+// Weekly set targets based on ranking
+function getSetTargets(){
+  const ranked=[...PATS].sort((a,b)=>(AP[a]||0)-(AP[b]||0));
+  const t={};
+  ranked.forEach((p,i)=>{
+    if(i<2)t[p]=20;
+    else if(i<6)t[p]=15;
+    else t[p]=10;
+  });
+  return t;
+}
+
+// Get exercise for a pattern+type at current level
+function getExercise(pid,type){
+  const lv=AP[pid]||0;
+  if(lv===0)return null;
+  const ex=EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type);
+  if(ex)return ex;
+  // Fallback: any exercise for this pattern at this level
+  return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
+}
+
+// Get rep string with week progression
+function repStr(intent,sets,week){
+  const r=RR[intent]||RR.Control;
+  const wib=((week-1)%4)+1;
+  let lo=r.lo,hi=r.hi,s=sets;
+  if(wib===2)hi++;
+  if(wib===3)hi+=2;
+  if(wib===4){s=Math.max(2,s-1)} // deload
+  return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
+}
+
+// Get suggested load from history
+function suggestedLoad(exId,intent){
+  if(!exId)return null;
+  const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+  if(!prev.length||!prev[0].load_kg||!prev[0].reps_achieved)return null;
+  const last=prev[0];
+  const range=RR[intent]||RR.Control;
+  let load=last.load_kg;
+  if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
+  return load;
+}
+
+// Build the full programme structure
+function buildProgramme(){
+  const setTargets=getSetTargets();
+  const plans=DAY_PLANS[pDays];
+  const circuitMap={};
+  CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
+
+  // Count how many times each pattern appears across all days
+  const patAppearances={};
+  PATS.forEach(p=>{patAppearances[p]=0});
+  plans.forEach(dayCircuits=>{
+    dayCircuits.forEach(cid=>{
+      const tmpl=circuitMap[cid];
+      if(tmpl)tmpl.pats.forEach(p=>{patAppearances[p]++});
+    });
+  });
+
+  return plans.map((dayCircuits,di)=>({
+    label:`Day ${di+1}`,
+    circuits:dayCircuits.map((cid,ci)=>{
+      const tmpl=circuitMap[cid];
+      if(!tmpl)return null;
+
+      // Determine exercise type for each pattern in this circuit
+      // Pattern with lowest level gets Main, next gets Bridge, last gets Limiter
+      const patsWithLevels=tmpl.pats.map(p=>({pid:p,lv:AP[p]||0}));
+      patsWithLevels.sort((a,b)=>a.lv-b.lv); // weakest first = gets Main
+
+      const typeAssignment={};
+      const types=['Main','Bridge','Limiter'];
+      patsWithLevels.forEach((p,i)=>{typeAssignment[p.pid]=types[Math.min(i,2)]});
+
+      // Build exercises — Main always first
+      const exList=[];
+      // Add Main first
+      patsWithLevels.forEach(({pid})=>{
+        if(typeAssignment[pid]==='Main'){
+          const ex=getExercise(pid,'Main')||getExercise(pid,'Bridge');
+          if(ex||AP[pid]>0){
+            const setsPerDay=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
+            exList.push({pid,type:'Main',ex,sets:setsPerDay});
+          }
+        }
+      });
+      // Then Bridge/Limiter
+      patsWithLevels.forEach(({pid})=>{
+        if(typeAssignment[pid]!=='Main'){
+          const t=typeAssignment[pid];
+          const ex=getExercise(pid,t)||getExercise(pid,'Bridge');
+          if(ex||AP[pid]>0){
+            const setsPerDay=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
+            exList.push({pid,type:t,ex,sets:setsPerDay});
+          }
+        }
+      });
+
+      const totalSets=exList.reduce((s,e)=>s+e.sets,0);
+      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,totalSets};
+    }).filter(Boolean)
+  }));
+}
+
+// ── RENDER PROGRAMME ──
+function rProg(){
+  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
+  const wib=((curWeek-1)%4)+1;
+  const wlabels=['','Base','Build','Overreach','Deload'];
+
+  let h=`
+    <div class="week-bar">
+      <div>
+        <div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wlabels[wib]}</span></div>
+        <div class="week-sub">Block ${Math.ceil(curWeek/4)}</div>
+      </div>
+      <div class="week-nav">
+        <button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button>
+        <button class="wn-btn" onclick="changeWeek(1)">Next →</button>
+      </div>
+    </div>
+    <div class="sl">Training days</div>
+    <div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
+    <div class="sl">Your programme</div>`;
+
+  if(!hasLvl){
+    h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;
+    document.getElementById('v-programme').innerHTML=h;
+    return;
+  }
+
+  const days=buildProgramme();
+
+  days.forEach((day,di)=>{
+    const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
+    h+=`<div class="day-wrap">
+      <div class="day-hdr">
+        <span class="day-title">${day.label}</span>
+        <span class="day-vol">${totalDaySets} sets</span>
+      </div>`;
+
+    day.circuits.forEach((circuit,ci)=>{
+      const ck=`d${di}c${ci}`;
+      const isOpen=!!openCircuits[ck];
+      h+=`<div class="circuit-wrap">
+        <div class="circuit-hdr" onclick="toggleCircuit('${ck}')">
+          <div class="circuit-letter">${circuit.letter}</div>
+          <span class="circuit-label">${circuit.name} circuit</span>
+          <span class="circuit-sets">${circuit.totalSets} sets</span>
+          <span class="circuit-arrow">${isOpen?'▲':'▼'}</span>
+        </div>
+        <div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
+
+      circuit.exercises.forEach((item,xi)=>{
+        const slot=`${circuit.letter}${xi+1}`;
+        const ex=item.ex;
+        const intent=ex?.intent||'Force';
+        const rs=repStr(intent,item.sets,curWeek);
+        const tempo=TM[intent]||'20X0';
+        const rest=REST[item.type]||'60s';
+        const tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
+        const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
+        const patLv=AP[item.pid]||0;
+        const sug=ex?.id?suggestedLoad(ex.id,intent):null;
+
+        // Build set rows
+        let setRows='';
+        for(let s=1;s<=rs.sets;s++){
+          const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
+          const logged=!!prev;
+          const uid=`${ck}-${ex?.id||item.pid}-${s}`;
+          setRows+=`<div class="set-row">
+            <span class="set-num">Set ${s}</span>
+            <input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/>
+            <input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/>
+            <button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button>
+          </div>`;
+        }
+
+        h+=`<div class="cx">
+          <div class="cx-top">
+            <span class="cx-slot">${slot}</span>
+            <span class="cx-name">${exName}</span>
+            <span class="cx-badge ${tagCls}">${item.type}</span>
+          </div>
+          <div class="cx-meta">${rs.str} · ${tempo} · Rest ${rest} · ${PL[item.pid]} L${patLv}</div>
+          ${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}
+          ${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong> (based on last session)</div>`:''}
+          <div class="set-logger">${setRows}</div>
+        </div>`;
+      });
+
+      h+=`</div></div>`;
+    });
+
+    h+=`</div>`;
+  });
+
+  document.getElementById('v-programme').innerHTML=h;
+}
+
+function toggleCircuit(key){
+  openCircuits[key]=!openCircuits[key];
+  const body=document.getElementById('cb-'+key);
+  if(body)body.classList.toggle('open',!!openCircuits[key]);
+  const hdr=body?.previousElementSibling;
+  if(hdr){const arr=hdr.querySelector('.circuit-arrow');if(arr)arr.textContent=openCircuits[key]?'▲':'▼';}
+}
+function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};rProg()}
+function setPD(n){pDays=n;openCircuits={};rProg()}
+
+async function logSet(uid,exId,patId,setNum,repLo,repHi){
+  const rEl=document.getElementById('r-'+uid);
+  const lEl=document.getElementById('l-'+uid);
+  const reps=parseInt(rEl?.value);
+  const load=parseFloat(lEl?.value)||null;
+  if(!reps||reps<1){alert('Enter reps achieved.');return}
+  const{error}=await sb.from('workout_sets').insert({
+    athlete_id:CU.id,
+    exercise_id:exId?parseInt(exId):null,
+    pattern_id:patId,
+    session_date:new Date().toISOString().split('T')[0],
+    week_number:curWeek,
+    set_number:setNum,
+    reps_achieved:reps,
+    load_kg:load,
+    reps_target_low:repLo,
+    reps_target_high:repHi,
+  });
+  if(error){alert('Error: '+error.message);return}
+  // Lock row
+  [rEl,lEl].forEach(el=>{if(el){el.classList.add('done');el.disabled=true}});
+  const btn=document.querySelector(`[onclick="logSet('${uid}','${exId}','${patId}',${setNum},${repLo},${repHi})"]`);
+  if(btn){btn.textContent='✓';btn.classList.add('done');btn.disabled=true}
+  SETS.unshift({exercise_id:exId?parseInt(exId):null,pattern_id:patId,week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi,logged_at:new Date().toISOString()});
+}
 
 // ── AUTH ──
 function switchTab(t){
@@ -289,313 +563,24 @@ sb.auth.onAuthStateChange(async(ev,sess)=>{
   }
 });
 
-// ── LOAD ──
 async function load(){
-  const[s,e,a,aa,l,ws]=await Promise.all([
-    sb.from('standards').select('*').order('pattern_id').order('level'),
-    sb.from('exercises').select('*'),
-    sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id),
-    sb.from('athlete_profiles').select('*,profiles(full_name,email)'),
-    sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}),
-    sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})
-  ]);
-  STD=s.data||[]; EX=e.data||[];
-  AP={}; (a.data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
-  AAP=aa.data||[]; LOGS=l.data||[]; SETS=ws.data||[];
-  rProfile(); rProg(); rHistory(); rTestLog(); rLB();
-}
-
-// ── PROGRAMME ENGINE ──
-function buildProgramme(days){
-  // 1. Rank patterns by level (ascending = weakest first)
-  const ranked=[...PATS].sort((a,b)=>(AP[a]||0)-(AP[b]||0));
-  // 2. Assign weekly set targets
-  const setTargets={};
-  ranked.forEach((p,i)=>{
-    if(i<2) setTargets[p]=20;
-    else if(i<6) setTargets[p]=15;
-    else setTargets[p]=10;
-  });
-
-  // 3. Day templates — ensure full body each day, patterns weighted by priority
-  // We distribute patterns across days proportional to their set targets
-  const dayTemplates={
-    3:[
-      {label:'Day 1',pats:['Squat','HPush','HPull','Core','Carry']},
-      {label:'Day 2',pats:['Hinge','VPush','VPull','Squat','Core']},
-      {label:'Day 3',pats:['Squat','HPush','HPull','Hinge','Carry']},
-    ],
-    4:[
-      {label:'Day 1',pats:['Squat','HPush','Core','Carry']},
-      {label:'Day 2',pats:['Hinge','VPull','HPull','Core']},
-      {label:'Day 3',pats:['Squat','VPush','HPull','Carry']},
-      {label:'Day 4',pats:['Hinge','HPush','VPull','Core']},
-    ],
-    5:[
-      {label:'Day 1',pats:['Squat','HPush','Core']},
-      {label:'Day 2',pats:['Hinge','VPull','Carry']},
-      {label:'Day 3',pats:['HPull','VPush','Core','Squat']},
-      {label:'Day 4',pats:['Hinge','HPush','Carry']},
-      {label:'Day 5',pats:['Squat','VPull','HPull','Core']},
-    ],
-  };
-
-  // 4. For each day and pattern, assign sets split across Main/Bridge/Limiter
-  // Patterns appearing more days get fewer sets per day (to hit weekly target)
-  const patDayCount={};
-  PATS.forEach(p=>{patDayCount[p]=0});
-  dayTemplates[days].forEach(d=>d.pats.forEach(p=>{patDayCount[p]++}));
-
-  const result=dayTemplates[days].map(day=>({
-    label:day.label,
-    patterns:day.pats.map(pid=>{
-      const lv=AP[pid]||0;
-      const weeklyTarget=setTargets[pid]||15;
-      const daysAppearing=patDayCount[pid]||1;
-      const setsThisDay=Math.round(weeklyTarget/daysAppearing);
-      // Split sets: Main gets ~50%, Bridge ~30%, Limiter ~20%, min 2 sets each
-      const mainSets=Math.max(2,Math.round(setsThisDay*0.5));
-      const bridgeSets=Math.max(2,Math.round(setsThisDay*0.3));
-      const limiterSets=Math.max(2,setsThisDay-mainSets-bridgeSets);
-      // Get exercises
-      const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv);
-      const mx=xs.find(e=>e.type==='Main');
-      const bx=xs.find(e=>e.type==='Bridge');
-      const lx=xs.find(e=>e.type==='Limiter');
-      // Fallback to standard test exercise name if no exercise found
-      const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-      return{
-        pid,lv,setsThisDay,
-        exercises:[
-          mx?{...mx,sets:mainSets}:{name:std?.test_exercise||'—',type:'Main',intent:'Force',id:null,sets:mainSets,coaching_cue:''},
-          bx?{...bx,sets:bridgeSets}:null,
-          lx?{...lx,sets:limiterSets}:null,
-        ].filter(Boolean)
-      };
-    })
-  }));
-  return{result,setTargets};
-}
-
-// Get suggested load for an exercise based on previous logs + week progression
-function getSuggestedLoad(exId,patId,week){
-  if(!exId)return null;
-  // Find most recent logged set for this exercise
-  const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
-  if(prev.length===0)return null;
-  const last=prev[0];
-  if(!last.load_kg||!last.reps_achieved)return null;
-  // Check if athlete hit top of rep range last time
-  const ex=EX.find(e=>e.id===exId);
-  const intent=ex?.intent||'Force';
-  const range=REP_RANGES[intent];
-  let load=last.load_kg;
-  if(last.reps_achieved>=range.hi){
-    load=Math.round(load*1.05*2)/2; // 5% increase, rounded to nearest 0.5kg
+  try{
+    const[s,e,a,aa,l,ws]=await Promise.all([
+      sb.from('standards').select('*').order('pattern_id').order('level'),
+      sb.from('exercises').select('*'),
+      sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id),
+      sb.from('athlete_profiles').select('*,profiles(full_name,email)'),
+      sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}),
+      sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})
+    ]);
+    STD=s.data||[];EX=e.data||[];
+    AP={};(a.data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
+    AAP=aa.data||[];LOGS=l.data||[];SETS=ws.data||[];
+    rProfile();rProg();rHistory();rTestLog();rLB();
+  } catch(err){
+    console.error('Load error:',err);
+    document.getElementById('v-profile').innerHTML=`<div class="empty"><div class="ei">⚠️</div>Error loading data: ${err.message}</div>`;
   }
-  return load;
-}
-
-// Get rep range string for an exercise
-function getRepStr(ex,sets,week){
-  if(!ex)return'';
-  const intent=ex.intent||'Control';
-  const range=REP_RANGES[intent];
-  // Week progression: week 1=base, week 2=+1 rep top, week 3=+1 rep top again, week 4=deload(-2 sets)
-  let lo=range.lo,hi=range.hi;
-  const weekInBlock=((week-1)%4)+1;
-  if(weekInBlock===2)hi=hi+1;
-  if(weekInBlock===3)hi=hi+2;
-  let actualSets=sets;
-  if(weekInBlock===4)actualSets=Math.max(2,sets-1); // deload
-  return`${actualSets}×${lo}–${hi}`;
-}
-
-// ── RENDER PROGRAMME ──
-function rProg(){
-  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
-  const weekInBlock=((curWeek-1)%4)+1;
-  const weekLabels=['','Base','Build','Overreach','Deload'];
-  let h=`
-    <div class="week-bar">
-      <div><div class="week-info">Week ${curWeek}</div><div class="week-sub">${weekLabels[weekInBlock]} week · Block ${Math.ceil(curWeek/4)}</div></div>
-      <div class="week-nav">
-        <button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button>
-        <button class="wn-btn" onclick="changeWeek(1)">Next →</button>
-      </div>
-    </div>
-    <div class="sl">Training days</div>
-    <div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
-  `;
-
-  if(!hasLvl){
-    h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;
-    document.getElementById('v-programme').innerHTML=h;
-    return;
-  }
-
-  const{result,setTargets}=buildProgramme(pDays);
-  h+=`<div class="sl">Your programme</div>`;
-
-  result.forEach((day,di)=>{
-    const totalSets=day.patterns.reduce((s,p)=>s+p.setsThisDay,0);
-    h+=`<div class="day-card">
-      <div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalSets} sets total</span></div>`;
-
-    day.patterns.forEach(pat=>{
-      if(pat.lv===0){
-        h+=`<div class="prog-pat"><div class="prog-pat-hdr" style="cursor:default"><span class="prog-pat-name">${PL[pat.pid]}</span><span class="prog-pat-sets" style="color:#ccc">not assessed</span></div></div>`;
-        return;
-      }
-      const patKey=`d${di}-${pat.pid}`;
-      const isOpen=!!openPats[patKey];
-      const weekInBlock=((curWeek-1)%4)+1;
-      const setsDisplay=weekInBlock===4?Math.max(2,pat.setsThisDay-1):pat.setsThisDay;
-      h+=`<div class="prog-pat">
-        <div class="prog-pat-hdr" onclick="togglePat('${patKey}')">
-          <span class="prog-pat-name">${PL[pat.pid]} <span style="font-weight:400;color:var(--mt)">L${pat.lv}</span></span>
-          <span class="prog-pat-sets">${setsDisplay} sets ${isOpen?'▲':'▼'}</span>
-        </div>
-        <div class="prog-pat-body${isOpen?' open':''}" id="ppb-${patKey}">`;
-
-      pat.exercises.forEach(ex=>{
-        const intent=ex.intent||'Control';
-        const repStr=getRepStr(ex,ex.sets,curWeek);
-        const tempo=TEMPO_MAP[intent]||'31X1';
-        const rest=REST_MAP[ex.type]||'60s';
-        const tagCls=ex.type==='Main'?'tm':ex.type==='Bridge'?'tb':'tl2';
-        const sugLoad=ex.id?getSuggestedLoad(ex.id,pat.pid,curWeek):null;
-        const loadHint=sugLoad?`Suggested: ${sugLoad}kg`:'Log load below';
-
-        // Build set rows for inline logging
-        const weekInBlock2=((curWeek-1)%4)+1;
-        const actualSets=weekInBlock2===4?Math.max(2,ex.sets-1):ex.sets;
-        let setRows='';
-        for(let s=1;s<=actualSets;s++){
-          const prevSet=SETS.find(ws=>ws.exercise_id===ex.id&&ws.set_number===s&&ws.week_number===curWeek);
-          const logged=!!prevSet;
-          const prevReps=prevSet?.reps_achieved||'';
-          const prevLoad=prevSet?.load_kg||'';
-          setRows+=`<div class="set-row" id="sr-${patKey}-${ex.id||ex.name.replace(/\s/g,'')}-${s}">
-            <span class="set-num">Set ${s}</span>
-            <input class="set-input${logged?' logged':''}" type="number" placeholder="Reps" id="reps-${patKey}-${ex.id||'x'}-${s}" value="${prevReps}" min="1" max="30" ${logged?'disabled':''}/>
-            <input class="set-input${logged?' logged':''}" type="number" placeholder="kg" id="load-${patKey}-${ex.id||'x'}-${s}" value="${prevLoad}" min="0" max="500" step="0.5" ${logged?'disabled':''}/>
-            <button class="set-log-btn${logged?' done':''}" onclick="logSet('${patKey}','${ex.id||''}','${pat.pid}',${s},${REP_RANGES[intent].lo},${REP_RANGES[intent].hi})" ${logged?'disabled':''}>
-              ${logged?'✓':'Log'}
-            </button>
-          </div>`;
-        }
-
-        h+=`<div class="prog-ex">
-          <div class="prog-ex-top">
-            <span class="prog-ex-name">${ex.name}</span>
-            <span class="prog-ex-badge ${tagCls}">${ex.type}</span>
-          </div>
-          <div class="prog-ex-meta">${repStr} · ${tempo} · Rest ${rest}</div>
-          ${ex.coaching_cue?`<div class="prog-cue">"${ex.coaching_cue}"</div>`:''}
-          <div class="load-hint">${loadHint}</div>
-          <div class="set-logger">${setRows}</div>
-        </div>`;
-      });
-
-      h+=`</div></div>`;
-    });
-    h+=`</div>`;
-  });
-
-  document.getElementById('v-programme').innerHTML=h;
-}
-
-function togglePat(key){
-  openPats[key]=!openPats[key];
-  const body=document.getElementById('ppb-'+key);
-  if(body){
-    body.classList.toggle('open',!!openPats[key]);
-    // Update arrow
-    const hdr=body.previousElementSibling;
-    if(hdr){
-      const setsSpan=hdr.querySelector('.prog-pat-sets');
-      if(setsSpan)setsSpan.textContent=setsSpan.textContent.replace(/[▲▼]/,openPats[key]?'▲':'▼');
-    }
-  }
-}
-
-function changeWeek(d){curWeek=Math.max(1,curWeek+d);openPats={};rProg()}
-function setPD(n){pDays=n;openPats={};rProg()}
-
-async function logSet(patKey,exId,patId,setNum,repLo,repHi){
-  const repsEl=document.getElementById(`reps-${patKey}-${exId||'x'}-${setNum}`);
-  const loadEl=document.getElementById(`load-${patKey}-${exId||'x'}-${setNum}`);
-  const reps=parseInt(repsEl?.value);
-  const load=parseFloat(loadEl?.value)||null;
-  if(!reps||reps<1){alert('Please enter reps achieved.');return}
-
-  const{error}=await sb.from('workout_sets').insert({
-    athlete_id:CU.id,
-    exercise_id:exId?parseInt(exId):null,
-    pattern_id:patId,
-    session_date:new Date().toISOString().split('T')[0],
-    week_number:curWeek,
-    set_number:setNum,
-    reps_achieved:reps,
-    load_kg:load,
-    reps_target_low:repLo,
-    reps_target_high:repHi,
-  });
-  if(error){alert('Error saving: '+error.message);return}
-
-  // Update UI inline without full re-render
-  const row=document.getElementById(`sr-${patKey}-${exId||'x'}-${setNum}`);
-  if(row){
-    row.querySelectorAll('.set-input').forEach(i=>{i.classList.add('logged');i.disabled=true});
-    const btn=row.querySelector('.set-log-btn');
-    if(btn){btn.textContent='✓';btn.classList.add('done');btn.disabled=true}
-  }
-  // Update local state
-  SETS.unshift({exercise_id:exId?parseInt(exId):null,pattern_id:patId,week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load});
-}
-
-// ── HISTORY ──
-function rHistory(){
-  if(SETS.length===0){
-    document.getElementById('v-history').innerHTML=`<div class="empty"><div class="ei">📊</div>No sessions logged yet. Head to Programme to start tracking.</div>`;
-    return;
-  }
-  // Group by date
-  const byDate={};
-  SETS.forEach(s=>{
-    const d=s.session_date||s.logged_at?.split('T')[0]||'Unknown';
-    if(!byDate[d])byDate[d]=[];
-    byDate[d].push(s);
-  });
-  let h=`<div class="sl">Session history</div>`;
-  Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([date,sets])=>{
-    const totalSets=sets.length;
-    const dateLabel=new Date(date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    h+=`<div class="hist-day">
-      <div class="hist-day-hdr"><span class="hist-day-title">Session — ${dateLabel}</span><span class="hist-day-date">${totalSets} sets logged</span></div>`;
-    // Group by exercise within day
-    const byEx={};
-    sets.forEach(s=>{
-      const exName=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
-      if(!byEx[exName])byEx[exName]=[];
-      byEx[exName].push(s);
-    });
-    Object.entries(byEx).forEach(([exName,exSets])=>{
-      exSets.sort((a,b)=>a.set_number-b.set_number).forEach(s=>{
-        const loadStr=s.load_kg?`${s.load_kg}kg`:'BW';
-        const hitTop=s.reps_achieved>=s.reps_target_high;
-        h+=`<div class="hist-set">
-          <span class="hist-ex">${exName} · Set ${s.set_number}</span>
-          <span class="hist-result${hitTop?' '+' style="color:var(--gm)"':''}">
-            ${s.reps_achieved} reps${s.load_kg?` @ ${loadStr}`:''}${hitTop?' ↑':''}
-          </span>
-        </div>`;
-      });
-    });
-    h+=`</div>`;
-  });
-  document.getElementById('v-history').innerHTML=h;
 }
 
 // ── PROFILE ──
@@ -621,7 +606,7 @@ function rProfile(){
 
 function rDetail(pid){
   const lv=AP[pid]||0;
-  if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:20px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
+  if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
   const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv);
   const mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
   const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
@@ -629,8 +614,8 @@ function rDetail(pid){
   function eb(x,tag,cls){
     if(!x)return'';
     const i=x.intent||'Control';
-    const rr=REP_RANGES[i];
-    return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${rr.lo}–${rr.hi} reps · ${TEMPO_MAP[i]}</span></div></div>`;
+    const r=RR[i];
+    return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`;
   }
   return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>
   ${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}
@@ -640,6 +625,37 @@ function rDetail(pid){
 }
 function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
 function cD(){selPat=null;rProfile()}
+
+// ── HISTORY ──
+function rHistory(){
+  if(!SETS.length){document.getElementById('v-history').innerHTML=`<div class="empty"><div class="ei">📊</div>No sessions logged yet. Start logging sets in your Programme tab.</div>`;return}
+  const byDate={};
+  SETS.forEach(s=>{
+    const d=(s.session_date||s.logged_at?.split('T')[0]||'Unknown');
+    if(!byDate[d])byDate[d]=[];
+    byDate[d].push(s);
+  });
+  let h=`<div class="sl">Session history</div>`;
+  Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30).forEach(([date,sets])=>{
+    const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    h+=`<div class="hist-card"><div class="hist-hdr"><span class="hist-title">Session — ${label}</span><span class="hist-count">${sets.length} sets</span></div>`;
+    const byEx={};
+    sets.forEach(s=>{
+      const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
+      if(!byEx[nm])byEx[nm]=[];
+      byEx[nm].push(s);
+    });
+    Object.entries(byEx).forEach(([nm,exSets])=>{
+      exSets.sort((a,b)=>a.set_number-b.set_number).forEach(s=>{
+        const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
+        const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
+        h+=`<div class="hist-row"><span class="hist-ex">${nm} · Set ${s.set_number}</span><span class="hist-res">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span></div>`;
+      });
+    });
+    h+=`</div>`;
+  });
+  document.getElementById('v-history').innerHTML=h;
+}
 
 // ── TEST LOG ──
 function rTestLog(){
@@ -651,14 +667,14 @@ function rTestLog(){
   <label>Notes for coach (optional)</label><textarea id="tnotes" placeholder="How did it feel? Any observations…"></textarea>
   <button class="btn btn-full btn-gm" onclick="subTest()">Submit for coach review</button>
   <div class="msg" id="tm2"></div></div>`;
-  if(LOGS.length>0){
+  if(LOGS.length){
     h+=`<div class="sl">Your test history</div>`;
     LOGS.forEach(log=>{
       const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested);
       const sc=log.passed===true?'spass':log.passed===false?'sfail':'sp';
-      const sl2=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review';
+      const sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review';
       const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-      h+=`<div class="tpend"><div class="tpl"><div class="tpn">${PF[log.pattern_id]||log.pattern_id} — Level ${log.level_tested}</div><div class="tps">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:3px">"${log.notes}"</div>`:''}</div><div class="tpr"><div><span class="sdot ${sc}"></span><span style="font-size:12px;font-weight:500">${sl2}</span></div><div class="td2">${dt}</div></div></div>`;
+      h+=`<div class="tpend"><div class="tpl"><div class="tpn">${PF[log.pattern_id]} — Level ${log.level_tested}</div><div class="tps">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:2px">"${log.notes}"</div>`:''}</div><div class="tpr"><div><span class="sdot ${sc}"></span><span style="font-size:12px;font-weight:500">${sl}</span></div><div class="td2">${dt}</div></div></div>`;
     });
   } else h+=`<div class="empty" style="padding:20px 0"><div class="ei">📝</div>No tests logged yet.</div>`;
   document.getElementById('v-testlog').innerHTML=h;
@@ -688,7 +704,7 @@ function rLB(){
   let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
-  if(aths.length===0)h+=`<div class="empty"><div class="ei">🏆</div>No athletes on the board yet.</div>`;
+  if(!aths.length)h+=`<div class="empty"><div class="ei">🏆</div>No athletes on the board yet.</div>`;
   else aths.forEach((a,i)=>{
     const rc=i===0?'r1':i===1?'r2':i===2?'r3':'',me=a.id===CU.id,c=AVC[a.ci],init=gi(a.name);
     let mb='';
@@ -706,8 +722,6 @@ function showTab(t,btn){
   document.getElementById('v-'+t).classList.add('active');
   btn.classList.add('active');
 }
-
-// ── UTILS ──
 function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 </script>
 </body>
