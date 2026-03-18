@@ -512,7 +512,8 @@ document.addEventListener('visibilitychange',async()=>{if(document.visibilitySta
 // ── LOAD ──
 async function load(){
   try{
-    const{data:prof}=await sb.from('profiles').select('role').eq('id',CU.id).single();
+    // Use maybeSingle() so missing row returns null instead of throwing
+    const{data:prof,error:profErr}=await sb.from('profiles').select('role').eq('id',CU.id).maybeSingle();
     IS_COACH=prof?.role==='coach';
     document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
     document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
@@ -565,7 +566,7 @@ async function load(){
 function rHome(){
   const nm=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
   const hour=new Date().getHours();
-const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+  const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0);
 
   // 7-day streak
