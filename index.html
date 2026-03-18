@@ -533,7 +533,8 @@ async function load(){
     EX=await safe(sb.from('exercises').select('*'));
     const apRows=await safe(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id));
     AP={};apRows.forEach(r=>{AP[r.pattern_id]=r.current_level});
-    AAP=await safe(sb.from('athlete_profiles').select('*,profiles(full_name,email)'));    LOGS=await safe(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}));
+    AAP=await safe(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level'));
+    LOGS=await safe(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}));
     SETS=await safe(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}));
     CHECKINS=await safe(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30));
 
@@ -1184,19 +1185,22 @@ function rHistory(){
 
 // ── LEADERBOARD ──
 function rLB(){
-  // Build from AAP (scored athletes) + ALL_ATHLETES (everyone including 0-score)
+  // Build name lookup from ALL_ATHLETES (coaches have this) + current user
+  const nameLookup={};
+  ALL_ATHLETES.forEach(a=>{nameLookup[a.id]=a.name;});
+  nameLookup[CU.id]=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
+
   const am={};
   AAP.forEach(r=>{
     const id=r.athlete_id;
-    if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};
+    if(!am[id])am[id]={id,name:nameLookup[id]||'Athlete',scores:{}};
     am[id].scores[r.pattern_id]=r.current_level;
   });
-  // Always add current user so they see themselves
-  if(CU&&!am[CU.id]){
-    am[CU.id]={id:CU.id,name:(CU.user_metadata?.full_name||CU.email).split(' ')[0],scores:{}};
-  }
-  // Add all known athletes (coaches see everyone)
+  // Always include current user even with no scores
+  if(!am[CU.id])am[CU.id]={id:CU.id,name:nameLookup[CU.id]||'Me',scores:{}};
+  // Coaches: include all athletes even with 0 scores
   ALL_ATHLETES.forEach(a=>{if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{}};});
+
   let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
