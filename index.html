@@ -533,8 +533,7 @@ async function load(){
     EX=await safe(sb.from('exercises').select('*'));
     const apRows=await safe(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id));
     AP={};apRows.forEach(r=>{AP[r.pattern_id]=r.current_level});
-    AAP=await safe(sb.from('athlete_profiles').select('*,profiles(full_name,email)'));
-    LOGS=await safe(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}));
+    AAP=await safe(sb.from('athlete_profiles').select('*,profiles(full_name,email)'));    LOGS=await safe(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}));
     SETS=await safe(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}));
     CHECKINS=await safe(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30));
 
@@ -782,7 +781,8 @@ function getSetTargets(){
   const t={};ranked.forEach((p,i)=>{t[p]=i<2?20:i<6?15:10});return t;
 }
 function getExercise(pid,type,usedNames){
-  const lv=AP[pid]||0;if(lv===0)return null;
+  // If athlete has no level yet, use level 1 as starter
+  const lv=Math.max(1,AP[pid]||1);
   const cands=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type);
   const fresh=cands.find(e=>!usedNames.has(e.name));
   if(fresh)return fresh;
@@ -853,7 +853,6 @@ function rWorkout(){
   const hasLvl=PATS.some(p=>(AP[p]||0)>0);
   const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
   let h=`<div class="week-bar"><div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div><div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div></div>`;
-  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet.</div>`;document.getElementById('v-workout').innerHTML=h;return;}
   h+=`<div class="day-sub-tabs">`;
   for(let d=0;d<4;d++)h+=`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}</button>`;
   h+=`</div>`;
@@ -1101,13 +1100,19 @@ function rCoach(){
       h+=`</div>`;
     }
 
-    // TEST HISTORY for this client
-    const clientTests=ALL_PENDING.filter(p=>p.athlete_id===a.id);
-    if(clientTests.length){
-      h+=`<div class="ccc-section"><div class="ccc-section-title">Pending Tests</div>`;
-      clientTests.forEach(p=>{
+    // PENDING TESTS for this athlete
+    const clientPending=ALL_PENDING.filter(p=>p.athlete_id===a.id);
+    if(clientPending.length){
+      h+=`<div class="ccc-section"><div class="ccc-section-title">Pending Tests (${clientPending.length})</div>`;
+      clientPending.forEach(p=>{
         const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
-        h+=`<div style="font-size:13px;padding:6px 0;border-bottom:0.5px solid var(--br)">${PF[p.pattern_id]} L${p.level_tested} — ${std?.test_exercise||'—'}</div>`;
+        const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        h+=`<div class="pending-card">
+          <div class="pending-top"><div><div class="pending-name">${PF[p.pattern_id]} — Level ${p.level_tested}</div><div class="pending-sub">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div></div><div class="pending-date">${dt}</div></div>
+          ${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}
+          ${p.video_url?`<video class="pending-video" src="${p.video_url}" controls playsinline></video>`:''}
+          <div class="pending-actions"><button class="btn-pass" onclick="event.stopPropagation();judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button><button class="btn-fail" onclick="event.stopPropagation();judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button></div>
+        </div>`;
       });
       h+=`</div>`;
     }
@@ -1163,9 +1168,19 @@ function rHistory(){
 
 // ── LEADERBOARD ──
 function rLB(){
+  // Build from AAP (scored athletes) + ALL_ATHLETES (everyone including 0-score)
   const am={};
-  AAP.forEach(r=>{const id=r.athlete_id;if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};am[id].scores[r.pattern_id]=r.current_level});
-  if(IS_COACH)ALL_ATHLETES.forEach(a=>{if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{}};});
+  AAP.forEach(r=>{
+    const id=r.athlete_id;
+    if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};
+    am[id].scores[r.pattern_id]=r.current_level;
+  });
+  // Always add current user so they see themselves
+  if(CU&&!am[CU.id]){
+    am[CU.id]={id:CU.id,name:(CU.user_metadata?.full_name||CU.email).split(' ')[0],scores:{}};
+  }
+  // Add all known athletes (coaches see everyone)
+  ALL_ATHLETES.forEach(a=>{if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{}};});
   let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
