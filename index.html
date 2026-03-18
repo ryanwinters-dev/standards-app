@@ -360,16 +360,20 @@ function buildProgramme(){
       const types=['Main','Bridge','Limiter'];
       patsWithLevels.forEach((p,i)=>{typeAssignment[p.pid]=types[Math.min(i,2)]});
 
+
+      // One set count for the whole circuit — all exercises do the same number of sets
+      // Driven by the highest-priority pattern, capped 3–5
+      const maxTarget=Math.max(...tmpl.pats.map(p=>setTargets[p]||15));
+      const daysAppearing=patAppearances[tmpl.pats[0]]||1;
+      let circuitSets=Math.round(maxTarget/Math.max(1,daysAppearing));
+      circuitSets=Math.min(5,Math.max(3,circuitSets));
+
       // Build exercises — Main always first
       const exList=[];
-      // Add Main first
       patsWithLevels.forEach(({pid})=>{
         if(typeAssignment[pid]==='Main'){
           const ex=getExercise(pid,'Main')||getExercise(pid,'Bridge');
-          if(ex||AP[pid]>0){
-            const setsPerDay=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
-            exList.push({pid,type:'Main',ex,sets:setsPerDay});
-          }
+          if(ex||AP[pid]>0) exList.push({pid,type:'Main',ex,sets:circuitSets});
         }
       });
       // Then Bridge/Limiter
@@ -377,15 +381,12 @@ function buildProgramme(){
         if(typeAssignment[pid]!=='Main'){
           const t=typeAssignment[pid];
           const ex=getExercise(pid,t)||getExercise(pid,'Bridge');
-          if(ex||AP[pid]>0){
-            const setsPerDay=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
-            exList.push({pid,type:t,ex,sets:setsPerDay});
-          }
+          if(ex||AP[pid]>0) exList.push({pid,type:t,ex,sets:circuitSets});
         }
       });
 
-      const totalSets=exList.reduce((s,e)=>s+e.sets,0);
-      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,totalSets};
+      const totalSets=exList.length*circuitSets;
+      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,totalSets,circuitSets};
     }).filter(Boolean)
   }));
 }
@@ -434,7 +435,7 @@ function rProg(){
         <div class="circuit-hdr" onclick="toggleCircuit('${ck}')">
           <div class="circuit-letter">${circuit.letter}</div>
           <span class="circuit-label">${circuit.name} circuit</span>
-          <span class="circuit-sets">${circuit.totalSets} sets</span>
+          <span class="circuit-sets">${circuit.circuitSets} sets each</span>
           <span class="circuit-arrow">${isOpen?'▲':'▼'}</span>
         </div>
         <div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
