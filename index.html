@@ -50,19 +50,18 @@
     .home-greeting h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
     .home-greeting p{font-size:14px;color:var(--mt);margin-top:2px}
 
-    /* Check-in streak */
-    .checkin-strip{background:var(--dk);border-radius:14px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:opacity .15s}
-    .checkin-strip:hover{opacity:.92}
+    .checkin-strip{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:border-color .15s}
+    .checkin-strip:hover{border-color:#bbb}
     .checkin-strip-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .checkin-strip-title{font-size:14px;font-weight:600;color:#fff}
-    .checkin-strip-arrow{font-size:16px;color:#666}
+    .checkin-strip-title{font-size:14px;font-weight:600;color:var(--dk)}
+    .checkin-strip-arrow{font-size:16px;color:var(--mt)}
     .checkin-days{display:flex;gap:6px;justify-content:flex-end}
     .checkin-day{display:flex;flex-direction:column;align-items:center;gap:4px}
-    .checkin-dot{width:32px;height:32px;border-radius:50%;border:1.5px solid #444;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
-    .checkin-dot.done{background:var(--amber);border-color:var(--amber);color:#fff}
-    .checkin-dot.today{border-color:var(--amber);color:var(--amber)}
-    .checkin-day-label{font-size:10px;color:#666;font-weight:500;text-transform:uppercase}
-    .checkin-day-num{font-size:10px;color:#555}
+    .checkin-dot{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;color:var(--mt)}
+    .checkin-dot.done{background:var(--gm);border-color:var(--gm);color:#fff}
+    .checkin-dot.today{border-color:var(--gm);color:var(--gm)}
+    .checkin-day-label{font-size:10px;color:var(--mt);font-weight:500;text-transform:uppercase}
+    .checkin-day-num{font-size:10px;color:var(--mt)}
 
     /* Spider diagram */
     .spider-card{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;padding:16px;margin-bottom:14px}
@@ -89,23 +88,23 @@
     .start-workout-btn:hover{opacity:.88}
 
     /* ── CHECK-IN MODAL ── */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-    .ci-modal{background:var(--dk);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .ci-modal{background:var(--cd);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease}
     .ci-modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-    .ci-modal-title{font-size:17px;font-weight:700;color:#fff}
-    .ci-close{width:28px;height:28px;border-radius:50%;border:0.5px solid #444;background:transparent;cursor:pointer;font-size:14px;color:#888;display:flex;align-items:center;justify-content:center}
+    .ci-modal-title{font-size:17px;font-weight:700;color:var(--dk)}
+    .ci-close{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;color:var(--mt);display:flex;align-items:center;justify-content:center}
     .ci-field{margin-bottom:18px}
-    .ci-label{font-size:12px;font-weight:500;color:#999;margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:.06em}
-    .ci-input{width:100%;padding:10px 12px;border:0.5px solid #333;border-radius:8px;font-size:14px;font-family:var(--fn);background:#1a1a1a;color:#fff;outline:none;margin-bottom:0;transition:border-color .15s}
-    .ci-input:focus{border-color:var(--amber)}
+    .ci-label{font-size:12px;font-weight:500;color:var(--md);margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:.06em}
+    .ci-input{width:100%;padding:10px 12px;border:0.5px solid var(--br);border-radius:8px;font-size:14px;font-family:var(--fn);background:var(--bg);color:var(--dk);outline:none;margin-bottom:0;transition:border-color .15s}
+    .ci-input:focus{border-color:var(--gm)}
     .ci-scale{display:flex;gap:6px;flex-wrap:wrap}
-    .ci-scale-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #333;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#666;font-family:var(--fn);transition:all .15s;display:flex;align-items:center;justify-content:center}
-    .ci-scale-btn.sel{background:var(--amber);border-color:var(--amber);color:#fff}
-    .ci-scale-btn:hover{border-color:var(--amber);color:var(--amber)}
+    .ci-scale-btn{width:36px;height:36px;border-radius:50%;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:13px;font-weight:600;color:var(--mt);font-family:var(--fn);transition:all .15s;display:flex;align-items:center;justify-content:center}
+    .ci-scale-btn.sel{background:var(--gm);border-color:var(--gm);color:#fff}
+    .ci-scale-btn:hover{border-color:var(--gm);color:var(--gm)}
     .ci-toggle{display:flex;gap:8px}
-    .ci-toggle-btn{flex:1;padding:8px;border-radius:8px;border:1.5px solid #333;background:transparent;cursor:pointer;font-size:13px;font-weight:500;color:#666;font-family:var(--fn);transition:all .15s}
-    .ci-toggle-btn.sel{background:var(--amber);border-color:var(--amber);color:#fff}
-    .ci-divider{border:none;border-top:0.5px solid #222;margin:4px 0 18px}
+    .ci-toggle-btn{flex:1;padding:8px;border-radius:8px;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:13px;font-weight:500;color:var(--mt);font-family:var(--fn);transition:all .15s}
+    .ci-toggle-btn.sel{background:var(--gm);border-color:var(--gm);color:#fff}
+    .ci-divider{border:none;border-top:0.5px solid var(--br);margin:4px 0 18px}
 
     /* ── WORKOUT ── */
     .week-bar{display:flex;align-items:center;justify-content:space-between;background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px 16px;margin-bottom:14px}
@@ -383,7 +382,7 @@
         <button class="ci-toggle-btn" id="ci-alc-yes" onclick="setAlcohol(true)">Yes</button>
       </div>
     </div>
-    <button class="btn btn-full btn-amber" style="margin-top:8px" onclick="submitCheckin()">Submit Check-In</button>
+    <button class="btn btn-full btn-gm" style="margin-top:8px" onclick="submitCheckin()">Submit Check-In</button>
     <div class="msg" id="ci-msg"></div>
   </div>
 </div>
@@ -500,7 +499,7 @@ function showApp(user){
   CU=user;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
+  document.getElementById('tu').textContent=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
 }
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(ev==='SIGNED_IN'&&sess?.user){showApp(sess.user);await load();}
@@ -632,7 +631,7 @@ function rHome(){
       <div class="session-circuit-sets">${circuit.circuitSets}×${circuit.exercises.length}</div>
     </div>`;
   });
-  h+=`<button class="start-workout-btn" onclick="showTab('workout',document.querySelector('.nav-tab:nth-child(2))'))">Start Workout →</button>`;
+  h+=`<button class="start-workout-btn" onclick="goToWorkout()">Start Workout →</button>`;
   h+=`</div>`;
 
   document.getElementById('v-home').innerHTML=h;
@@ -942,7 +941,7 @@ function closeDemoModal(e){
 
 // ── PROFILE ──
 function rProfile(){
-  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),init=gi(CU.user_metadata?.full_name||CU.email),nm=CU.user_metadata?.full_name||CU.email;
+  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),fullName=CU.user_metadata?.full_name||CU.email,nm=fullName.split(' ')[0],init=gi(fullName);
   let h=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`;
   h+=`<div class="sl">Movement Standards</div><div class="pg">`;
   PATS.forEach(pid=>{
@@ -1175,6 +1174,7 @@ function rLB(){
 function sLBF(f){lbF=f;rLB()}
 
 // ── TABS / UTILS ──
+function goToWorkout(){const btn=document.querySelectorAll('.nav-tab')[1];showTab('workout',btn);}
 function showTab(t,btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
