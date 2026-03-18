@@ -41,11 +41,11 @@
     .sl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin:18px 0 10px}
     .sl:first-child{margin-top:0}
     @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
     .ei{font-size:32px;margin-bottom:8px}
 
-    /* ── WORKOUT ── */
+    /* WORKOUT */
     .week-bar{display:flex;align-items:center;justify-content:space-between;background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px 16px;margin-bottom:14px}
     .week-info{font-size:14px;font-weight:600}.week-sub{font-size:12px;color:var(--mt);margin-top:1px}
     .week-nav{display:flex;gap:6px}
@@ -54,68 +54,62 @@
     .day-sub-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
     .day-sub-tab{padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-family:var(--fn);transition:all .15s;color:var(--mt)}
     .day-sub-tab.act{background:var(--dk);color:#fff;border-color:var(--dk)}
-    .day-hdr{background:var(--dk);border-radius:10px 10px 0 0;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
-    .day-title{font-size:13px;font-weight:600;color:#fff}.day-vol{font-size:11px;color:#777}
 
-    /* CIRCUIT */
-    .circuit-wrap{border:0.5px solid var(--br);border-top:none;background:var(--cd);margin-bottom:0}
-    .circuit-wrap:last-of-type{border-radius:0 0 10px 10px;overflow:hidden;margin-bottom:16px}
-    .circuit-wrap.logged{border-color:var(--gm)}
-    .circuit-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);cursor:pointer;user-select:none}
-    .circuit-hdr:hover{background:#f0f0ee}
-    .circuit-wrap.logged .circuit-hdr{background:var(--gl)}
-    .circuit-letter{width:26px;height:26px;border-radius:6px;background:var(--dk);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .circuit-wrap.logged .circuit-letter{background:var(--gm)}
-    .circuit-label{font-size:13px;font-weight:600;color:var(--md);flex:1}
-    .circuit-meta{font-size:12px;color:var(--mt)}.circuit-arrow{font-size:11px;color:var(--mt);margin-left:4px}
+    /* CIRCUIT CARD */
+    .circuit-card{border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px;background:var(--cd)}
+    .circuit-card.logged{border-color:var(--gm);background:#f8fdf9}
+    .circuit-hdr{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--dk);cursor:pointer;user-select:none}
+    .circuit-letter{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.15);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .circuit-label{font-size:13px;font-weight:600;color:#fff;flex:1}
+    .circuit-meta{font-size:11px;color:#888}
+    .circuit-arrow{font-size:11px;color:#888}
     .circuit-body{display:none}.circuit-body.open{display:block}
 
     /* EXERCISE IN CIRCUIT */
-    .cx{border-bottom:0.5px solid var(--br);padding:14px}
-    .cx:last-of-type{border-bottom:none}
-    .cx-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-    .cx-slot{font-size:10px;font-weight:700;color:var(--mt);letter-spacing:.08em;flex-shrink:0;width:22px}
-    .cx-name{font-size:14px;font-weight:600;flex:1}
-    .cx-demo-btn{width:28px;height:28px;border-radius:6px;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-    .cx-demo-btn:hover{background:var(--dk);border-color:var(--dk)}
-    .cx-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+    .ex-block{padding:14px;border-bottom:0.5px solid var(--br)}
+    .ex-block:last-of-type{border-bottom:none}
+    .ex-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .ex-slot{font-size:10px;font-weight:700;color:var(--mt);letter-spacing:.08em;flex-shrink:0;width:24px}
+    .ex-name{font-size:14px;font-weight:600;flex:1;line-height:1.3}
+    .ex-demo-btn{width:28px;height:28px;border-radius:6px;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+    .ex-demo-btn:hover{background:var(--dk);border-color:var(--dk)}
+    .ex-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
     .tm{background:var(--gl);color:var(--gd)}.tb{background:#EEEDFE;color:#534AB7}.tl2{background:#FAEEDA;color:#854F0B}
-    .cx-meta{font-size:12px;color:var(--mt);margin-bottom:2px;padding-left:30px}
-    .cx-cue{font-size:11px;color:var(--gm);font-style:italic;margin-bottom:8px;padding-left:30px}
-    .load-hint{font-size:11px;color:var(--mt);margin-bottom:6px;padding-left:30px}
+    .ex-meta{font-size:12px;color:var(--mt);margin-bottom:4px;padding-left:32px}
+    .ex-cue{font-size:11px;color:var(--gm);font-style:italic;margin-bottom:8px;padding-left:32px}
+    .load-hint{font-size:11px;color:var(--mt);margin-bottom:6px;padding-left:32px}
 
-    /* SET TABLE */
-    .set-table{width:100%;margin-bottom:6px}
-    .set-table-hdr{display:grid;grid-template-columns:40px 1fr 1fr;gap:6px;padding:0 0 4px;margin-bottom:2px}
-    .set-table-hdr span{font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em}
-    .set-row{display:grid;grid-template-columns:40px 1fr 1fr;gap:6px;margin-bottom:4px;align-items:center}
-    .set-num{font-size:12px;font-weight:600;color:var(--mt);padding-left:2px}
-    .set-inp{padding:7px 10px;border:0.5px solid var(--br);border-radius:6px;font-size:14px;font-family:var(--fn);background:var(--bg);color:var(--dk);outline:none;width:100%;transition:border-color .15s;margin-bottom:0}
+    /* SET ROWS */
+    .set-table{width:100%;border-collapse:collapse;margin-bottom:6px}
+    .set-table th{font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;padding:4px 6px;text-align:left}
+    .set-table td{padding:3px 4px}
+    .set-label{font-size:11px;font-weight:600;color:var(--mt);padding:4px 6px;width:40px}
+    .set-inp{width:100%;padding:6px 8px;border:0.5px solid var(--br);border-radius:6px;font-size:13px;font-family:var(--fn);background:var(--bg);color:var(--dk);outline:none;transition:border-color .15s;-moz-appearance:textfield}
+    .set-inp::-webkit-outer-spin-button,.set-inp::-webkit-inner-spin-button{-webkit-appearance:none}
     .set-inp:focus{border-color:var(--gm)}
-    .set-inp.done{background:var(--gl);border-color:var(--gm);color:var(--gd);font-weight:600}
-    .add-set-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border:0.5px dashed var(--br);border-radius:6px;background:transparent;font-size:12px;font-weight:500;color:var(--mt);cursor:pointer;font-family:var(--fn);margin-bottom:0;transition:all .15s}
+    .set-inp.done{background:var(--gl);border-color:var(--gm);color:var(--gd)}
+    .add-set-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border:0.5px dashed var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:12px;color:var(--mt);font-family:var(--fn);margin-left:32px;transition:all .15s}
     .add-set-btn:hover{border-color:var(--gm);color:var(--gm)}
 
     /* LOG CIRCUIT BUTTON */
-    .log-circuit-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:var(--dk);color:#fff;border:none;border-radius:0 0 8px 8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s}
-    .log-circuit-btn:hover{background:#222}
-    .log-circuit-btn.logged{background:var(--gm);cursor:default}
+    .log-circuit-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:12px 14px 14px;padding:10px;background:var(--dk);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s}
+    .log-circuit-btn:hover{opacity:.85}
+    .log-circuit-btn.done{background:var(--gm)}
+    .log-circuit-btn:disabled{opacity:.5;cursor:not-allowed}
 
-    /* ── VIDEO MODAL ── */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s ease}
-    .video-modal{background:var(--dk);border-radius:14px;width:100%;max-width:560px;overflow:hidden}
-    .video-modal-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
-    .video-modal-title{font-size:14px;font-weight:600;color:#fff}
-    .video-modal-close{width:28px;height:28px;border-radius:50%;border:0.5px solid #444;background:transparent;cursor:pointer;font-size:14px;color:#aaa;display:flex;align-items:center;justify-content:center}
-    .video-modal-close:hover{background:#333}
-    .video-embed{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
-    .video-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
-    .no-video{padding:32px;text-align:center;color:#666;font-size:14px}
+    /* DEMO VIDEO MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+    .demo-modal{background:var(--cd);border-radius:16px;width:100%;max-width:560px;overflow:hidden;animation:fi .2s ease}
+    .demo-modal-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--br)}
+    .demo-modal-title{font-size:14px;font-weight:600}
+    .demo-modal-close{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;color:var(--mt);display:flex;align-items:center;justify-content:center}
+    .demo-modal-body{padding:0}
+    .yt-embed{width:100%;aspect-ratio:16/9;border:none}
+    .no-demo{padding:24px;text-align:center;color:var(--mt);font-size:13px}
 
-    /* ── TEST LOG MODAL ── */
-    .modal-overlay-light{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-    .modal{background:var(--cd);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
-    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    /* TEST LOG MODAL */
+    .test-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .test-modal{background:var(--cd);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
     .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
     .modal-title{font-size:16px;font-weight:600}
     .modal-close{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;color:var(--mt);display:flex;align-items:center;justify-content:center}
@@ -128,7 +122,7 @@
     .upload-progress{height:4px;background:var(--br);border-radius:2px;margin-bottom:14px;overflow:hidden}
     .upload-progress-fill{height:100%;background:var(--gm);border-radius:2px;transition:width .3s ease}
 
-    /* ── PROFILE ── */
+    /* PROFILE */
     .ph{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
     .av{width:50px;height:50px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0}
     .pn{font-size:17px;font-weight:600}.ps{font-size:13px;color:var(--mt);margin-top:2px}
@@ -157,7 +151,7 @@
     .ns{margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd)}
     .mlvl{margin-top:10px;padding:9px 11px;background:var(--gm);border-radius:8px;font-size:12px;color:#fff;font-weight:600}
 
-    /* ── COACH ── */
+    /* COACH */
     .coach-section{background:var(--dk);border-radius:12px;padding:14px 16px;margin-bottom:16px}
     .coach-section-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:12px}
     .athlete-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#1a1a1a;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s;border:1px solid transparent}
@@ -168,8 +162,8 @@
     .athlete-score{font-size:16px;font-weight:700;color:var(--gm)}
     .pending-card{background:#1a1a1a;border-radius:8px;padding:12px;margin-bottom:6px;border-left:3px solid #F0A500}
     .pending-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-    .pending-name{font-size:13px;font-weight:600;color:#fff}.pending-sub{font-size:11px;color:#666;margin-top:2px}.pending-date{font-size:11px;color:#666}
-    .pending-notes{font-size:12px;color:#aaa;font-style:italic;margin-bottom:8px}
+    .pending-name{font-size:13px;font-weight:600;color:#fff}.pending-sub{font-size:11px;color:#666;margin-top:2px}
+    .pending-date{font-size:11px;color:#666}.pending-notes{font-size:12px;color:#aaa;font-style:italic;margin-bottom:8px}
     .pending-video{width:100%;border-radius:6px;margin-bottom:8px;max-height:200px;background:#000}
     .pending-actions{display:flex;gap:6px}
     .btn-pass{background:var(--gm);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
@@ -193,7 +187,7 @@
     .cap-bar{height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden}
     .cap-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
 
-    /* ── HISTORY ── */
+    /* HISTORY */
     .hist-card{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:10px}
     .hist-hdr{padding:10px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);display:flex;justify-content:space-between}
     .hist-title{font-size:13px;font-weight:600}.hist-count{font-size:12px;color:var(--mt)}
@@ -201,7 +195,7 @@
     .hist-row:last-child{border-bottom:none}
     .hist-ex{font-weight:500;color:var(--dk)}.hist-res{color:var(--gm);font-weight:600}
 
-    /* ── LEADERBOARD ── */
+    /* LEADERBOARD */
     .lbf{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
     .lbfb{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);color:var(--mt);cursor:pointer;font-family:var(--fn);transition:all .15s}
     .lbfb.act{background:var(--gl);color:var(--gd);border-color:var(--gm)}
@@ -263,20 +257,20 @@
   </div>
 </div>
 
-<!-- VIDEO DEMO MODAL -->
-<div class="modal-overlay" id="video-modal" style="display:none" onclick="closeVideoModal(event)">
-  <div class="video-modal" onclick="event.stopPropagation()">
-    <div class="video-modal-hdr">
-      <div class="video-modal-title" id="video-modal-title">Exercise Demo</div>
-      <button class="video-modal-close" onclick="closeVideoModal()">✕</button>
+<!-- DEMO VIDEO MODAL -->
+<div class="modal-overlay" id="demo-modal" style="display:none" onclick="closeDemoModal()">
+  <div class="demo-modal" onclick="event.stopPropagation()">
+    <div class="demo-modal-hdr">
+      <div class="demo-modal-title" id="demo-modal-title">Exercise Demo</div>
+      <button class="demo-modal-close" onclick="closeDemoModal()">✕</button>
     </div>
-    <div id="video-modal-body"></div>
+    <div class="demo-modal-body" id="demo-modal-body"></div>
   </div>
 </div>
 
 <!-- TEST LOG MODAL -->
-<div class="modal-overlay-light" id="test-modal" style="display:none" onclick="closeTestModal(event)">
-  <div class="modal" onclick="event.stopPropagation()">
+<div class="test-modal-overlay" id="test-modal" style="display:none" onclick="closeTestModal(event)">
+  <div class="test-modal" onclick="event.stopPropagation()">
     <div class="modal-hdr">
       <div class="modal-title" id="test-modal-title">Log a Test</div>
       <button class="modal-close" onclick="closeTestModal()">✕</button>
@@ -308,14 +302,12 @@ const sb=createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjemZhbXJqZHdiZWVqb3hoeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODAzNjEsImV4cCI6MjA4OTM1NjM2MX0.trUIKdNicHPRDmleAYoF3nAg8unqQrnQCjKTPB63bI0'
 );
 
-// ── STATE ──
 let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[];
 let ALL_ATHLETES=[],ALL_PENDING=[],selAthlete=null;
-let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
-let loggedCircuits={};   // track which circuits are fully logged
-let extraSets={};        // extra sets added by user: key = circuitKey-exId
+let selPat=null,lbF='all',curWeek=1,curDay=0;
 let testModalPat=null,selectedVideoFile=null;
-const DAYS=4;
+// Per-circuit state: extra sets added, logged status
+let circuitExtraSets={},circuitLogged={};
 
 const PATS=['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
 const PL={Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
@@ -325,7 +317,7 @@ const LL=['#f4f4f2','#E8F2EC','#D4EDE1','#C0E8D4','#A8DFC8','#8FD4BC'];
 const AVC=[{bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#EEEDFE',fg:'#534AB7'},{bg:'#FAEEDA',fg:'#854F0B'},{bg:'#FAECE7',fg:'#993C1D'},{bg:'#E6F1FB',fg:'#185FA5'},{bg:'#F1EFE8',fg:'#444441'}];
 const RR={Control:{lo:8,hi:12},Unilateral:{lo:6,hi:8},Force:{lo:3,hi:5},Expression:{lo:5,hi:8}};
 const TM={Control:'3131',Unilateral:'3121',Force:'20X0',Expression:'10X0'};
-const REST_MAP={Main:'90s',Bridge:'60s',Limiter:'45s'};
+const REST={Main:'90s',Bridge:'60s',Limiter:'45s'};
 
 const CIRCUIT_TEMPLATES=[
   {id:'horiz',pats:['HPush','HPull'],name:'Horizontal'},
@@ -432,10 +424,26 @@ function getSetTargets(){
   const ranked=[...PATS].sort((a,b)=>(AP[a]||0)-(AP[b]||0));
   const t={};ranked.forEach((p,i)=>{t[p]=i<2?20:i<6?15:10});return t;
 }
-function getExercise(pid,type){
+
+// Get exercise for pattern+type at level, excluding already-used exercises that day
+function getExercise(pid,type,usedNames){
   const lv=AP[pid]||0;if(lv===0)return null;
-  return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type)||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
+  // Try exact type at current level, skip used
+  const candidates=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type&&!usedNames.has(e.name));
+  if(candidates.length)return candidates[0];
+  // Try same type at adjacent levels
+  for(const adjLv of[lv-1,lv+1,lv-2,lv+2]){
+    if(adjLv<1||adjLv>5)continue;
+    const adj=EX.filter(e=>e.pattern_id===pid&&e.level_focus===adjLv&&e.type===type&&!usedNames.has(e.name));
+    if(adj.length)return adj[0];
+  }
+  // Try any type at current level, skip used
+  const anyType=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&!usedNames.has(e.name));
+  if(anyType.length)return anyType[0];
+  // Last resort: return something even if used (no other option)
+  return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
 }
+
 function repStr(intent,sets,week){
   const r=RR[intent]||RR.Control,wib=((week-1)%4)+1;
   let lo=r.lo,hi=r.hi,s=sets;
@@ -451,39 +459,53 @@ function suggestedLoad(exId,intent){
   if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
   return load;
 }
+
 function buildDay(di){
   const setTargets=getSetTargets();
   const circuitMap={};CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
   const patAppearances={};PATS.forEach(p=>{patAppearances[p]=0});
   DAY_PLAN.forEach(dc=>dc.forEach(cid=>{const t=circuitMap[cid];if(t)t.pats.forEach(p=>{patAppearances[p]++})}));
+
+  const usedNamesThisDay=new Set(); // track used exercise names across whole day
+  const dayCircuits=DAY_PLAN[di];
+
   return{
     label:`Day ${di+1}`,
-    circuits:DAY_PLAN[di].map((cid,ci)=>{
+    circuits:dayCircuits.map((cid,ci)=>{
       const tmpl=circuitMap[cid];if(!tmpl)return null;
       const pwl=tmpl.pats.map(p=>({pid:p,lv:AP[p]||0}));
       pwl.sort((a,b)=>a.lv-b.lv);
       const types=['Main','Bridge','Limiter'],ta={};
       pwl.forEach((p,i)=>{ta[p.pid]=types[Math.min(i,2)]});
+
+      // Calculate circuit sets — use the Main exercise's target as the baseline
+      // All exercises in circuit get the same number of sets
+      const mainPid=pwl.find(p=>ta[p.pid]==='Main')?.pid||pwl[0].pid;
+      const weeklyTarget=setTargets[mainPid]||15;
+      const appearances=Math.max(1,patAppearances[mainPid]);
+      const sessionSets=Math.round(weeklyTarget/appearances);
+      const circuitSets=Math.min(4,Math.max(2,Math.round(sessionSets*0.4)));
+
       const exList=[];
+      // Main first
       pwl.forEach(({pid})=>{
-        const weeklyTarget=setTargets[pid]||15;
-        const appearances=Math.max(1,patAppearances[pid]);
-        const sessionSets=Math.round(weeklyTarget/appearances);
-        const mainSets=Math.min(4,Math.max(2,Math.round(sessionSets*0.4)));
-        const bridgeSets=Math.min(4,Math.max(2,Math.round(sessionSets*0.35)));
-        const limiterSets=Math.min(4,Math.max(2,sessionSets-mainSets-bridgeSets));
-        const type=ta[pid];
-        if(type==='Main'){
-          exList.unshift({pid,type:'Main',ex:getExercise(pid,'Main'),sets:mainSets});
-        } else {
-          exList.push({pid,type,ex:getExercise(pid,type)||getExercise(pid,'Bridge'),sets:type==='Bridge'?bridgeSets:limiterSets});
+        if(ta[pid]==='Main'){
+          const ex=getExercise(pid,'Main',usedNamesThisDay);
+          if(ex)usedNamesThisDay.add(ex.name);
+          exList.unshift({pid,type:'Main',ex,sets:circuitSets});
         }
       });
-      // Equalise sets — all exercises in circuit use Main exercise set count
-      const mainItem=exList.find(e=>e.type==='Main');
-      const circuitSets=mainItem?mainItem.sets:3;
-      exList.forEach(e=>{e.sets=circuitSets});
-      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,sets:circuitSets};
+      // Then Bridge/Limiter — same sets as Main
+      pwl.forEach(({pid})=>{
+        if(ta[pid]!=='Main'){
+          const t=ta[pid];
+          const ex=getExercise(pid,t,usedNamesThisDay)||getExercise(pid,'Bridge',usedNamesThisDay);
+          if(ex)usedNamesThisDay.add(ex.name);
+          exList.push({pid,type:t,ex,sets:circuitSets});
+        }
+      });
+
+      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,circuitSets};
     }).filter(Boolean)
   };
 }
@@ -492,189 +514,204 @@ function buildDay(di){
 function rWorkout(){
   const hasLvl=PATS.some(p=>(AP[p]||0)>0);
   const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
-  let h=`<div class="week-bar"><div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div><div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div></div>`;
-  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;document.getElementById('v-workout').innerHTML=h;return}
+
+  let h=`<div class="week-bar">
+    <div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div>
+    <div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div>
+  </div>`;
+
+  if(!hasLvl){
+    h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;
+    document.getElementById('v-workout').innerHTML=h;return;
+  }
+
   h+=`<div class="day-sub-tabs">`;
-  for(let d=0;d<DAYS;d++)h+=`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}</button>`;
+  for(let d=0;d<4;d++)h+=`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}</button>`;
   h+=`</div>`;
+
   const day=buildDay(curDay);
-  const totalSets=day.circuits.reduce((s,c)=>s+(c.sets*c.exercises.length),0);
-  h+=`<div style="margin-bottom:2px"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalSets} sets total</span></div>`;
+  const totalSets=day.circuits.reduce((s,c)=>s+c.circuitSets*c.exercises.length,0);
+  h+=`<div style="font-size:12px;color:var(--mt);margin-bottom:12px">${day.label} · ${totalSets} sets total</div>`;
+
   day.circuits.forEach((circuit,ci)=>{
     const ck=`d${curDay}c${ci}`;
-    const isOpen=!!openCircuits[ck];
-    const isLogged=!!loggedCircuits[ck];
-    h+=`<div class="circuit-wrap${isLogged?' logged':''}" id="cw-${ck}">
+    const isLogged=!!circuitLogged[ck];
+    const isOpen=!isLogged; // auto-open unlogged circuits
+
+    h+=`<div class="circuit-card${isLogged?' logged':''}" id="cc-${ck}">
       <div class="circuit-hdr" onclick="toggleCircuit('${ck}')">
-        <div class="circuit-letter">${isLogged?'✓':circuit.letter}</div>
+        <div class="circuit-letter">${circuit.letter}</div>
         <span class="circuit-label">${circuit.name} circuit</span>
-        <span class="circuit-meta">${circuit.sets} sets × ${circuit.exercises.length} exercises</span>
-        <span class="circuit-arrow">${isOpen?'▲':'▼'}</span>
+        <span class="circuit-meta">${circuit.circuitSets} sets each</span>
+        <span class="circuit-arrow">${isLogged?'✓':isOpen?'▲':'▼'}</span>
       </div>
       <div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
+
     circuit.exercises.forEach((item,xi)=>{
       const slot=`${circuit.letter}${xi+1}`;
-      const ex=item.ex;
-      const intent=ex?.intent||'Force';
-      const rs=repStr(intent,circuit.sets,curWeek);
+      const ex=item.ex,intent=ex?.intent||'Force';
+      const rs=repStr(intent,item.sets,curWeek);
       const tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
       const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||`${PF[item.pid]}`);
       const sug=ex?.id?suggestedLoad(ex.id,intent):null;
-      const exKey=`${ck}-${ex?.id||item.pid}`;
-      const extraCount=extraSets[exKey]||0;
-      const totalExSets=rs.sets+extraCount;
-      const hasDemo=!!(ex?.demo_url);
-      // Build set rows
-      let setRows=`<div class="set-table-hdr"><span></span><span>Reps</span><span>kg</span></div>`;
-      for(let s=1;s<=totalExSets;s++){
-        const prev=s<=rs.sets?SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek):null;
-        const logged=!!prev&&isLogged;
-        const uid=`${exKey}-${s}`;
-        setRows+=`<div class="set-row"><span class="set-num">Set ${s}</span><input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="${rs.lo}–${rs.hi}" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/><input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/></div>`;
-      }
-      h+=`<div class="cx">
-        <div class="cx-top">
-          <span class="cx-slot">${slot}</span>
-          <span class="cx-name">${exName}</span>
-          ${hasDemo?`<button class="cx-demo-btn" onclick="openVideoModal('${exName.replace(/'/g,"\\'")}','${ex.demo_url}')" title="Watch demo">🎥</button>`:`<button class="cx-demo-btn" style="opacity:.3;cursor:default" title="No demo yet">🎥</button>`}
-          <span class="cx-badge ${tagCls}">${item.type}</span>
+      const extraSets=circuitExtraSets[`${ck}-${xi}`]||0;
+      const totalSetsEx=rs.sets+extraSets;
+
+      h+=`<div class="ex-block">
+        <div class="ex-top">
+          <span class="ex-slot">${slot}</span>
+          <span class="ex-name">${exName}</span>
+          ${ex?.demo_url?`<button class="ex-demo-btn" onclick="openDemo('${ex.demo_url}','${exName.replace(/'/g,"\\'")}')">🎥</button>`:`<button class="ex-demo-btn" onclick="openDemoSearch('${exName.replace(/'/g,"\\'")}')" title="Search on YouTube">🔍</button>`}
+          <span class="ex-badge ${tagCls}">${item.type}</span>
         </div>
-        <div class="cx-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST_MAP[item.type]||'60s'} · ${PL[item.pid]} L${AP[item.pid]||0}</div>
-        ${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}
+        <div class="ex-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST[item.type]||'60s'} · ${PL[item.pid]} L${AP[item.pid]||0}</div>
+        ${ex?.coaching_cue?`<div class="ex-cue">"${ex.coaching_cue}"</div>`:''}
         ${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong> (based on last session)</div>`:''}
-        <div class="set-table" id="sets-${exKey}">${setRows}</div>
-        ${!isLogged?`<button class="add-set-btn" onclick="addSet('${exKey}','${ck}')">+ Add set</button>`:''}
+        <table class="set-table">
+          <tr><th style="width:44px">Set</th><th>Reps</th><th>Load (kg)</th></tr>
+          ${Array.from({length:totalSetsEx},(_,s)=>`<tr>
+            <td class="set-label">Set ${s+1}</td>
+            <td><input class="set-inp" type="number" id="r-${ck}-${xi}-${s}" placeholder="${rs.lo}–${rs.hi}" min="1" max="50"/></td>
+            <td><input class="set-inp" type="number" id="l-${ck}-${xi}-${s}" placeholder="kg" min="0" max="500" step="0.5"/></td>
+          </tr>`).join('')}
+        </table>
+        <button class="add-set-btn" onclick="addSet('${ck}',${xi})">+ Add set</button>
       </div>`;
     });
-    // Log circuit button
-    if(!isLogged){
-      h+=`<button class="log-circuit-btn" onclick="logCircuit('${ck}')">Log ${circuit.name} circuit</button>`;
-    } else {
-      h+=`<div class="log-circuit-btn logged">✓ ${circuit.name} logged</div>`;
-    }
-    h+=`</div></div>`;
+
+    h+=`<button class="log-circuit-btn${isLogged?' done':''}" id="lcb-${ck}" onclick="logCircuit('${ck}',${ci})" ${isLogged?'disabled':''}>
+      ${isLogged?'✓ Circuit logged':'Log Circuit'}
+    </button>
+    </div></div>`;
   });
-  h+=`</div>`;
+
   document.getElementById('v-workout').innerHTML=h;
 }
 
 function toggleCircuit(key){
-  openCircuits[key]=!openCircuits[key];
   const body=document.getElementById('cb-'+key);
-  if(body)body.classList.toggle('open',!!openCircuits[key]);
-  const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
-  if(arr)arr.textContent=openCircuits[key]?'▲':'▼';
-}
-function setDay(d){curDay=d;openCircuits={};rWorkout()}
-function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};loggedCircuits={};extraSets={};rWorkout()}
-
-function addSet(exKey,circuitKey){
-  extraSets[exKey]=(extraSets[exKey]||0)+1;
-  // Re-render just the set table for this exercise
-  const container=document.getElementById('sets-'+exKey);
-  if(!container){rWorkout();return}
-  // Find the exercise data
-  const day=buildDay(curDay);
-  let foundEx=null,foundCi=-1;
-  day.circuits.forEach((c,ci)=>{
-    c.exercises.forEach(item=>{
-      const k=`d${curDay}c${ci}-${item.ex?.id||item.pid}`;
-      if(k===exKey){foundEx=item;foundCi=ci;}
-    });
-  });
-  if(!foundEx){rWorkout();return}
-  const intent=foundEx.ex?.intent||'Force';
-  const circuit=day.circuits[foundCi];
-  const rs=repStr(intent,circuit.sets,curWeek);
-  const totalExSets=rs.sets+(extraSets[exKey]||0);
-  let setRows=`<div class="set-table-hdr"><span></span><span>Reps</span><span>kg</span></div>`;
-  for(let s=1;s<=totalExSets;s++){
-    const uid=`${exKey}-${s}`;
-    const existing=document.getElementById('r-'+uid);
-    const existingLoad=document.getElementById('l-'+uid);
-    const rVal=existing?.value||'';
-    const lVal=existingLoad?.value||'';
-    setRows+=`<div class="set-row"><span class="set-num">Set ${s}</span><input class="set-inp" type="number" id="r-${uid}" placeholder="${rs.lo}–${rs.hi}" value="${rVal}" min="1" max="50"/><input class="set-inp" type="number" id="l-${uid}" placeholder="kg" value="${lVal}" min="0" max="500" step="0.5"/></div>`;
+  if(body){
+    const isOpen=body.classList.toggle('open');
+    const arr=body.previousElementSibling?.querySelector('.circuit-arrow');
+    if(arr&&!circuitLogged[key])arr.textContent=isOpen?'▲':'▼';
   }
-  container.innerHTML=setRows;
+}
+function setDay(d){curDay=d;circuitExtraSets={};circuitLogged={};rWorkout()}
+function changeWeek(d){curWeek=Math.max(1,curWeek+d);circuitExtraSets={};circuitLogged={};rWorkout()}
+
+function addSet(ck,xi){
+  const key=`${ck}-${xi}`;
+  circuitExtraSets[key]=(circuitExtraSets[key]||0)+1;
+  // Re-render just the exercise block — find current set count and add a row
+  const day=buildDay(curDay);
+  const [_,dayIdx,ciIdx]=[...ck.matchAll(/\d+/g)].map(m=>parseInt(m[0]));
+  const circuit=day.circuits[parseInt(ck.replace(/d\d+c/,''))];
+  if(!circuit)return;
+  const item=circuit.exercises[xi];
+  const intent=item?.ex?.intent||'Force';
+  const rs=repStr(intent,item.sets,curWeek);
+  const totalSets=rs.sets+(circuitExtraSets[key]||0);
+  // Add one new row to the table
+  const table=document.querySelector(`#cb-${ck} .ex-block:nth-child(${xi+1}) .set-table`);
+  if(table){
+    const s=totalSets-1;
+    const intent2=item?.ex?.intent||'Force';
+    const r=RR[intent2]||RR.Control;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="set-label">Set ${s+1}</td><td><input class="set-inp" type="number" id="r-${ck}-${xi}-${s}" placeholder="${r.lo}–${r.hi}" min="1" max="50"/></td><td><input class="set-inp" type="number" id="l-${ck}-${xi}-${s}" placeholder="kg" min="0" max="500" step="0.5"/></td>`;
+    table.appendChild(tr);
+  }
 }
 
-async function logCircuit(ck){
+async function logCircuit(ck,ci){
+  const btn=document.getElementById('lcb-'+ck);
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
   const day=buildDay(curDay);
-  const parts=ck.split('c');
-  const ci=parseInt(parts[1]);
-  const circuit=day.circuits[ci];
-  if(!circuit)return;
+  const ciIdx=parseInt(ck.split('c')[1]);
+  const circuit=day.circuits[ciIdx];
+  if(!circuit){if(btn){btn.disabled=false;btn.textContent='Log Circuit';}return;}
+
   const inserts=[];
-  let anyFilled=false;
-  circuit.exercises.forEach(item=>{
-    const ex=item.ex;
-    const intent=ex?.intent||'Force';
-    const rs=repStr(intent,circuit.sets,curWeek);
-    const exKey=`${ck}-${ex?.id||item.pid}`;
-    const totalExSets=rs.sets+(extraSets[exKey]||0);
-    for(let s=1;s<=totalExSets;s++){
-      const uid=`${exKey}-${s}`;
-      const rEl=document.getElementById('r-'+uid);
-      const lEl=document.getElementById('l-'+uid);
+  circuit.exercises.forEach((item,xi)=>{
+    const key=`${ck}-${xi}`;
+    const extraSets=circuitExtraSets[key]||0;
+    const intent=item.ex?.intent||'Force';
+    const rs=repStr(intent,item.sets,curWeek);
+    const totalSets=rs.sets+extraSets;
+    for(let s=0;s<totalSets;s++){
+      const rEl=document.getElementById(`r-${ck}-${xi}-${s}`);
+      const lEl=document.getElementById(`l-${ck}-${xi}-${s}`);
       const reps=parseInt(rEl?.value);
       const load=parseFloat(lEl?.value)||null;
       if(reps&&reps>0){
-        anyFilled=true;
         inserts.push({
           athlete_id:CU.id,
-          exercise_id:ex?.id?parseInt(ex.id):null,
+          exercise_id:item.ex?.id||null,
           pattern_id:item.pid,
           session_date:new Date().toISOString().split('T')[0],
           week_number:curWeek,
-          set_number:s,
+          set_number:s+1,
           reps_achieved:reps,
           load_kg:load,
-          reps_target_low:RR[intent]?.lo||3,
-          reps_target_high:RR[intent]?.hi||5,
+          reps_target_low:rs.lo,
+          reps_target_high:rs.hi,
         });
       }
     }
   });
-  if(!anyFilled){alert('Please fill in at least one set before logging.');return}
-  const{error}=await sb.from('workout_sets').insert(inserts);
-  if(error){alert('Error logging: '+error.message);return}
-  SETS=[...inserts.map(i=>({...i,logged_at:new Date().toISOString()})),...SETS];
-  loggedCircuits[ck]=true;
-  // Update UI without full re-render
-  const wrap=document.getElementById('cw-'+ck);
-  if(wrap){
-    wrap.classList.add('logged');
-    const letter=wrap.querySelector('.circuit-letter');
-    if(letter)letter.textContent='✓';
-    const logBtn=wrap.querySelector('.log-circuit-btn');
-    if(logBtn){logBtn.classList.add('logged');logBtn.textContent='✓ '+circuit.name+' logged';logBtn.onclick=null;}
-    // Lock all inputs
-    wrap.querySelectorAll('.set-inp').forEach(el=>{el.classList.add('done');el.disabled=true});
-    wrap.querySelectorAll('.add-set-btn').forEach(el=>el.remove());
-    const hdr=wrap.querySelector('.circuit-hdr');
-    if(hdr)hdr.style.background='var(--gl)';
+
+  if(inserts.length===0){
+    if(btn){btn.disabled=false;btn.textContent='Log Circuit';}
+    alert('Enter at least one set before logging.');return;
   }
+
+  const{error}=await sb.from('workout_sets').insert(inserts);
+  if(error){
+    if(btn){btn.disabled=false;btn.textContent='Log Circuit';}
+    alert('Error saving: '+error.message);return;
+  }
+
+  // Update local SETS
+  SETS.unshift(...inserts.map(i=>({...i,logged_at:new Date().toISOString()})));
+
+  // Mark circuit as logged and update UI
+  circuitLogged[ck]=true;
+  const card=document.getElementById('cc-'+ck);
+  if(card)card.classList.add('logged');
+  const body=document.getElementById('cb-'+ck);
+  if(body)body.classList.remove('open');
+  const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
+  if(arr)arr.textContent='✓';
+  // Lock all inputs
+  circuit.exercises.forEach((item,xi)=>{
+    const key=`${ck}-${xi}`;
+    const extraSets=circuitExtraSets[key]||0;
+    const rs=repStr(item.ex?.intent||'Force',item.sets,curWeek);
+    const totalSets=rs.sets+extraSets;
+    for(let s=0;s<totalSets;s++){
+      [document.getElementById(`r-${ck}-${xi}-${s}`),document.getElementById(`l-${ck}-${xi}-${s}`)].forEach(el=>{if(el){el.classList.add('done');el.disabled=true;}});
+    }
+  });
+  if(btn){btn.textContent='✓ Circuit logged';btn.classList.add('done');}
 }
 
-// ── VIDEO DEMO MODAL ──
-function openVideoModal(name,url){
-  document.getElementById('video-modal-title').textContent=name;
-  let videoId='';
-  const yt=url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([^&?#\s]{11})/);
-  if(yt)videoId=yt[1];
-  const body=document.getElementById('video-modal-body');
-  if(videoId){
-    body.innerHTML=`<div class="video-embed"><iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`;
-  } else {
-    body.innerHTML=`<div class="no-video">No demo video available for this exercise yet.</div>`;
-  }
-  document.getElementById('video-modal').style.display='flex';
+// ── DEMO VIDEO MODAL ──
+function openDemo(url,name){
+  document.getElementById('demo-modal-title').textContent=name;
+  // Convert YouTube URL to embed
+  let embedUrl=url;
+  const ytMatch=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+  if(ytMatch)embedUrl=`https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
+  document.getElementById('demo-modal-body').innerHTML=`<iframe class="yt-embed" src="${embedUrl}" allowfullscreen allow="autoplay"></iframe>`;
+  document.getElementById('demo-modal').style.display='flex';
 }
-function closeVideoModal(e){
-  if(e&&e.target!==document.getElementById('video-modal'))return;
-  document.getElementById('video-modal').style.display='none';
-  document.getElementById('video-modal-body').innerHTML='';
+function openDemoSearch(name){
+  const query=encodeURIComponent(name+' exercise tutorial');
+  window.open(`https://www.youtube.com/results?search_query=${query}`,'_blank');
+}
+function closeDemoModal(){
+  document.getElementById('demo-modal').style.display='none';
+  document.getElementById('demo-modal-body').innerHTML=''; // stop video
 }
 
 // ── PROFILE ──
@@ -705,7 +742,6 @@ function rProfile(){
   }
   document.getElementById('v-profile').innerHTML=h;
 }
-
 function rDetail(pid){
   const lv=AP[pid]||0;
   if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
@@ -717,7 +753,7 @@ function rDetail(pid){
 function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
 function cD(){selPat=null;rProfile()}
 
-// ── TEST MODAL ──
+// ── TEST LOG MODAL ──
 function openTestModal(pid){
   testModalPat=pid;selectedVideoFile=null;
   const lv=AP[pid]||0;
@@ -730,7 +766,7 @@ function openTestModal(pid){
   document.getElementById('tm-progress-wrap').style.display='none';
   document.getElementById('tm-video-input').value='';
   const sel=document.getElementById('tm-level');
-  sel.innerHTML=STD.filter(s=>s.pattern_id===pid).map(s=>`<option value="${s.level}"${s.level===lv+1?' selected':''}>Level ${s.level} — ${s.test_exercise} (${s.load_standard})</option>`).join('');
+  sel.innerHTML=STD.filter(s=>s.pattern_id===pid).map(s=>`<option value="${s.level}"${s.level===lv+1?' selected':''}>${PF[pid]} Level ${s.level} — ${s.test_exercise} (${s.load_standard})</option>`).join('');
   document.getElementById('test-modal').style.display='flex';
 }
 function closeTestModal(e){
@@ -748,8 +784,9 @@ function handleVideoSelect(input){
 async function submitTest(){
   const pid=testModalPat,lv=parseInt(document.getElementById('tm-level').value);
   const dt=document.getElementById('tm-date').value,nt=document.getElementById('tm-notes').value.trim();
-  const me=document.getElementById('tm-msg'),submitBtn=document.getElementById('tm-submit');
+  const me=document.getElementById('tm-msg');
   if(!pid||!lv){me.textContent='Please select a level.';me.className='msg err';return}
+  const submitBtn=document.getElementById('tm-submit');
   submitBtn.disabled=true;me.textContent='Submitting…';me.className='msg';
   let videoUrl=null;
   if(selectedVideoFile){
@@ -758,7 +795,7 @@ async function submitTest(){
       const path=`${CU.id}/${Date.now()}.${ext}`;
       document.getElementById('tm-progress-wrap').style.display='block';
       document.getElementById('tm-progress').style.width='30%';
-      const{error:upErr}=await sb.storage.from('test-videos').upload(path,selectedVideoFile,{contentType:selectedVideoFile.type,upsert:false});
+      const{error:upErr}=await sb.storage.from('test-videos').upload(path,selectedVideoFile,{contentType:selectedVideoFile.type});
       if(upErr)throw upErr;
       document.getElementById('tm-progress').style.width='80%';
       const{data:urlData}=sb.storage.from('test-videos').getPublicUrl(path);
@@ -782,8 +819,7 @@ function rCoachRoster(){
   if(pendingCount>0){
     h+=`<div style="background:#2a2000;border:1px solid #F0A500;border-radius:8px;padding:10px 12px;margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:#F0A500;margin-bottom:8px">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</div>`;
     ALL_PENDING.forEach(p=>{
-      const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
-      const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested),dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
       h+=`<div class="pending-card"><div class="pending-top"><div><div class="pending-name">${p.profiles?.full_name||'Athlete'}</div><div class="pending-sub">${PF[p.pattern_id]||p.pattern_id} — Level ${p.level_tested} · ${std?.test_exercise||'—'}</div></div><div class="pending-date">${dt}</div></div>${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}${p.video_url?`<video class="pending-video" src="${p.video_url}" controls playsinline></video>`:''}<div class="pending-actions"><button class="btn-pass" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button><button class="btn-fail" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button></div></div>`;
     });
     h+=`</div>`;
@@ -850,7 +886,7 @@ function rHistory(){
 function rLB(){
   const am={};
   AAP.forEach(r=>{const id=r.athlete_id;if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};am[id].scores[r.pattern_id]=r.current_level});
-  if(IS_COACH)ALL_ATHLETES.forEach(a=>{if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{}}});
+  if(IS_COACH)ALL_ATHLETES.forEach(a=>{if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{}};});
   let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
