@@ -521,9 +521,14 @@ async function load(){
       document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
     });
 
-    // Run each query independently so one failure doesn't kill everything
-    const safe=async(q)=>{try{const r=await q;return r.data||[];}catch(e){console.warn('Query failed:',e);return[];}};
-
+    // Safe query wrapper with 8s timeout
+    const safe=async(q)=>{
+      try{
+        const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Query timeout')),8000));
+        const r=await Promise.race([q,timeout]);
+        return r.data||[];
+      }catch(e){console.warn('Query failed:',e.message);return[];}
+    };
     STD=await safe(sb.from('standards').select('*').order('pattern_id').order('level'));
     EX=await safe(sb.from('exercises').select('*'));
     const apRows=await safe(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id));
@@ -549,7 +554,7 @@ async function load(){
       });
       ALL_ATHLETES=Object.values(am);
       ALL_PENDING=await safe(sb.from('assessments').select('*,profiles(full_name)').is('passed',null).order('assessed_at',{ascending:false}));
-      const allSets=await safe(sb.from('workout_sets').select('*').order('logged_at',{ascending:false}).limit(200));
+      const allSets=await safe(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').order('logged_at',{ascending:false}).limit(500));
       ALL_CLIENT_SETS={};
       allSets.forEach(s=>{if(!ALL_CLIENT_SETS[s.athlete_id])ALL_CLIENT_SETS[s.athlete_id]=[];ALL_CLIENT_SETS[s.athlete_id].push(s);});
     }
