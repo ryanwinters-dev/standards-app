@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--red:#c0392b;--amber:#F0A500}
+    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--red:#c0392b;--redbg:#FDECEA;--amber:#854F0B;--amberbg:#FAEEDA}
     body{font-family:var(--fn);background:var(--bg);color:var(--dk);min-height:100vh}
     #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
     .auth-card{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
@@ -23,19 +23,17 @@
     textarea{resize:vertical;min-height:72px}
     .btn{padding:11px 16px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
     .btn-full{width:100%}.btn-dk{background:var(--dk);color:#fff}.btn-gm{background:var(--gm);color:#fff}
-    .btn-sm{padding:5px 10px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
-    .btn-pass{background:#E1F5EE;color:#0F6E56}.btn-fail{background:#FDECEA;color:#c0392b}
-    .btn-level{width:26px;height:26px;border-radius:6px;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-size:14px;font-weight:600;color:var(--md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--fn)}
-    .btn-level:hover{background:var(--bg);border-color:var(--gm);color:var(--gm)}
-    .btn:hover,.btn-sm:hover{opacity:.85}
+    .btn-sm{padding:5px 10px;font-size:12px;border-radius:6px;font-family:var(--fn);border:none;cursor:pointer;font-weight:500;transition:opacity .15s}
+    .btn-sm:hover,.btn:hover{opacity:.85}
     .btn:disabled,.btn-sm:disabled{opacity:.4;cursor:not-allowed}
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:var(--red)}.msg.ok{color:var(--gd)}
     #app{display:none}
     .topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
     .tl{font-size:18px;font-weight:700;letter-spacing:-.3px}.tl span{color:var(--gm)}
-    .tu{font-size:13px;color:var(--mt);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .coach-badge{font-size:10px;font-weight:600;background:var(--dk);color:#fff;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:.04em}
+    .topbar-r{display:flex;align-items:center;gap:8px}
+    .coach-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--dk);color:#fff}
+    .tu{font-size:13px;color:var(--mt);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .btn-so{padding:5px 12px;font-size:12px;border:0.5px solid var(--br);background:transparent;border-radius:99px;cursor:pointer;color:var(--md);font-family:var(--fn)}
     .nav-tabs{display:flex;padding:0 16px;border-bottom:0.5px solid var(--br);background:var(--cd);overflow-x:auto;-webkit-overflow-scrolling:touch}
     .nav-tab{padding:10px 12px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:var(--mt);border-bottom:2px solid transparent;margin-bottom:-0.5px;font-family:var(--fn);white-space:nowrap;transition:all .15s}
@@ -47,6 +45,53 @@
     @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
     .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
     .ei{font-size:32px;margin-bottom:8px}
+
+    /* ── COACH STYLES ── */
+    .coach-section{background:var(--dk);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+    .coach-section-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:12px}
+    .athlete-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#1a1a1a;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s;border:1px solid transparent}
+    .athlete-row:hover{background:#222}
+    .athlete-row.active{border-color:var(--gm)}
+    .athlete-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+    .athlete-info{flex:1}
+    .athlete-name{font-size:13px;font-weight:600;color:#fff}
+    .athlete-sub{font-size:11px;color:#666;margin-top:1px}
+    .athlete-score{font-size:16px;font-weight:700;color:var(--gm)}
+    .athlete-bars{display:flex;gap:2px;margin-top:4px}
+    .athlete-bar{width:8px;height:8px;border-radius:2px}
+
+    /* Pending tests */
+    .pending-card{background:#1a1a1a;border-radius:8px;padding:12px;margin-bottom:6px;border-left:3px solid #F0A500}
+    .pending-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+    .pending-name{font-size:13px;font-weight:600;color:#fff}
+    .pending-sub{font-size:11px;color:#666;margin-top:2px}
+    .pending-date{font-size:11px;color:#666}
+    .pending-notes{font-size:12px;color:#aaa;font-style:italic;margin-bottom:8px}
+    .pending-actions{display:flex;gap:6px}
+    .btn-pass{background:var(--gm);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
+    .btn-fail{background:var(--red);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
+    .btn-pass:hover,.btn-fail:hover{opacity:.85}
+
+    /* Athlete profile in coach view */
+    .coach-athlete-profile{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
+    .cap-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .cap-name{font-size:15px;font-weight:600}
+    .cap-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
+    .cap-close{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:13px;color:var(--mt);display:flex;align-items:center;justify-content:center}
+    .cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .cap-pat{background:var(--bg);border:0.5px solid var(--br);border-radius:8px;padding:10px}
+    .cap-pat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .cap-pat-name{font-size:12px;font-weight:600}
+    .cap-level-ctrl{display:flex;align-items:center;gap:6px}
+    .level-btn{width:22px;height:22px;border-radius:4px;border:0.5px solid var(--br);background:var(--cd);cursor:pointer;font-size:14px;font-weight:600;color:var(--dk);display:flex;align-items:center;justify-content:center;font-family:var(--fn);transition:all .15s;line-height:1}
+    .level-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
+    .level-btn:disabled{opacity:.3;cursor:not-allowed}
+    .level-num{font-size:13px;font-weight:700;color:var(--gm);min-width:16px;text-align:center}
+    .cap-ex{font-size:11px;color:var(--mt);margin-top:2px}
+    .cap-std{font-size:11px;font-weight:600;color:var(--gm)}
+    .cap-bar{height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden}
+    .cap-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
+
     /* PROFILE */
     .ph{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
     .av{width:50px;height:50px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0}
@@ -60,12 +105,8 @@
     .lc{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
     .bt{height:4px;background:var(--br);border-radius:2px;margin-bottom:5px;overflow:hidden}
     .bf{height:100%;border-radius:2px;transition:width .5s ease}
-    .pb2{display:flex;justify-content:space-between;align-items:center}
+    .pb2{display:flex;justify-content:space-between}
     .pex{font-size:11px;color:var(--mt)}.pst{font-size:11px;font-weight:600;color:var(--gm)}
-    /* COACH LEVEL CONTROLS ON PATTERN CARD */
-    .level-controls{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--br)}
-    .level-val{font-size:13px;font-weight:600;color:var(--dk);min-width:60px;text-align:center}
-    /* DETAIL CARD */
     .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
     .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .dt{font-size:14px;font-weight:600}
@@ -78,25 +119,7 @@
     .ec{font-size:11px;color:var(--gm);font-style:italic}.em2{font-size:11px;color:var(--mt)}
     .ns{margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd)}
     .mlvl{margin-top:10px;padding:9px 11px;background:var(--gm);border-radius:8px;font-size:12px;color:#fff;font-weight:600}
-    /* COACH — ATHLETE ROSTER */
-    .athlete-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
-    .athlete-card:hover{border-color:#bbb}
-    .athlete-card.selected{border-color:var(--gm);border-width:1.5px}
-    .ac-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
-    .ac-info{flex:1}.ac-name{font-size:14px;font-weight:600}.ac-sub{font-size:12px;color:var(--mt);margin-top:1px}
-    .ac-score{text-align:right}.ac-num{font-size:18px;font-weight:700;color:var(--gm);line-height:1}.ac-den{font-size:11px;color:var(--mt)}
-    .ac-bars{display:flex;gap:2px;margin-top:4px;justify-content:flex-end}
-    .ac-bar{width:8px;height:8px;border-radius:2px}
-    /* COACH — PENDING TESTS */
-    .pending-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:8px;animation:fi .2s ease}
-    .pending-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .pending-name{font-size:13px;font-weight:600}
-    .pending-date{font-size:11px;color:var(--mt)}
-    .pending-detail{font-size:12px;color:var(--mt);margin-bottom:10px}
-    .pending-notes{font-size:12px;color:var(--dk);font-style:italic;margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:6px}
-    .pending-actions{display:flex;gap:8px}
-    .sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
-    .sp{background:var(--amber)}.spass{background:var(--gm)}.sfail{background:var(--red)}
+
     /* PROGRAMME */
     .week-bar{display:flex;align-items:center;justify-content:space-between;background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px 16px;margin-bottom:14px}
     .week-info{font-size:14px;font-weight:600}.week-sub{font-size:12px;color:var(--mt);margin-top:1px}
@@ -132,6 +155,7 @@
     .set-btn{padding:4px 9px;font-size:11px;font-weight:600;border:none;border-radius:5px;cursor:pointer;font-family:var(--fn);background:var(--gm);color:#fff;flex-shrink:0;white-space:nowrap}
     .set-btn.done{background:var(--gl);color:var(--gd);cursor:default}
     .load-hint{font-size:11px;color:var(--mt);margin-bottom:4px}
+
     /* HISTORY */
     .hist-card{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:10px}
     .hist-hdr{padding:10px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);display:flex;justify-content:space-between}
@@ -139,12 +163,16 @@
     .hist-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:0.5px solid var(--br);font-size:13px}
     .hist-row:last-child{border-bottom:none}
     .hist-ex{font-weight:500;color:var(--dk)}.hist-res{color:var(--gm);font-weight:600}
+
     /* TEST LOG */
     .tf{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:18px;margin-bottom:16px}
     .tft{font-size:14px;font-weight:600;margin-bottom:14px}
     .tpend{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
     .tpl{flex:1}.tpn{font-size:13px;font-weight:600}.tps{font-size:12px;color:var(--mt);margin-top:2px}
     .tpr{text-align:right}.td2{font-size:11px;color:var(--mt)}
+    .sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+    .sp{background:#F0A500}.spass{background:var(--gm)}.sfail{background:var(--red)}
+
     /* LEADERBOARD */
     .lbf{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
     .lbfb{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);color:var(--mt);cursor:pointer;font-family:var(--fn);transition:all .15s}
@@ -157,7 +185,7 @@
     .lbi{flex:1}.lbn{font-size:13px;font-weight:600}.lbns{font-size:12px;color:var(--mt)}
     .lbs{text-align:right}.lbsn{font-size:20px;font-weight:700;color:var(--gm);line-height:1}.lbsd{font-size:11px;color:var(--mt)}
     .lbmb{display:flex;gap:2px;margin-top:4px}.lbmbs{width:8px;height:8px;border-radius:2px}
-    @media(max-width:420px){.pg{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
+    @media(max-width:420px){.pg{grid-template-columns:1fr}.cap-grid{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
   </style>
 </head>
 <body>
@@ -187,9 +215,9 @@
 <div id="app">
   <div class="topbar">
     <div class="tl">STAND<span>ARDS</span></div>
-    <div style="display:flex;align-items:center;gap:10px">
+    <div class="topbar-r">
+      <span id="coach-badge" class="coach-badge" style="display:none">Coach</span>
       <span class="tu" id="tu"></span>
-      <span class="coach-badge" id="coach-badge" style="display:none">COACH</span>
       <button class="btn-so" onclick="signOut()">Sign out</button>
     </div>
   </div>
@@ -217,11 +245,9 @@ const sb=createClient(
 );
 
 // ── STATE ──
-let CU=null, PROFILE=null, IS_COACH=false;
-let STD=[], EX=[], AP={}, AAP=[], LOGS=[], SETS=[], ALL_LOGS=[], ALL_PROFILES=[];
-let selPat=null, lbF='all', pDays=3, curWeek=1, openCircuits={};
-let viewingAthleteId=null; // null = viewing self, uuid = viewing that athlete
-let selectedAthleteId=null; // selected in roster
+let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[];
+let ALL_ATHLETES=[],ALL_PENDING=[],selAthlete=null;
+let selPat=null,lbF='all',pDays=3,curWeek=1,openCircuits={};
 
 const PATS=['Squat','Hinge','HPush','VPush','HPull','VPull','Carry','Core'];
 const PL={Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
@@ -273,55 +299,72 @@ async function signUp(){
 }
 async function signOut(){
   await sb.auth.signOut();
-  CU=null;PROFILE=null;IS_COACH=false;STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];ALL_LOGS=[];ALL_PROFILES=[];
+  CU=null;IS_COACH=false;STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];ALL_ATHLETES=[];ALL_PENDING=[];selAthlete=null;
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('app').style.display='none';
-  document.getElementById('coach-badge').style.display='none';
   document.getElementById('am').textContent='';
 }
+
+// ── SESSION ──
 function showApp(user){
   CU=user;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
 }
+
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(ev==='SIGNED_IN'&&sess?.user){showApp(sess.user);await load();}
   else if(ev==='SIGNED_OUT'){CU=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('app').style.display='none';}
 });
-(async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){showApp(session.user);await load();}})();
-document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&CU)await load();});
 
-// ── LOAD ──
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session?.user){showApp(session.user);await load();}
+})();
+
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState==='visible'&&CU)await load();
+});
+
+// ── DATA ──
 async function load(){
   try{
-    // Load base data everyone needs
-    const[s,e,myAp,aa,myLogs,mySets,prof]=await Promise.all([
+    // Check if coach
+    const{data:prof}=await sb.from('profiles').select('role').eq('id',CU.id).single();
+    IS_COACH=prof?.role==='coach';
+    document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
+
+    const queries=[
       sb.from('standards').select('*').order('pattern_id').order('level'),
       sb.from('exercises').select('*'),
       sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id),
       sb.from('athlete_profiles').select('*,profiles(full_name,email)'),
       sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}),
       sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}),
-      sb.from('profiles').select('*').eq('id',CU.id).single()
-    ]);
-    STD=s.data||[];EX=e.data||[];
-    AP={};(myAp.data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
-    AAP=aa.data||[];LOGS=myLogs.data||[];SETS=mySets.data||[];
-    PROFILE=prof.data;
-    IS_COACH=PROFILE?.role==='coach'||PROFILE?.role==='admin';
+    ];
 
-    // Show/hide coach badge
-    document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
-
-    // If coach, load all athlete data
     if(IS_COACH){
-      const[allLogs,allProfs]=await Promise.all([
-        sb.from('assessments').select('*,profiles(full_name,email)').order('assessed_at',{ascending:false}),
-        sb.from('profiles').select('*').neq('role','admin'),
-      ]);
-      ALL_LOGS=allLogs.data||[];
-      ALL_PROFILES=allProfs.data||[];
+      queries.push(sb.from('athlete_profiles').select('*,profiles(full_name,email,role)'));
+      queries.push(sb.from('assessments').select('*,profiles(full_name)').is('passed',null).order('assessed_at',{ascending:false}));
+    }
+
+    const results=await Promise.all(queries);
+    STD=results[0].data||[];EX=results[1].data||[];
+    AP={};(results[2].data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
+    AAP=results[3].data||[];LOGS=results[4].data||[];SETS=results[5].data||[];
+
+    if(IS_COACH){
+      // Build athlete map from all profiles
+      const athleteMap={};
+      (results[6].data||[]).forEach(r=>{
+        if(r.profiles?.role==='coach')return; // exclude coaches from athlete list
+        const id=r.athlete_id;
+        if(!athleteMap[id])athleteMap[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',email:r.profiles?.email||'',scores:{}};
+        athleteMap[id].scores[r.pattern_id]=r.current_level;
+      });
+      ALL_ATHLETES=Object.values(athleteMap);
+      ALL_PENDING=results[7].data||[];
     }
 
     rProfile();rProg();rHistory();rTestLog();rLB();
@@ -331,179 +374,162 @@ async function load(){
   }
 }
 
-// ── ACTIVE ATHLETE PROFILE (coach can view others) ──
-function getActiveAP(){
-  if(!IS_COACH||!viewingAthleteId)return AP;
-  const profile=AAP.filter(r=>r.athlete_id===viewingAthleteId);
-  const ap={};profile.forEach(r=>{ap[r.pattern_id]=r.current_level});
-  return ap;
-}
-function getActiveName(){
-  if(!IS_COACH||!viewingAthleteId)return CU.user_metadata?.full_name||CU.email;
-  const p=ALL_PROFILES.find(p=>p.id===viewingAthleteId);
-  return p?.full_name||p?.email||'Athlete';
-}
-function getActiveId(){return IS_COACH&&viewingAthleteId?viewingAthleteId:CU.id}
-
 // ── COACH: SET ATHLETE LEVEL ──
 async function setLevel(athleteId,patId,newLevel){
   if(newLevel<0||newLevel>5)return;
-  const{data:existing}=await sb.from('athlete_profiles').select('id').eq('athlete_id',athleteId).eq('pattern_id',patId).single();
-  let error;
-  if(existing){
-    const res=await sb.from('athlete_profiles').update({current_level:newLevel,updated_at:new Date().toISOString()}).eq('athlete_id',athleteId).eq('pattern_id',patId);
-    error=res.error;
-  } else {
-    const res=await sb.from('athlete_profiles').insert({athlete_id:athleteId,pattern_id:patId,current_level:newLevel,passed_at:newLevel>0?new Date().toISOString():null});
-    error=res.error;
-  }
-  if(error){alert('Error updating level: '+error.message);return;}
+  const{error}=await sb.from('athlete_profiles').upsert({
+    athlete_id:athleteId,pattern_id:patId,current_level:newLevel,
+    passed_at:newLevel>0?new Date().toISOString():null,updated_at:new Date().toISOString()
+  },{onConflict:'athlete_id,pattern_id'});
+  if(error){alert('Error: '+error.message);return;}
   // Update local state
-  if(athleteId===CU.id){AP[patId]=newLevel;}
-  const idx=AAP.findIndex(r=>r.athlete_id===athleteId&&r.pattern_id===patId);
-  if(idx>=0)AAP[idx].current_level=newLevel;
-  else AAP.push({athlete_id:athleteId,pattern_id:patId,current_level:newLevel});
-  selPat=null;
-  rProfile();rLB();
+  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
+  if(a)a.scores[patId]=newLevel;
+  if(athleteId===CU.id)AP[patId]=newLevel;
+  rCoachAthleteProfile(athleteId);
+  rProfile();
 }
 
 // ── COACH: APPROVE / FAIL TEST ──
-async function resolveTest(logId,passed,athleteId,patId,level){
-  const{error}=await sb.from('assessments').update({passed}).eq('id',logId);
+async function judgeTest(assessmentId,athleteId,patId,level,pass){
+  const{error}=await sb.from('assessments').update({passed:pass}).eq('id',assessmentId);
   if(error){alert('Error: '+error.message);return;}
-  // If passed, update athlete level
-  if(passed){
-    const currentLevel=getActiveAPForAthlete(athleteId)[patId]||0;
-    if(level>currentLevel)await setLevel(athleteId,patId,level);
+  if(pass){
+    // Update athlete level
+    const current=ALL_ATHLETES.find(x=>x.id===athleteId)?.scores[patId]||0;
+    if(level>current)await setLevel(athleteId,patId,level);
   }
-  // Update local ALL_LOGS
-  const idx=ALL_LOGS.findIndex(l=>l.id===logId);
-  if(idx>=0)ALL_LOGS[idx].passed=passed;
-  const myIdx=LOGS.findIndex(l=>l.id===logId);
-  if(myIdx>=0)LOGS[myIdx].passed=passed;
-  rProfile();rTestLog();
+  // Remove from pending list
+  ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);
+  rProfile(); // re-render to update pending count
 }
 
-function getActiveAPForAthlete(athleteId){
-  const profile=AAP.filter(r=>r.athlete_id===athleteId);
-  const ap={};profile.forEach(r=>{ap[r.pattern_id]=r.current_level});
-  return ap;
+// ── COACH: RENDER ATHLETE ROSTER ──
+function rCoachRoster(){
+  if(!IS_COACH||!ALL_ATHLETES.length)return'';
+  const pendingCount=ALL_PENDING.length;
+  let h=`<div class="coach-section">
+    <div class="coach-section-title">Athletes (${ALL_ATHLETES.length})</div>`;
+
+  // Pending tests banner
+  if(pendingCount>0){
+    h+=`<div style="background:#2a2000;border:1px solid #F0A500;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:#F0A500;margin-bottom:8px">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</div>`;
+    ALL_PENDING.forEach(p=>{
+      const std=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
+      const dt=new Date(p.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      h+=`<div class="pending-card">
+        <div class="pending-top">
+          <div><div class="pending-name">${p.profiles?.full_name||'Athlete'}</div><div class="pending-sub">${PF[p.pattern_id]||p.pattern_id} — Level ${p.level_tested} · ${std?.test_exercise||'—'}</div></div>
+          <div class="pending-date">${dt}</div>
+        </div>
+        ${p.notes?`<div class="pending-notes">"${p.notes}"</div>`:''}
+        <div class="pending-actions">
+          <button class="btn-pass" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button>
+          <button class="btn-fail" onclick="judgeTest('${p.id}','${p.athlete_id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button>
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  // Athlete list
+  ALL_ATHLETES.sort((a,b)=>{
+    const sa=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+    const sb2=PATS.reduce((s,p)=>s+(b.scores[p]||0),0);
+    return sb2-sa;
+  }).forEach((a,i)=>{
+    const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+    const init=gi(a.name),c=AVC[i%AVC.length];
+    const bars=PATS.map(p=>`<div class="athlete-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
+    h+=`<div class="athlete-row${selAthlete===a.id?' active':''}" onclick="selectAthlete('${a.id}')">
+      <div class="athlete-av" style="background:${c.bg};color:${c.fg}">${init}</div>
+      <div class="athlete-info">
+        <div class="athlete-name">${a.name}</div>
+        <div class="athlete-bars">${bars}</div>
+      </div>
+      <div class="athlete-score">${total}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // Selected athlete profile
+  if(selAthlete)h+=rCoachAthleteProfile(selAthlete,true);
+
+  return h;
 }
 
-// ── RENDER PROFILE ──
+function selectAthlete(id){
+  selAthlete=selAthlete===id?null:id;
+  rProfile();
+  if(selAthlete)setTimeout(()=>{const el=document.querySelector('.coach-athlete-profile');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'})},50);
+}
+
+function rCoachAthleteProfile(athleteId,returnStr=false){
+  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
+  if(!a)return'';
+  const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+  let h=`<div class="coach-athlete-profile">
+    <div class="cap-header">
+      <div class="cap-name">${a.name}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="cap-score">${total} / 40</span>
+        <button class="cap-close" onclick="selectAthlete('${athleteId}')">✕</button>
+      </div>
+    </div>
+    <div class="cap-grid">`;
+  PATS.forEach(pid=>{
+    const lv=a.scores[pid]||0,col=LC[lv],bg=LL[lv];
+    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    const nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
+    h+=`<div class="cap-pat">
+      <div class="cap-pat-top">
+        <span class="cap-pat-name">${PL[pid]}</span>
+        <div class="cap-level-ctrl">
+          <button class="level-btn" onclick="setLevel('${athleteId}','${pid}',${lv-1})" ${lv<=0?'disabled':''}>−</button>
+          <span class="level-num" style="color:${col}">${lv}</span>
+          <button class="level-btn" onclick="setLevel('${athleteId}','${pid}',${lv+1})" ${lv>=5?'disabled':''}>+</button>
+        </div>
+      </div>
+      <div class="cap-bar"><div class="cap-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+      <div class="cap-ex">${std?std.test_exercise:'Not assessed'}</div>
+      ${nx?`<div class="cap-std">→ ${nx.test_exercise} · ${nx.load_standard}</div>`:''}
+    </div>`;
+  });
+  h+=`</div></div>`;
+  if(returnStr)return h;
+  // If called to update in place, re-render full profile
+  rProfile();
+}
+
+// ── PROFILE ──
 function rProfile(){
-  const activeAP=getActiveAP();
-  const activeId=getActiveId();
-  const activeName=getActiveName();
-  const tot=PATS.reduce((s,p)=>s+(activeAP[p]||0),0);
-  const init=gi(activeName);
+  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),init=gi(CU.user_metadata?.full_name||CU.email),nm=CU.user_metadata?.full_name||CU.email;
   let h='';
 
-  // ── COACH SECTIONS ──
-  if(IS_COACH){
-    // Pending tests across all athletes
-    const pending=ALL_LOGS.filter(l=>l.passed===null);
-    if(pending.length>0){
-      h+=`<div class="sl">Pending test reviews — ${pending.length}</div>`;
-      pending.forEach(log=>{
-        const athleteName=log.profiles?.full_name||log.profiles?.email||'Athlete';
-        const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested);
-        const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-        h+=`<div class="pending-card">
-          <div class="pending-top">
-            <span class="pending-name">${athleteName} — ${PF[log.pattern_id]} Level ${log.level_tested}</span>
-            <span class="pending-date">${dt}</span>
-          </div>
-          <div class="pending-detail">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>
-          ${log.notes?`<div class="pending-notes">"${log.notes}"</div>`:''}
-          <div class="pending-actions">
-            <button class="btn-sm btn-pass" onclick="resolveTest('${log.id}',true,'${log.athlete_id}','${log.pattern_id}',${log.level_tested})">✓ Pass</button>
-            <button class="btn-sm btn-fail" onclick="resolveTest('${log.id}',false,'${log.athlete_id}','${log.pattern_id}',${log.level_tested})">✗ Fail</button>
-          </div>
-        </div>`;
-      });
-    }
+  // Coach section at top
+  if(IS_COACH)h+=rCoachRoster();
 
-    // Athlete roster
-    h+=`<div class="sl">Athletes</div>`;
-    // Group AAP by athlete
-    const athleteMap={};
-    AAP.forEach(r=>{
-      if(!athleteMap[r.athlete_id])athleteMap[r.athlete_id]={id:r.athlete_id,scores:{},profile:ALL_PROFILES.find(p=>p.id===r.athlete_id)};
-      athleteMap[r.athlete_id].scores[r.pattern_id]=r.current_level;
-    });
-    // Also include athletes with no assessments yet
-    ALL_PROFILES.forEach(p=>{
-      if(p.id!==CU.id&&!athleteMap[p.id])athleteMap[p.id]={id:p.id,scores:{},profile:p};
-    });
-    const athletes=Object.values(athleteMap).filter(a=>a.id!==CU.id||ALL_PROFILES.find(p=>p.id===CU.id)?.role!=='coach');
-    if(athletes.length===0){
-      h+=`<div class="empty" style="padding:20px 0"><div class="ei">👥</div>No athletes yet. Share the app URL with your clients to get started.</div>`;
-    } else {
-      athletes.forEach((a,i)=>{
-        const name=a.profile?.full_name||a.profile?.email||'Athlete';
-        const score=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-        const col=AVC[i%AVC.length];
-        const isSelected=selectedAthleteId===a.id;
-        const bars=PATS.map(p=>`<div class="ac-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
-        h+=`<div class="athlete-card${isSelected?' selected':''}" onclick="selectAthlete('${a.id}')">
-          <div class="ac-av" style="background:${col.bg};color:${col.fg}">${gi(name)}</div>
-          <div class="ac-info">
-            <div class="ac-name">${name}</div>
-            <div class="ac-sub">${a.profile?.email||''}</div>
-          </div>
-          <div class="ac-score">
-            <div class="ac-num">${score}</div>
-            <div class="ac-den">/ 40</div>
-            <div class="ac-bars">${bars}</div>
-          </div>
-        </div>`;
-      });
-    }
-    h+=`<div style="height:1px;background:var(--br);margin:16px 0"></div>`;
-  }
-
-  // ── ATHLETE PROFILE (self or viewing athlete as coach) ──
-  const viewLabel=IS_COACH&&viewingAthleteId?`Viewing: ${activeName}`:'My Profile';
-  h+=`<div class="sl">${viewLabel}</div>`;
-  if(IS_COACH&&viewingAthleteId){
-    h+=`<button class="btn-sm" style="background:var(--bg);border:0.5px solid var(--br);margin-bottom:12px" onclick="clearViewingAthlete()">← Back to roster</button>`;
-  }
-  h+=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${activeName}</div><div class="ps">${IS_COACH&&viewingAthleteId?'Athlete · STANDARDS':'Athlete · STANDARDS'}</div></div><div class="sc">${tot} / 40</div></div>
-  <div class="sl">Movement Standards${IS_COACH&&viewingAthleteId?' — tap to adjust levels':' — tap to see exercises'}</div>
-  <div class="pg">`;
-
+  // Own profile
+  h+=`<div class="sl">${IS_COACH?'Your profile':'Movement Standards — tap to see your exercises'}</div>`;
+  h+=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`;
+  if(!IS_COACH)h+=`<div class="sl">Movement Standards — tap a pattern</div>`;
+  h+=`<div class="pg">`;
   PATS.forEach(pid=>{
-    const lv=activeAP[pid]||0,col=LC[lv],bg=LL[lv];
-    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
     h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
       <div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div>
       <div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div>
       <div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div>
-      ${IS_COACH&&viewingAthleteId?`<div class="level-controls" onclick="event.stopPropagation()">
-        <button class="btn-level" onclick="setLevel('${activeId}','${pid}',${lv-1})" ${lv<=0?'disabled':''}>−</button>
-        <span class="level-val">Level ${lv}</span>
-        <button class="btn-level" onclick="setLevel('${activeId}','${pid}',${lv+1})" ${lv>=5?'disabled':''}>+</button>
-      </div>`:''}
     </div>`;
   });
   h+=`</div>`;
-  if(selPat&&(!IS_COACH||!viewingAthleteId))h+=rDetail(selPat,activeAP);
+  if(selPat)h+=rDetail(selPat);
   document.getElementById('v-profile').innerHTML=h;
 }
 
-function selectAthlete(id){
-  selectedAthleteId=id;
-  viewingAthleteId=id;
-  selPat=null;
-  rProfile();
-  // Scroll to athlete profile
-  setTimeout(()=>{const el=document.querySelector('.pg');if(el)el.scrollIntoView({behavior:'smooth',block:'start'})},50);
-}
-function clearViewingAthlete(){viewingAthleteId=null;selectedAthleteId=null;selPat=null;rProfile();}
-
-function rDetail(pid,activeAP){
-  const lv=activeAP[pid]||0;
+function rDetail(pid){
+  const lv=AP[pid]||0;
   if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
   const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
   const std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
@@ -513,16 +539,16 @@ function rDetail(pid,activeAP){
   ${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}
   ${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
 }
-function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat&&(!IS_COACH||!viewingAthleteId))setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
+function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
 function cD(){selPat=null;rProfile()}
 
 // ── PROGRAMME ENGINE ──
-function getSetTargets(activeAP){
-  const ranked=[...PATS].sort((a,b)=>(activeAP[a]||0)-(activeAP[b]||0));
+function getSetTargets(){
+  const ranked=[...PATS].sort((a,b)=>(AP[a]||0)-(AP[b]||0));
   const t={};ranked.forEach((p,i)=>{t[p]=i<2?20:i<6?15:10});return t;
 }
-function getExercise(pid,type,activeAP){
-  const lv=activeAP[pid]||0;if(lv===0)return null;
+function getExercise(pid,type){
+  const lv=AP[pid]||0;if(lv===0)return null;
   return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type)||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
 }
 function repStr(intent,sets,week){
@@ -540,8 +566,8 @@ function suggestedLoad(exId,intent){
   if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
   return load;
 }
-function buildProgramme(activeAP){
-  const setTargets=getSetTargets(activeAP),plans=DAY_PLANS[pDays],circuitMap={};
+function buildProgramme(){
+  const setTargets=getSetTargets(),plans=DAY_PLANS[pDays],circuitMap={};
   CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
   const patAppearances={};PATS.forEach(p=>{patAppearances[p]=0});
   plans.forEach(dc=>dc.forEach(cid=>{const t=circuitMap[cid];if(t)t.pats.forEach(p=>{patAppearances[p]++})}));
@@ -549,7 +575,7 @@ function buildProgramme(activeAP){
     label:`Day ${di+1}`,
     circuits:dayCircuits.map((cid,ci)=>{
       const tmpl=circuitMap[cid];if(!tmpl)return null;
-      const pwl=tmpl.pats.map(p=>({pid:p,lv:activeAP[p]||0}));
+      const pwl=tmpl.pats.map(p=>({pid:p,lv:AP[p]||0}));
       pwl.sort((a,b)=>a.lv-b.lv);
       const types=['Main','Bridge','Limiter'],ta={};
       pwl.forEach((p,i)=>{ta[p.pid]=types[Math.min(i,2)]});
@@ -564,10 +590,10 @@ function buildProgramme(activeAP){
         const setSplit={Main:mainSets,Bridge:bridgeSets,Limiter:limiterSets};
         const type=ta[pid];
         if(type==='Main'){
-          const ex=getExercise(pid,'Main',activeAP);
+          const ex=getExercise(pid,'Main');
           exList.unshift({pid,type:'Main',ex,sets:mainSets});
         } else {
-          const ex=getExercise(pid,type,activeAP)||getExercise(pid,'Bridge',activeAP);
+          const ex=getExercise(pid,type)||getExercise(pid,'Bridge');
           exList.push({pid,type,ex,sets:setSplit[type]||2});
         }
       });
@@ -577,14 +603,13 @@ function buildProgramme(activeAP){
 }
 
 function rProg(){
-  const activeAP=getActiveAP();
-  const hasLvl=PATS.some(p=>(activeAP[p]||0)>0);
+  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
   const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
   let h=`<div class="week-bar"><div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div><div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div></div>
   <div class="sl">Training days</div><div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
   <div class="sl">Your programme</div>`;
-  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet.</div>`;document.getElementById('v-programme').innerHTML=h;return}
-  buildProgramme(activeAP).forEach((day,di)=>{
+  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;document.getElementById('v-programme').innerHTML=h;return}
+  buildProgramme().forEach((day,di)=>{
     const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
     h+=`<div class="day-wrap"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalDaySets} sets</span></div>`;
     day.circuits.forEach((circuit,ci)=>{
@@ -593,7 +618,7 @@ function rProg(){
       circuit.exercises.forEach((item,xi)=>{
         const slot=`${circuit.letter}${xi+1}`,ex=item.ex,intent=ex?.intent||'Force';
         const rs=repStr(intent,item.sets,curWeek),tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
-        const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(activeAP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
+        const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
         const sug=ex?.id?suggestedLoad(ex.id,intent):null;
         let setRows='';
         for(let s=1;s<=rs.sets;s++){
@@ -601,7 +626,7 @@ function rProg(){
           const logged=!!prev,uid=`${ck}-${ex?.id||item.pid}-${s}`;
           setRows+=`<div class="set-row"><span class="set-num">Set ${s}</span><input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/><input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/><button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button></div>`;
         }
-        h+=`<div class="cx"><div class="cx-top"><span class="cx-slot">${slot}</span><span class="cx-name">${exName}</span><span class="cx-badge ${tagCls}">${item.type}</span></div><div class="cx-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST[item.type]||'60s'} · ${PL[item.pid]} L${activeAP[item.pid]||0}</div>${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong></div>`:''}<div class="set-logger">${setRows}</div></div>`;
+        h+=`<div class="cx"><div class="cx-top"><span class="cx-slot">${slot}</span><span class="cx-name">${exName}</span><span class="cx-badge ${tagCls}">${item.type}</span></div><div class="cx-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST[item.type]||'60s'} · ${PL[item.pid]} L${AP[item.pid]||0}</div>${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong></div>`:''}<div class="set-logger">${setRows}</div></div>`;
       });
       h+=`</div></div>`;
     });
