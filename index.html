@@ -651,27 +651,50 @@ async function initApp(){
     await load();
   }
 }
-initApp();
+// ── SESSION MANAGEMENT ──
+async function initApp(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(session?.user){
+    await startSession(session.user);
+  }
+}
 
-// Handle sign in / sign out events
+async function startSession(user){
+  CU=user;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
+  await load();
+}
+
+function endSession(){
+  CU=null;
+  STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('am').textContent='';
+}
+
 sb.auth.onAuthStateChange(async(ev,sess)=>{
-  if(sess?.user){
+  if(ev==='SIGNED_IN'&&sess?.user){
+    await startSession(sess.user);
+  } else if(ev==='SIGNED_OUT'){
+    endSession();
+  } else if(ev==='TOKEN_REFRESHED'&&sess?.user){
     CU=sess.user;
-    showApp();
-    if(ev==='SIGNED_IN'||ev==='TOKEN_REFRESHED')await load();
-  } else {
-    CU=null;
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('app').style.display='none';
   }
 });
 
-// Reload data when user comes back to the tab
+async function signOut(){
+  const{error}=await sb.auth.signOut();
+  if(error)console.error('Sign out error:',error);
+  endSession();
+}
+
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'&&CU){
     await load();
   }
 });
-</script>
-</body>
-</html>
+
+initApp();
