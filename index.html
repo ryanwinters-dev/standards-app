@@ -511,48 +511,49 @@ document.addEventListener('visibilitychange',async()=>{if(document.visibilitySta
 // ── LOAD ──
 async function load(){
   try{
-    // Use maybeSingle() so missing row returns null instead of throwing
-    const{data:prof,error:profErr}=await sb.from('profiles').select('role').eq('id',CU.id).maybeSingle();
-    IS_COACH=prof?.role==='coach';
+    // Read role from JWT app_metadata — instant, no database lookup needed
+    IS_COACH=CU.app_metadata?.role==='coach';
     document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
     document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
 
-    const queries=[
-      sb.from('standards').select('*').order('pattern_id').order('level'),
-      sb.from('exercises').select('*'),
-      sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id),
-      sb.from('athlete_profiles').select('*,profiles(full_name,email)'),
-      sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}),
-      sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}),
-      sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30),
-    ];
+    // Show loading state immediately
+    ['home','workout','profile','history','leaderboard'].forEach(t=>{
+      document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
+    });
+
+    // Run each query independently so one failure doesn't kill everything
+    const safe=async(q)=>{try{const r=await q;return r.data||[];}catch(e){console.warn('Query failed:',e);return[];}};
+
+    STD=await safe(sb.from('standards').select('*').order('pattern_id').order('level'));
+    EX=await safe(sb.from('exercises').select('*'));
+    const apRows=await safe(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id));
+    AP={};apRows.forEach(r=>{AP[r.pattern_id]=r.current_level});
+    AAP=await safe(sb.from('athlete_profiles').select('*,profiles(full_name,email)'));
+    LOGS=await safe(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false}));
+    SETS=await safe(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}));
+    CHECKINS=await safe(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30));
+
     if(IS_COACH){
-      queries.push(sb.from('athlete_profiles').select('*,profiles(full_name,email,role)'));
-      queries.push(sb.from('assessments').select('*,profiles(full_name)').is('passed',null).order('assessed_at',{ascending:false}));
-      queries.push(sb.from('workout_sets').select('*,profiles(full_name)').order('logged_at',{ascending:false}).limit(200));
-    }
-    const results=await Promise.all(queries);
-    STD=results[0].data||[];EX=results[1].data||[];
-    AP={};(results[2].data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
-    AAP=results[3].data||[];LOGS=results[4].data||[];SETS=results[5].data||[];
-    CHECKINS=results[6].data||[];
-    if(IS_COACH){
+      // Load all athletes from profiles table — catches users with no levels yet
+      const allProfiles=await safe(sb.from('profiles').select('*').neq('id',CU.id));
+      const allAP=await safe(sb.from('athlete_profiles').select('*'));
       const am={};
-      (results[7].data||[]).forEach(r=>{
-        if(r.profiles?.role==='coach')return;
-        const id=r.athlete_id;
-        if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',email:r.profiles?.email||'',scores:{}};
-        am[id].scores[r.pattern_id]=r.current_level;
+      // Start from profiles so athletes with no levels still appear
+      allProfiles.forEach(p=>{
+        if(p.role==='coach')return;
+        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',email:p.email||'',scores:{}};
+      });
+      // Merge in their scores
+      allAP.forEach(r=>{
+        if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;
       });
       ALL_ATHLETES=Object.values(am);
-      ALL_PENDING=results[8].data||[];
-      // Group sets by athlete
+      ALL_PENDING=await safe(sb.from('assessments').select('*,profiles(full_name)').is('passed',null).order('assessed_at',{ascending:false}));
+      const allSets=await safe(sb.from('workout_sets').select('*').order('logged_at',{ascending:false}).limit(200));
       ALL_CLIENT_SETS={};
-      (results[9].data||[]).forEach(s=>{
-        if(!ALL_CLIENT_SETS[s.athlete_id])ALL_CLIENT_SETS[s.athlete_id]=[];
-        ALL_CLIENT_SETS[s.athlete_id].push(s);
-      });
+      allSets.forEach(s=>{if(!ALL_CLIENT_SETS[s.athlete_id])ALL_CLIENT_SETS[s.athlete_id]=[];ALL_CLIENT_SETS[s.athlete_id].push(s);});
     }
+
     rHome();rWorkout();rProfile();rHistory();rLB();
     if(IS_COACH)rCoach();
   }catch(err){
