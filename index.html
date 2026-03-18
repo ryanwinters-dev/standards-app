@@ -7,13 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;
-      --l1:#1A3A2A;--l2:#1D6B45;--l3:#1D9E75;--l4:#5DCAA5;--l5:#3DBFA0;
-      --l1b:#E8F2EC;--l2b:#D4EDE1;--l3b:#C0E8D4;--l4b:#A8DFC8;--l5b:#8FD4BC;
-      --dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;
-      --fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
-    }
+    :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--l1:#1A3A2A;--l2:#1D6B45;--l3:#1D9E75;--l4:#5DCAA5;--l5:#3DBFA0;--l1b:#E8F2EC;--l2b:#D4EDE1;--l3b:#C0E8D4;--l4b:#A8DFC8;--l5b:#8FD4BC;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
     body{font-family:var(--fn);background:var(--bg);color:var(--dk);min-height:100vh}
     #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
     .auth-card{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
@@ -133,11 +127,8 @@
     .tf{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:18px;margin-bottom:16px}
     .tft{font-size:14px;font-weight:600;margin-bottom:14px}
     .tpend{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
-    .tpl{flex:1}
-    .tpn{font-size:13px;font-weight:600}
-    .tps{font-size:12px;color:var(--mt);margin-top:2px}
-    .tpr{text-align:right}
-    .td2{font-size:11px;color:var(--mt)}
+    .tpl{flex:1}.tpn{font-size:13px;font-weight:600}.tps{font-size:12px;color:var(--mt);margin-top:2px}
+    .tpr{text-align:right}.td2{font-size:11px;color:var(--mt)}
     .sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
     .sp{background:#F0A500}.spass{background:var(--gm)}.sfail{background:#c0392b}
     .lbf{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
@@ -148,19 +139,13 @@
     .lbrk{font-size:18px;font-weight:700;width:26px;text-align:center;flex-shrink:0}
     .r1{color:#B8860B}.r2{color:#888}.r3{color:#8B4513}
     .lbav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
-    .lbi{flex:1}
-    .lbn{font-size:13px;font-weight:600}
-    .lbns{font-size:12px;color:var(--mt)}
-    .lbs{text-align:right}
-    .lbsn{font-size:20px;font-weight:700;color:var(--gm);line-height:1}
-    .lbsd{font-size:11px;color:var(--mt)}
-    .lbmb{display:flex;gap:2px;margin-top:4px}
-    .lbmbs{width:8px;height:8px;border-radius:2px}
+    .lbi{flex:1}.lbn{font-size:13px;font-weight:600}.lbns{font-size:12px;color:var(--mt)}
+    .lbs{text-align:right}.lbsn{font-size:20px;font-weight:700;color:var(--gm);line-height:1}.lbsd{font-size:11px;color:var(--mt)}
+    .lbmb{display:flex;gap:2px;margin-top:4px}.lbmbs{width:8px;height:8px;border-radius:2px}
     @media(max-width:420px){.pg{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
   </style>
 </head>
 <body>
-
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">STAND<span>ARDS</span></div>
@@ -215,6 +200,7 @@ const sb=createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjemZhbXJqZHdiZWVqb3hoeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODAzNjEsImV4cCI6MjA4OTM1NjM2MX0.trUIKdNicHPRDmleAYoF3nAg8unqQrnQCjKTPB63bI0'
 );
 
+// ── STATE ──
 let CU=null,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[];
 let selPat=null,lbF='all',pDays=3,curWeek=1,openCircuits={};
 
@@ -237,360 +223,13 @@ const CIRCUIT_TEMPLATES=[
   {id:'pull_core',pats:['HPull','Core'],name:'Pull & Core'},
   {id:'carry_core',pats:['Carry','Core'],name:'Carry & Brace'},
 ];
-
 const DAY_PLANS={
-  3:[
-    ['horiz','hinge_pull','squat_carry'],
-    ['vert','hinge_core','pull_core'],
-    ['horiz','squat_carry','carry_core'],
-  ],
-  4:[
-    ['horiz','squat_carry','hinge_core'],
-    ['vert','hinge_pull','pull_core'],
-    ['horiz','carry_core','squat_carry'],
-    ['vert','hinge_core','pull_core'],
-  ],
-  5:[
-    ['horiz','squat_carry','hinge_core'],
-    ['vert','hinge_pull','carry_core'],
-    ['horiz','pull_core','squat_carry'],
-    ['vert','hinge_core','hinge_pull'],
-    ['horiz','carry_core','pull_core'],
-  ],
+  3:[['horiz','hinge_pull','squat_carry'],['vert','hinge_core','pull_core'],['horiz','squat_carry','carry_core']],
+  4:[['horiz','squat_carry','hinge_core'],['vert','hinge_pull','pull_core'],['horiz','carry_core','squat_carry'],['vert','hinge_core','pull_core']],
+  5:[['horiz','squat_carry','hinge_core'],['vert','hinge_pull','carry_core'],['horiz','pull_core','squat_carry'],['vert','hinge_core','hinge_pull'],['horiz','carry_core','pull_core']],
 };
 
-function getSetTargets(){
-  const ranked=[...PATS].sort((a,b)=>(AP[a]||0)-(AP[b]||0));
-  const t={};
-  ranked.forEach((p,i)=>{t[p]=i<2?20:i<6?15:10});
-  return t;
-}
-
-function getExercise(pid,type){
-  const lv=AP[pid]||0;
-  if(lv===0)return null;
-  return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type)||
-         EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
-}
-
-function repStr(intent,sets,week){
-  const r=RR[intent]||RR.Control;
-  const wib=((week-1)%4)+1;
-  let lo=r.lo,hi=r.hi,s=sets;
-  if(wib===2)hi++;
-  if(wib===3)hi+=2;
-  if(wib===4)s=Math.max(2,s-1);
-  return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
-}
-
-function suggestedLoad(exId,intent){
-  if(!exId)return null;
-  const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
-  if(!prev.length||!prev[0].load_kg||!prev[0].reps_achieved)return null;
-  const last=prev[0];
-  const range=RR[intent]||RR.Control;
-  let load=last.load_kg;
-  if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
-  return load;
-}
-
-function buildProgramme(){
-  const setTargets=getSetTargets();
-  const plans=DAY_PLANS[pDays];
-  const circuitMap={};
-  CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
-  const patAppearances={};
-  PATS.forEach(p=>{patAppearances[p]=0});
-  plans.forEach(dc=>dc.forEach(cid=>{
-    const t=circuitMap[cid];
-    if(t)t.pats.forEach(p=>{patAppearances[p]++});
-  }));
-  return plans.map((dayCircuits,di)=>({
-    label:`Day ${di+1}`,
-    circuits:dayCircuits.map((cid,ci)=>{
-      const tmpl=circuitMap[cid];
-      if(!tmpl)return null;
-      const patsWithLevels=tmpl.pats.map(p=>({pid:p,lv:AP[p]||0}));
-      patsWithLevels.sort((a,b)=>a.lv-b.lv);
-      const types=['Main','Bridge','Limiter'];
-      const typeAssignment={};
-      patsWithLevels.forEach((p,i)=>{typeAssignment[p.pid]=types[Math.min(i,2)]});
-      const exList=[];
-      // Main first
-      patsWithLevels.forEach(({pid})=>{
-        if(typeAssignment[pid]==='Main'){
-          const ex=getExercise(pid,'Main');
-          const setsPerDay=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
-          exList.push({pid,type:'Main',ex,sets:setsPerDay});
-        }
-      });
-      // Then Bridge/Limiter
-      patsWithLevels.forEach(({pid})=>{
-        if(typeAssignment[pid]!=='Main'){
-          const t=typeAssignment[pid];
-          const ex=getExercise(pid,t)||getExercise(pid,'Bridge');
-          const setsPerDay=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
-          exList.push({pid,type:t,ex,sets:setsPerDay});
-        }
-      });
-      const totalSets=exList.reduce((s,e)=>s+e.sets,0);
-      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,totalSets};
-    }).filter(Boolean)
-  }));
-}
-
-function rProg(){
-  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
-  const wib=((curWeek-1)%4)+1;
-  const wlabels=['','Base','Build','Overreach','Deload'];
-  let h=`
-    <div class="week-bar">
-      <div>
-        <div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wlabels[wib]}</span></div>
-        <div class="week-sub">Block ${Math.ceil(curWeek/4)}</div>
-      </div>
-      <div class="week-nav">
-        <button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button>
-        <button class="wn-btn" onclick="changeWeek(1)">Next →</button>
-      </div>
-    </div>
-    <div class="sl">Training days</div>
-    <div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
-    <div class="sl">Your programme</div>`;
-  if(!hasLvl){
-    h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;
-    document.getElementById('v-programme').innerHTML=h;
-    return;
-  }
-  const days=buildProgramme();
-  days.forEach((day,di)=>{
-    const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
-    h+=`<div class="day-wrap"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalDaySets} sets</span></div>`;
-    day.circuits.forEach((circuit,ci)=>{
-      const ck=`d${di}c${ci}`;
-      const isOpen=!!openCircuits[ck];
-      h+=`<div class="circuit-wrap">
-        <div class="circuit-hdr" onclick="toggleCircuit('${ck}')">
-          <div class="circuit-letter">${circuit.letter}</div>
-          <span class="circuit-label">${circuit.name} circuit</span>
-          <span class="circuit-sets">${circuit.totalSets} sets</span>
-          <span class="circuit-arrow">${isOpen?'▲':'▼'}</span>
-        </div>
-        <div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
-      circuit.exercises.forEach((item,xi)=>{
-        const slot=`${circuit.letter}${xi+1}`;
-        const ex=item.ex;
-        const intent=ex?.intent||'Force';
-        const rs=repStr(intent,item.sets,curWeek);
-        const tempo=TM[intent]||'20X0';
-        const rest=REST[item.type]||'60s';
-        const tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
-        const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
-        const patLv=AP[item.pid]||0;
-        const sug=ex?.id?suggestedLoad(ex.id,intent):null;
-        let setRows='';
-        for(let s=1;s<=rs.sets;s++){
-          const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
-          const logged=!!prev;
-          const uid=`${ck}-${ex?.id||item.pid}-${s}`;
-          setRows+=`<div class="set-row">
-            <span class="set-num">Set ${s}</span>
-            <input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/>
-            <input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/>
-            <button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button>
-          </div>`;
-        }
-        h+=`<div class="cx">
-          <div class="cx-top">
-            <span class="cx-slot">${slot}</span>
-            <span class="cx-name">${exName}</span>
-            <span class="cx-badge ${tagCls}">${item.type}</span>
-          </div>
-          <div class="cx-meta">${rs.str} · ${tempo} · Rest ${rest} · ${PL[item.pid]} L${patLv}</div>
-          ${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}
-          ${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong> (based on last session)</div>`:''}
-          <div class="set-logger">${setRows}</div>
-        </div>`;
-      });
-      h+=`</div></div>`;
-    });
-    h+=`</div>`;
-  });
-  document.getElementById('v-programme').innerHTML=h;
-}
-
-function toggleCircuit(key){
-  openCircuits[key]=!openCircuits[key];
-  const body=document.getElementById('cb-'+key);
-  if(body)body.classList.toggle('open',!!openCircuits[key]);
-  const hdr=body?.previousElementSibling;
-  if(hdr){const arr=hdr.querySelector('.circuit-arrow');if(arr)arr.textContent=openCircuits[key]?'▲':'▼';}
-}
-function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};rProg()}
-function setPD(n){pDays=n;openCircuits={};rProg()}
-
-async function logSet(uid,exId,patId,setNum,repLo,repHi){
-  const rEl=document.getElementById('r-'+uid);
-  const lEl=document.getElementById('l-'+uid);
-  const reps=parseInt(rEl?.value);
-  const load=parseFloat(lEl?.value)||null;
-  if(!reps||reps<1){alert('Enter reps achieved.');return}
-  const{error}=await sb.from('workout_sets').insert({
-    athlete_id:CU.id,
-    exercise_id:exId?parseInt(exId):null,
-    pattern_id:patId,
-    session_date:new Date().toISOString().split('T')[0],
-    week_number:curWeek,
-    set_number:setNum,
-    reps_achieved:reps,
-    load_kg:load,
-    reps_target_low:repLo,
-    reps_target_high:repHi,
-  });
-  if(error){alert('Error: '+error.message);return}
-  [rEl,lEl].forEach(el=>{if(el){el.classList.add('done');el.disabled=true}});
-  const btn=document.querySelector(`[onclick="logSet('${uid}','${exId}','${patId}',${setNum},${repLo},${repHi})"]`);
-  if(btn){btn.textContent='✓';btn.classList.add('done');btn.disabled=true}
-  SETS.unshift({exercise_id:exId?parseInt(exId):null,pattern_id:patId,week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi,logged_at:new Date().toISOString()});
-}
-
-function rProfile(){
-  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0);
-  const init=gi(CU.user_metadata?.full_name||CU.email);
-  const nm=CU.user_metadata?.full_name||CU.email;
-  let h=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">Athlete · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>
-  <div class="sl">Movement Standards — tap to see your exercises</div><div class="pg">`;
-  PATS.forEach(pid=>{
-    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv];
-    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
-      <div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div>
-      <div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div>
-      <div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div>
-    </div>`;
-  });
-  h+=`</div>`;
-  if(selPat)h+=rDetail(selPat);
-  document.getElementById('v-profile').innerHTML=h;
-}
-
-function rDetail(pid){
-  const lv=AP[pid]||0;
-  if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
-  const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv);
-  const mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
-  const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-  const nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
-  function eb(x,tag,cls){
-    if(!x)return'';
-    const i=x.intent||'Control';
-    const r=RR[i];
-    return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`;
-  }
-  return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>
-  ${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}
-  ${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}
-  ${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}
-  </div>`;
-}
-function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
-function cD(){selPat=null;rProfile()}
-
-function rHistory(){
-  if(!SETS.length){document.getElementById('v-history').innerHTML=`<div class="empty"><div class="ei">📊</div>No sessions logged yet. Start logging sets in your Programme tab.</div>`;return}
-  const byDate={};
-  SETS.forEach(s=>{
-    const d=s.session_date||s.logged_at?.split('T')[0]||'Unknown';
-    if(!byDate[d])byDate[d]=[];
-    byDate[d].push(s);
-  });
-  let h=`<div class="sl">Session history</div>`;
-  Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30).forEach(([date,sets])=>{
-    const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    h+=`<div class="hist-card"><div class="hist-hdr"><span class="hist-title">Session — ${label}</span><span class="hist-count">${sets.length} sets</span></div>`;
-    const byEx={};
-    sets.forEach(s=>{
-      const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
-      if(!byEx[nm])byEx[nm]=[];
-      byEx[nm].push(s);
-    });
-    Object.entries(byEx).forEach(([nm,exSets])=>{
-      exSets.sort((a,b)=>a.set_number-b.set_number).forEach(s=>{
-        const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
-        const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
-        h+=`<div class="hist-row"><span class="hist-ex">${nm} · Set ${s.set_number}</span><span class="hist-res">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span></div>`;
-      });
-    });
-    h+=`</div>`;
-  });
-  document.getElementById('v-history').innerHTML=h;
-}
-
-function rTestLog(){
-  let h=`<div class="sl">Log a level test</div><div class="tf"><div class="tft">Record a test attempt</div>
-  <label>Movement pattern</label>
-  <select id="tpat" onchange="uTL()"><option value="">Select pattern…</option>${PATS.map(p=>`<option value="${p}">${PF[p]}</option>`).join('')}</select>
-  <label>Level attempted</label><select id="tlvl"><option value="">Select pattern first…</option></select>
-  <label>Date</label><input type="date" id="tdate" value="${new Date().toISOString().split('T')[0]}"/>
-  <label>Notes for coach (optional)</label><textarea id="tnotes" placeholder="How did it feel? Any observations…"></textarea>
-  <button class="btn btn-full btn-gm" onclick="subTest()">Submit for coach review</button>
-  <div class="msg" id="tm2"></div></div>`;
-  if(LOGS.length){
-    h+=`<div class="sl">Your test history</div>`;
-    LOGS.forEach(log=>{
-      const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested);
-      const sc=log.passed===true?'spass':log.passed===false?'sfail':'sp';
-      const sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review';
-      const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-      h+=`<div class="tpend"><div class="tpl"><div class="tpn">${PF[log.pattern_id]} — Level ${log.level_tested}</div><div class="tps">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:2px">"${log.notes}"</div>`:''}</div><div class="tpr"><div><span class="sdot ${sc}"></span><span style="font-size:12px;font-weight:500">${sl}</span></div><div class="td2">${dt}</div></div></div>`;
-    });
-  } else h+=`<div class="empty" style="padding:20px 0"><div class="ei">📝</div>No tests logged yet.</div>`;
-  document.getElementById('v-testlog').innerHTML=h;
-}
-function uTL(){
-  const pid=document.getElementById('tpat').value,sel=document.getElementById('tlvl');
-  if(!pid){sel.innerHTML='<option>Select pattern first…</option>';return}
-  sel.innerHTML=STD.filter(s=>s.pattern_id===pid).map(s=>`<option value="${s.level}"${s.level===(AP[pid]||0)+1?' selected':''}>Level ${s.level} — ${s.test_exercise} (${s.load_standard})</option>`).join('');
-}
-async function subTest(){
-  const pid=document.getElementById('tpat').value,lv=parseInt(document.getElementById('tlvl').value),dt=document.getElementById('tdate').value,nt=document.getElementById('tnotes').value.trim();
-  const me=document.getElementById('tm2');
-  if(!pid||!lv){me.textContent='Please select a pattern and level.';me.className='msg err';return}
-  me.textContent='Submitting…';me.className='msg';
-  const{error}=await sb.from('assessments').insert({athlete_id:CU.id,pattern_id:pid,level_tested:lv,passed:null,notes:nt||null,assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()});
-  if(error){me.textContent='Error: '+error.message;me.className='msg err';return}
-  me.textContent='Logged! Your coach will review it.';me.className='msg ok';
-  const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
-  LOGS=data||[];
-  setTimeout(()=>rTestLog(),1500);
-}
-
-function rLB(){
-  const am={};
-  AAP.forEach(r=>{const id=r.athlete_id;if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};am[id].scores[r.pattern_id]=r.current_level});
-  let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
-  const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
-  let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
-  if(!aths.length)h+=`<div class="empty"><div class="ei">🏆</div>No athletes on the board yet.</div>`;
-  else aths.forEach((a,i)=>{
-    const rc=i===0?'r1':i===1?'r2':i===2?'r3':'',me=a.id===CU.id,c=AVC[a.ci],init=gi(a.name);
-    let mb='';
-    if(lbF==='all'){mb=`<div class="lbmb">`;PATS.forEach(p=>{mb+=`<div class="lbmbs" style="background:${LC[a.scores[p]||0]}"></div>`});mb+=`</div>`}
-    h+=`<div class="lbr${me?' me':''}"><div class="lbrk ${rc}">${i+1}</div><div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div><div class="lbi"><div class="lbn">${a.name}${me?' <span style="font-size:11px;color:var(--gm)">(you)</span>':''}</div><div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>${mb}</div><div class="lbs"><div class="lbsn">${a.ds}</div><div class="lbsd">/ ${a.ms}</div></div></div>`;
-  });
-  document.getElementById('v-leaderboard').innerHTML=h;
-}
-function sLBF(f){lbF=f;rLB()}
-
-function showTab(t,btn){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  document.getElementById('v-'+t).classList.add('active');
-  btn.classList.add('active');
-}
-function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
-
-// AUTH
+// ── AUTH ──
 function switchTab(t){
   document.getElementById('lf').style.display=t==='login'?'block':'none';
   document.getElementById('sf').style.display=t==='signup'?'block':'none';
@@ -598,6 +237,7 @@ function switchTab(t){
   sm('','');
 }
 function sm(m,t){const e=document.getElementById('am');e.textContent=m;e.className='msg'+(t?' '+t:'')}
+
 async function signIn(){
   const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
   if(!e||!p)return sm('Please fill in all fields.','err');
@@ -605,6 +245,7 @@ async function signIn(){
   const{error}=await sb.auth.signInWithPassword({email:e,password:p});
   if(error)sm(error.message,'err');
 }
+
 async function signUp(){
   const n=document.getElementById('sn').value.trim(),e=document.getElementById('se').value.trim(),p=document.getElementById('sp2').value;
   if(!n||!e||!p)return sm('Please fill in all fields.','err');
@@ -615,6 +256,48 @@ async function signUp(){
   else sm('Account created! You can sign in now.','ok');
 }
 
+async function signOut(){
+  await sb.auth.signOut();
+  CU=null;STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('am').textContent='';
+}
+
+// ── SESSION ──
+function showApp(user){
+  CU=user;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
+}
+
+sb.auth.onAuthStateChange(async(ev,sess)=>{
+  if(ev==='SIGNED_IN'&&sess?.user){
+    showApp(sess.user);
+    await load();
+  } else if(ev==='SIGNED_OUT'){
+    CU=null;
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+});
+
+// Check for existing session on page load
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session?.user){
+    showApp(session.user);
+    await load();
+  }
+})();
+
+// Reload when tab regains focus
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState==='visible'&&CU)await load();
+});
+
+// ── DATA ──
 async function load(){
   try{
     const[s,e,a,aa,l,ws]=await Promise.all([
@@ -629,71 +312,215 @@ async function load(){
     AP={};(a.data||[]).forEach(r=>{AP[r.pattern_id]=r.current_level});
     AAP=aa.data||[];LOGS=l.data||[];SETS=ws.data||[];
     rProfile();rProg();rHistory();rTestLog();rLB();
-  } catch(err){
+  }catch(err){
     console.error('Load error:',err);
-    document.getElementById('v-profile').innerHTML=`<div class="empty"><div class="ei">⚠️</div>Error loading: ${err.message}<br><br><button class="btn btn-dk" onclick="load()" style="margin-top:12px">Retry</button></div>`;
+    document.getElementById('v-profile').innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}<br><br><button class="btn btn-dk" onclick="load()" style="margin-top:8px">Retry</button></div>`;
   }
 }
 
-function showApp(){
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
+// ── PROGRAMME ENGINE ──
+function getSetTargets(){
+  const ranked=[...PATS].sort((a,b)=>(AP[a]||0)-(AP[b]||0));
+  const t={};ranked.forEach((p,i)=>{t[p]=i<2?20:i<6?15:10});return t;
+}
+function getExercise(pid,type){
+  const lv=AP[pid]||0;if(lv===0)return null;
+  return EX.find(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type)||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
+}
+function repStr(intent,sets,week){
+  const r=RR[intent]||RR.Control,wib=((week-1)%4)+1;
+  let lo=r.lo,hi=r.hi,s=sets;
+  if(wib===2)hi++;if(wib===3)hi+=2;if(wib===4)s=Math.max(2,s-1);
+  return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
+}
+function suggestedLoad(exId,intent){
+  if(!exId)return null;
+  const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+  if(!prev.length||!prev[0].load_kg||!prev[0].reps_achieved)return null;
+  const last=prev[0],range=RR[intent]||RR.Control;
+  let load=last.load_kg;
+  if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
+  return load;
+}
+function buildProgramme(){
+  const setTargets=getSetTargets(),plans=DAY_PLANS[pDays],circuitMap={};
+  CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
+  const patAppearances={};PATS.forEach(p=>{patAppearances[p]=0});
+  plans.forEach(dc=>dc.forEach(cid=>{const t=circuitMap[cid];if(t)t.pats.forEach(p=>{patAppearances[p]++})}));
+  return plans.map((dayCircuits,di)=>({
+    label:`Day ${di+1}`,
+    circuits:dayCircuits.map((cid,ci)=>{
+      const tmpl=circuitMap[cid];if(!tmpl)return null;
+      const pwl=tmpl.pats.map(p=>({pid:p,lv:AP[p]||0}));
+      pwl.sort((a,b)=>a.lv-b.lv);
+      const types=['Main','Bridge','Limiter'],ta={};
+      pwl.forEach((p,i)=>{ta[p.pid]=types[Math.min(i,2)]});
+      const exList=[];
+      pwl.forEach(({pid})=>{
+        if(ta[pid]==='Main'){
+          const ex=getExercise(pid,'Main');
+          const spd=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
+          exList.push({pid,type:'Main',ex,sets:spd});
+        }
+      });
+      pwl.forEach(({pid})=>{
+        if(ta[pid]!=='Main'){
+          const t=ta[pid],ex=getExercise(pid,t)||getExercise(pid,'Bridge');
+          const spd=Math.max(2,Math.round((setTargets[pid]||15)/Math.max(1,patAppearances[pid])));
+          exList.push({pid,type:t,ex,sets:spd});
+        }
+      });
+      return{id:cid,letter:String.fromCharCode(65+ci),name:tmpl.name,exercises:exList,totalSets:exList.reduce((s,e)=>s+e.sets,0)};
+    }).filter(Boolean)
+  }));
 }
 
-// Check session immediately on page load
-async function initApp(){
-  const{data:{session}}=await sb.auth.getSession();
-  if(session?.user){
-    CU=session.user;
-    showApp();
-    await load();
-  }
+// ── RENDER PROGRAMME ──
+function rProg(){
+  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
+  const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
+  let h=`<div class="week-bar"><div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div><div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div></div>
+  <div class="sl">Training days</div><div class="ds">${[3,4,5].map(d=>`<button class="db${pDays===d?' act':''}" onclick="setPD(${d})">${d} days/week</button>`).join('')}</div>
+  <div class="sl">Your programme</div>`;
+  if(!hasLvl){h+=`<div class="empty"><div class="ei">📋</div>No levels set yet. Your programme will appear once your coach has assessed you.</div>`;document.getElementById('v-programme').innerHTML=h;return}
+  buildProgramme().forEach((day,di)=>{
+    const totalDaySets=day.circuits.reduce((s,c)=>s+c.totalSets,0);
+    h+=`<div class="day-wrap"><div class="day-hdr"><span class="day-title">${day.label}</span><span class="day-vol">${totalDaySets} sets</span></div>`;
+    day.circuits.forEach((circuit,ci)=>{
+      const ck=`d${di}c${ci}`,isOpen=!!openCircuits[ck];
+      h+=`<div class="circuit-wrap"><div class="circuit-hdr" onclick="toggleCircuit('${ck}')"><div class="circuit-letter">${circuit.letter}</div><span class="circuit-label">${circuit.name} circuit</span><span class="circuit-sets">${circuit.totalSets} sets</span><span class="circuit-arrow">${isOpen?'▲':'▼'}</span></div><div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">`;
+      circuit.exercises.forEach((item,xi)=>{
+        const slot=`${circuit.letter}${xi+1}`,ex=item.ex,intent=ex?.intent||'Force';
+        const rs=repStr(intent,item.sets,curWeek),tagCls=item.type==='Main'?'tm':item.type==='Bridge'?'tb':'tl2';
+        const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||`${PF[item.pid]} — not assessed`);
+        const sug=ex?.id?suggestedLoad(ex.id,intent):null;
+        let setRows='';
+        for(let s=1;s<=rs.sets;s++){
+          const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
+          const logged=!!prev,uid=`${ck}-${ex?.id||item.pid}-${s}`;
+          setRows+=`<div class="set-row"><span class="set-num">Set ${s}</span><input class="set-inp${logged?' done':''}" type="number" id="r-${uid}" placeholder="Reps" value="${logged?prev.reps_achieved:''}" min="1" max="50" ${logged?'disabled':''}/><input class="set-inp${logged?' done':''}" type="number" id="l-${uid}" placeholder="kg" value="${logged&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${logged?'disabled':''}/><button class="set-btn${logged?' done':''}" onclick="logSet('${uid}','${ex?.id||''}','${item.pid}',${s},${rs.lo},${rs.hi})" ${logged?'disabled':''}>${logged?'✓':'Log'}</button></div>`;
+        }
+        h+=`<div class="cx"><div class="cx-top"><span class="cx-slot">${slot}</span><span class="cx-name">${exName}</span><span class="cx-badge ${tagCls}">${item.type}</span></div><div class="cx-meta">${rs.str} · ${TM[intent]||'20X0'} · Rest ${REST[item.type]||'60s'} · ${PL[item.pid]} L${AP[item.pid]||0}</div>${ex?.coaching_cue?`<div class="cx-cue">"${ex.coaching_cue}"</div>`:''}${sug?`<div class="load-hint">Suggested: <strong>${sug}kg</strong></div>`:''}<div class="set-logger">${setRows}</div></div>`;
+      });
+      h+=`</div></div>`;
+    });
+    h+=`</div>`;
+  });
+  document.getElementById('v-programme').innerHTML=h;
 }
-// ── SESSION MANAGEMENT ──
-async function initApp(){
-  const{data:{session}}=await sb.auth.getSession();
-  if(session?.user){
-    await startSession(session.user);
-  }
+function toggleCircuit(key){
+  openCircuits[key]=!openCircuits[key];
+  const body=document.getElementById('cb-'+key);
+  if(body)body.classList.toggle('open',!!openCircuits[key]);
+  const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
+  if(arr)arr.textContent=openCircuits[key]?'▲':'▼';
+}
+function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};rProg()}
+function setPD(n){pDays=n;openCircuits={};rProg()}
+async function logSet(uid,exId,patId,setNum,repLo,repHi){
+  const rEl=document.getElementById('r-'+uid),lEl=document.getElementById('l-'+uid);
+  const reps=parseInt(rEl?.value),load=parseFloat(lEl?.value)||null;
+  if(!reps||reps<1){alert('Enter reps achieved.');return}
+  const{error}=await sb.from('workout_sets').insert({athlete_id:CU.id,exercise_id:exId?parseInt(exId):null,pattern_id:patId,session_date:new Date().toISOString().split('T')[0],week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi});
+  if(error){alert('Error: '+error.message);return}
+  [rEl,lEl].forEach(el=>{if(el){el.classList.add('done');el.disabled=true}});
+  const btn=document.querySelector(`[onclick="logSet('${uid}','${exId}','${patId}',${setNum},${repLo},${repHi})"]`);
+  if(btn){btn.textContent='✓';btn.classList.add('done');btn.disabled=true}
+  SETS.unshift({exercise_id:exId?parseInt(exId):null,pattern_id:patId,week_number:curWeek,set_number:setNum,reps_achieved:reps,load_kg:load,reps_target_low:repLo,reps_target_high:repHi,logged_at:new Date().toISOString()});
 }
 
-async function startSession(user){
-  CU=user;
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('tu').textContent=CU.user_metadata?.full_name||CU.email;
-  await load();
+// ── PROFILE ──
+function rProfile(){
+  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),init=gi(CU.user_metadata?.full_name||CU.email),nm=CU.user_metadata?.full_name||CU.email;
+  let h=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">Athlete · STANDARDS</div></div><div class="sc">${tot} / 40</div></div><div class="sl">Movement Standards — tap to see your exercises</div><div class="pg">`;
+  PATS.forEach(pid=>{
+    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')"><div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div><div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div><div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div></div>`;
+  });
+  h+=`</div>`;if(selPat)h+=rDetail(selPat);
+  document.getElementById('v-profile').innerHTML=h;
+}
+function rDetail(pid){
+  const lv=AP[pid]||0;
+  if(lv===0)return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]}</div><button class="dx" onclick="cD()">✕</button></div><div class="empty" style="padding:16px 0"><div class="ei">📋</div>Not yet assessed.</div></div>`;
+  const xs=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),mx=xs.find(e=>e.type==='Main'),bx=xs.find(e=>e.type==='Bridge'),lx=xs.find(e=>e.type==='Limiter');
+  const std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
+  function eb(x,tag,cls){if(!x)return'';const i=x.intent||'Control',r=RR[i];return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`}
+  return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}${nx?`<div class="ns"><strong>Next standard →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
+}
+function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
+function cD(){selPat=null;rProfile()}
+
+// ── HISTORY ──
+function rHistory(){
+  if(!SETS.length){document.getElementById('v-history').innerHTML=`<div class="empty"><div class="ei">📊</div>No sessions logged yet.</div>`;return}
+  const byDate={};
+  SETS.forEach(s=>{const d=s.session_date||s.logged_at?.split('T')[0]||'Unknown';if(!byDate[d])byDate[d]=[];byDate[d].push(s)});
+  let h=`<div class="sl">Session history</div>`;
+  Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30).forEach(([date,sets])=>{
+    const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    h+=`<div class="hist-card"><div class="hist-hdr"><span class="hist-title">Session — ${label}</span><span class="hist-count">${sets.length} sets</span></div>`;
+    const byEx={};
+    sets.forEach(s=>{const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';if(!byEx[nm])byEx[nm]=[];byEx[nm].push(s)});
+    Object.entries(byEx).forEach(([nm,exSets])=>{
+      exSets.sort((a,b)=>a.set_number-b.set_number).forEach(s=>{
+        const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high,loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
+        h+=`<div class="hist-row"><span class="hist-ex">${nm} · Set ${s.set_number}</span><span class="hist-res">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span></div>`;
+      });
+    });
+    h+=`</div>`;
+  });
+  document.getElementById('v-history').innerHTML=h;
 }
 
-function endSession(){
-  CU=null;
-  STD=[];EX=[];AP={};AAP=[];LOGS=[];SETS=[];
-  document.getElementById('auth-screen').style.display='flex';
-  document.getElementById('app').style.display='none';
-  document.getElementById('am').textContent='';
+// ── TEST LOG ──
+function rTestLog(){
+  let h=`<div class="sl">Log a level test</div><div class="tf"><div class="tft">Record a test attempt</div><label>Movement pattern</label><select id="tpat" onchange="uTL()"><option value="">Select pattern…</option>${PATS.map(p=>`<option value="${p}">${PF[p]}</option>`).join('')}</select><label>Level attempted</label><select id="tlvl"><option value="">Select pattern first…</option></select><label>Date</label><input type="date" id="tdate" value="${new Date().toISOString().split('T')[0]}"/><label>Notes for coach (optional)</label><textarea id="tnotes" placeholder="How did it feel? Any observations…"></textarea><button class="btn btn-full btn-gm" onclick="subTest()">Submit for coach review</button><div class="msg" id="tm2"></div></div>`;
+  if(LOGS.length){
+    h+=`<div class="sl">Your test history</div>`;
+    LOGS.forEach(log=>{
+      const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested),sc=log.passed===true?'spass':log.passed===false?'sfail':'sp',sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending review',dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      h+=`<div class="tpend"><div class="tpl"><div class="tpn">${PF[log.pattern_id]} — Level ${log.level_tested}</div><div class="tps">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:2px">"${log.notes}"</div>`:''}</div><div class="tpr"><div><span class="sdot ${sc}"></span><span style="font-size:12px;font-weight:500">${sl}</span></div><div class="td2">${dt}</div></div></div>`;
+    });
+  } else h+=`<div class="empty" style="padding:20px 0"><div class="ei">📝</div>No tests logged yet.</div>`;
+  document.getElementById('v-testlog').innerHTML=h;
+}
+function uTL(){
+  const pid=document.getElementById('tpat').value,sel=document.getElementById('tlvl');
+  if(!pid){sel.innerHTML='<option>Select pattern first…</option>';return}
+  sel.innerHTML=STD.filter(s=>s.pattern_id===pid).map(s=>`<option value="${s.level}"${s.level===(AP[pid]||0)+1?' selected':''}>Level ${s.level} — ${s.test_exercise} (${s.load_standard})</option>`).join('');
+}
+async function subTest(){
+  const pid=document.getElementById('tpat').value,lv=parseInt(document.getElementById('tlvl').value),dt=document.getElementById('tdate').value,nt=document.getElementById('tnotes').value.trim(),me=document.getElementById('tm2');
+  if(!pid||!lv){me.textContent='Please select a pattern and level.';me.className='msg err';return}
+  me.textContent='Submitting…';me.className='msg';
+  const{error}=await sb.from('assessments').insert({athlete_id:CU.id,pattern_id:pid,level_tested:lv,passed:null,notes:nt||null,assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()});
+  if(error){me.textContent='Error: '+error.message;me.className='msg err';return}
+  me.textContent='Logged! Your coach will review it.';me.className='msg ok';
+  const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
+  LOGS=data||[];setTimeout(()=>rTestLog(),1500);
 }
 
-sb.auth.onAuthStateChange(async(ev,sess)=>{
-  if(ev==='SIGNED_IN'&&sess?.user){
-    await startSession(sess.user);
-  } else if(ev==='SIGNED_OUT'){
-    endSession();
-  } else if(ev==='TOKEN_REFRESHED'&&sess?.user){
-    CU=sess.user;
-  }
-});
-
-async function signOut(){
-  const{error}=await sb.auth.signOut();
-  if(error)console.error('Sign out error:',error);
-  endSession();
+// ── LEADERBOARD ──
+function rLB(){
+  const am={};
+  AAP.forEach(r=>{const id=r.athlete_id;if(!am[id])am[id]={id,name:r.profiles?.full_name||r.profiles?.email||'Athlete',scores:{}};am[id].scores[r.pattern_id]=r.current_level});
+  let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
+  const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
+  let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
+  if(!aths.length)h+=`<div class="empty"><div class="ei">🏆</div>No athletes on the board yet.</div>`;
+  else aths.forEach((a,i)=>{
+    const rc=i===0?'r1':i===1?'r2':i===2?'r3':'',me=a.id===CU.id,c=AVC[a.ci],init=gi(a.name);
+    let mb='';if(lbF==='all'){mb=`<div class="lbmb">`;PATS.forEach(p=>{mb+=`<div class="lbmbs" style="background:${LC[a.scores[p]||0]}"></div>`});mb+=`</div>`}
+    h+=`<div class="lbr${me?' me':''}"><div class="lbrk ${rc}">${i+1}</div><div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div><div class="lbi"><div class="lbn">${a.name}${me?' <span style="font-size:11px;color:var(--gm)">(you)</span>':''}</div><div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>${mb}</div><div class="lbs"><div class="lbsn">${a.ds}</div><div class="lbsd">/ ${a.ms}</div></div></div>`;
+  });
+  document.getElementById('v-leaderboard').innerHTML=h;
 }
+function sLBF(f){lbF=f;rLB()}
 
-document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='visible'&&CU){
-    await load();
-  }
-});
-
-initApp();
+// ── TABS / UTILS ──
+function showTab(t,btn){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.getElementById('v-'+t).classList.add('active');btn.classList.add('active')}
+function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+</script>
+</body>
+</html>
