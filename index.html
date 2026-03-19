@@ -42,6 +42,7 @@
     .sl:first-child{margin-top:0}
     @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
     .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
     .ei{font-size:32px;margin-bottom:8px}
 
@@ -545,7 +546,7 @@ async function load(){
   document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
 
   // Show spinners
-  ['home','workout','profile','history','leaderboard'].forEach(t=>{
+  ['home','workout','profile','leaderboard'].forEach(t=>{
     document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
   });
 
