@@ -1173,12 +1173,14 @@ async function openClientPage(athleteId){
   document.getElementById('client-page').classList.add('active');
 
   // Fetch this client's data fresh — don't rely on preloaded ALL_PENDING
-  const[pendingRes,allTestsRes]=await Promise.all([
+  const[pendingRes,allTestsRes,checkinsRes]=await Promise.all([
     sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
     sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
+    sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
   ]);
   const clientPending=pendingRes.data||[];
   const allTests=allTestsRes.data||[];
+  const clientCheckins=checkinsRes.data||[];
   const clientSets=ALL_CLIENT_SETS[athleteId]||[];
 
   let h='';
@@ -1235,6 +1237,196 @@ async function openClientPage(athleteId){
     h+=`<div style="color:var(--mt);font-size:13px;padding:8px 0">No sessions logged yet.</div>`;
   }
   h+=`</div>`;
+
+  // ── CHECK-INS ──
+  if(clientCheckins.length){
+    const latest=clientCheckins[0];
+    const last7=clientCheckins.slice(0,7).reverse(); // oldest→newest for chart
+
+    // Snapshot
+    const latestDate=new Date(latest.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    h+=`<div class="cp-section"><div class="cp-section-title">Daily Check-Ins</div>`;
+    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:12px;font-weight:600;color:var(--mt)">LATEST — ${latestDate}</span>
+        <span style="font-size:11px;color:var(--mt)">${clientCheckins.length} entries</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:var(--dk)">${latest.weight?latest.weight+'kg':'—'}</div>
+          <div style="font-size:11px;color:var(--mt);margin-top:2px">Weight</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:${latest.hours_slept>=7?'var(--gm)':latest.hours_slept>=5?'var(--amber)':'var(--red)'}">${latest.hours_slept?latest.hours_slept+'h':'—'}</div>
+          <div style="font-size:11px;color:var(--mt);margin-top:2px">Sleep</div>
+        </div>
+      </div>`;
+
+    // 7-day sparkline chart
+    if(last7.length>1){
+      const maxW=Math.max(...last7.map(c=>c.weight||0).filter(Boolean))||100;
+      const minW=Math.min(...last7.map(c=>c.weight||0).filter(Boolean))||0;
+      const maxS=10,minS=0;
+      const W=280,H=60,pad=4;
+      const xStep=(W-pad*2)/(last7.length-1);
+
+      // Weight points (normalised)
+      const wPts=last7.map((c,i)=>{
+        const x=pad+i*xStep;
+        const range=maxW-minW||1;
+        const y=H-pad-((( c.weight||minW)-minW)/range)*(H-pad*2);
+        return`${x},${y}`;
+      }).join(' ');
+
+      // Sleep points (normalised 0-10h)
+      const sPts=last7.map((c,i)=>{
+        const x=pad+i*xStep;
+        const y=H-pad-((c.hours_slept||0)/10)*(H-pad*2);
+        return`${x},${y}`;
+      }).join(' ');
+
+      const dayLabels=last7.map(c=>new Date(c.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'}));
+
+      h+=`<div style="margin-bottom:8px">
+        <svg viewBox="0 0 ${W} ${H+16}" width="100%" style="display:block;overflow:visible">
+          ${last7.some(c=>c.weight)?`<polyline points="${wPts}" fill="none" stroke="var(--gm)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`:''}
+          ${last7.some(c=>c.hours_slept)?`<polyline points="${sPts}" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="4,2"/>`:''}
+          ${last7.map((c,i)=>{
+            const x=pad+i*xStep;
+            return`<text x="${x}" y="${H+14}" text-anchor="middle" font-size="9" fill="#aaa" font-family="-apple-system,sans-serif">${dayLabels[i].slice(0,2)}</text>`;
+          }).join('')}
+        </svg>
+        <div style="display:flex;gap:12px;margin-top:2px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mt)"><div style="width:16px;height:2px;background:var(--gm);border-radius:1px"></div>Weight</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mt)"><div style="width:16px;height:2px;background:var(--amber);border-radius:1px;opacity:.8"></div>Sleep</div>
+        </div>
+      </div>`;
+    }
+
+    // Dropdown for all entries
+    h+=`<div style="border-top:0.5px solid var(--br);margin:0 -14px;padding:10px 14px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleSess('ci-all-${athleteId}')">
+        <span style="font-size:12px;font-weight:600;color:var(--md)">All entries</span>
+        <span id="arr-ci-all-${athleteId}" style="font-size:11px;color:var(--mt)">▼</span>
+      </div>
+      <div id="ci-all-${athleteId}" style="display:none;margin-top:10px">`;
+    clientCheckins.forEach(ci=>{
+      const dt=new Date(ci.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+      const metrics=[];
+      if(ci.weight)metrics.push(`⚖ ${ci.weight}kg`);
+      if(ci.hours_slept)metrics.push(`😴 ${ci.hours_slept}h`);
+      if(ci.energy)metrics.push(`⚡ ${ci.energy}/10`);
+      if(ci.stress)metrics.push(`🧠 ${ci.stress}/10`);
+      if(ci.resting_hr)metrics.push(`❤ ${ci.resting_hr}bpm`);
+      if(ci.calories)metrics.push(`🍽 ${ci.calories}kcal`);
+      if(ci.protein_g)metrics.push(`💪 ${ci.protein_g}g protein`);
+      if(ci.water_litres)metrics.push(`💧 ${ci.water_litres}L`);
+      if(ci.steps)metrics.push(`👟 ${ci.steps.toLocaleString()}`);
+      if(ci.alcohol_consumed)metrics.push(`🍺 Alcohol`);
+      h+=`<div style="padding:8px 0;border-bottom:0.5px solid var(--br)">
+        <div style="font-size:12px;font-weight:600;color:var(--md);margin-bottom:4px">${dt}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${metrics.map(m=>`<span style="font-size:11px;background:var(--bg);padding:2px 7px;border-radius:99px;color:var(--md)">${m}</span>`).join('')}</div>
+      </div>`;
+    });
+    h+=`</div></div></div></div>`;
+  }
+
+  // ── CHECK-IN SUMMARY ──
+  if(clientCheckins.length){
+    const latest=clientCheckins[0];
+    const last7=clientCheckins.slice(0,7).reverse(); // oldest first for chart
+
+    // Sparkline SVG for weight and sleep
+    const wVals=last7.map(c=>c.weight||null);
+    const sVals=last7.map(c=>c.hours_slept||null);
+    const hasWeight=wVals.some(v=>v!==null);
+    const hasSleep=sVals.some(v=>v!==null);
+
+    function sparkline(vals,color){
+      const valid=vals.filter(v=>v!==null);
+      if(valid.length<2)return'';
+      const min=Math.min(...valid),max=Math.max(...valid);
+      const range=max-min||1;
+      const w=260,h=40,pad=4;
+      const pts=vals.map((v,i)=>{
+        if(v===null)return null;
+        const x=pad+(i/(vals.length-1))*(w-pad*2);
+        const y=h-pad-((v-min)/range)*(h-pad*2);
+        return`${x},${y}`;
+      }).filter(Boolean);
+      const path=pts.map((p,i)=>i===0?`M${p}`:`L${p}`).join(' ');
+      return`<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+
+    function dayLabel(dateStr){
+      return new Date(dateStr+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'});
+    }
+
+    h+=`<div class="cp-section"><div class="cp-section-title">Check-In</div>`;
+
+    // Snapshot row
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px">
+        <div style="font-size:11px;color:var(--mt);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Latest Weight</div>
+        <div style="font-size:22px;font-weight:700;color:var(--dk)">${latest.weight?latest.weight+'kg':'—'}</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:2px">${new Date(latest.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+      </div>
+      <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px">
+        <div style="font-size:11px;color:var(--mt);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Last Sleep</div>
+        <div style="font-size:22px;font-weight:700;color:var(--dk)">${latest.hours_slept?latest.hours_slept+'h':'—'}</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:2px">${latest.energy?`Energy: ${latest.energy}/10`:'—'}</div>
+      </div>
+    </div>`;
+
+    // 7-day sparkline chart
+    if(last7.length>=2&&(hasWeight||hasSleep)){
+      const dayLabels=last7.map(c=>dayLabel(c.checkin_date));
+      h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">7-Day Trend</div>
+        <svg viewBox="0 0 268 48" width="100%" style="display:block;overflow:visible">
+          ${hasWeight?sparkline(wVals,'#1D9E75'):''}
+          ${hasSleep?sparkline(sVals,'#5DCAA5'):''}
+          ${last7.map((_,i)=>{
+            const x=4+(i/(last7.length-1))*260;
+            return`<text x="${x}" y="47" text-anchor="middle" font-size="8" font-family="-apple-system,sans-serif" fill="#888">${dayLabels[i]}</text>`;
+          }).join('')}
+        </svg>
+        <div style="display:flex;gap:12px;margin-top:4px">
+          ${hasWeight?`<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mt)"><div style="width:10px;height:2px;background:#1D9E75;border-radius:1px"></div>Weight</div>`:''}
+          ${hasSleep?`<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mt)"><div style="width:10px;height:2px;background:#5DCAA5;border-radius:1px"></div>Sleep (h)</div>`:''}
+        </div>
+      </div>`;
+    }
+
+    // All entries dropdown
+    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleSess('ci-all-${athleteId.slice(0,8)}')">
+        <span style="font-size:13px;font-weight:600">All entries (${clientCheckins.length})</span>
+        <span id="arr-ci-all-${athleteId.slice(0,8)}" style="font-size:12px;color:var(--mt)">▼</span>
+      </div>
+      <div id="ci-all-${athleteId.slice(0,8)}" style="display:none">`;
+    clientCheckins.forEach(c=>{
+      const dt=new Date(c.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      const metrics=[];
+      if(c.weight)metrics.push(`Weight: ${c.weight}kg`);
+      if(c.hours_slept)metrics.push(`Sleep: ${c.hours_slept}h`);
+      if(c.energy)metrics.push(`Energy: ${c.energy}/10`);
+      if(c.stress)metrics.push(`Stress: ${c.stress}/10`);
+      if(c.resting_hr)metrics.push(`HR: ${c.resting_hr}bpm`);
+      if(c.calories)metrics.push(`Kcal: ${c.calories}`);
+      if(c.protein_g)metrics.push(`Protein: ${c.protein_g}g`);
+      if(c.water_litres)metrics.push(`Water: ${c.water_litres}L`);
+      if(c.steps)metrics.push(`Steps: ${c.steps.toLocaleString()}`);
+      if(c.alcohol_consumed)metrics.push(`Alcohol: Yes`);
+      h+=`<div style="padding:10px 14px;border-top:0.5px solid var(--br)">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px">${dt}</div>
+        <div style="font-size:12px;color:var(--mt);line-height:1.7">${metrics.join(' · ')||'No data'}</div>
+      </div>`;
+    });
+    h+=`</div></div></div>`;
+  } else {
+    h+=`<div class="cp-section"><div class="cp-section-title">Check-In</div><div style="color:var(--mt);font-size:13px;padding:8px 0">No check-ins logged yet.</div></div>`;
+  }
 
   // ── TEST HISTORY ──
   if(allTests.length){
