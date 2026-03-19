@@ -1296,26 +1296,6 @@ async function judgeTest(assessmentId,athleteId,patId,level,pass){
 }
 
 // ── HISTORY ──
-function rHistory(){
-  if(!SETS.length){document.getElementById('v-history').innerHTML=`<div class="empty"><div class="ei">📊</div>No sessions logged yet.</div>`;return}
-  const byDate={};
-  SETS.forEach(s=>{const d=s.session_date||s.logged_at?.split('T')[0]||'Unknown';if(!byDate[d])byDate[d]=[];byDate[d].push(s)});
-  let h=`<div class="sl">Session history</div>`;
-  Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30).forEach(([date,sets])=>{
-    const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    h+=`<div class="hist-card"><div class="hist-hdr"><span class="hist-title">Session — ${label}</span><span class="hist-count">${sets.length} sets</span></div>`;
-    const byEx={};
-    sets.forEach(s=>{const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';if(!byEx[nm])byEx[nm]=[];byEx[nm].push(s)});
-    Object.entries(byEx).forEach(([nm,exSets])=>{
-      exSets.sort((a,b)=>a.set_number-b.set_number).forEach(s=>{
-        const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high,loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
-        h+=`<div class="hist-row"><span class="hist-ex">${nm} · Set ${s.set_number}</span><span class="hist-res">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span></div>`;
-      });
-    });
-    h+=`</div>`;
-  });
-  document.getElementById('v-history').innerHTML=h;
-}
 
 // ── LEADERBOARD ──
 function rLB(){
