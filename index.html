@@ -1118,17 +1118,30 @@ function rCoach(){
 }
 
 // ── CLIENT PROFILE PAGE ──
-function openClientPage(athleteId){
+async function openClientPage(athleteId){
   const a=ALL_ATHLETES.find(x=>x.id===athleteId);
   if(!a)return;
   const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
   document.getElementById('cp-name').textContent=a.name;
   document.getElementById('cp-score').textContent=`${total} / 40`;
+  document.getElementById('cp-body').innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
+  document.getElementById('client-page').classList.add('active');
 
+  // Fetch this client's data fresh — don't rely on preloaded ALL_PENDING
+  const[pendingRes,allTestsRes]=await Promise.all([
+    sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
+    sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
+  ]);
+  const clientPending=pendingRes.data||[];
+  const allTests=allTestsRes.data||[];
   const clientSets=ALL_CLIENT_SETS[athleteId]||[];
-  const clientPending=ALL_PENDING.filter(p=>p.athlete_id===athleteId);
 
   let h='';
+
+  // ── PENDING COUNT BANNER ──
+  if(clientPending.length>0){
+    h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting your review</div>`;
+  }
 
   // ── STANDARDS + PENDING TESTS ──
   h+=`<div class="cp-section"><div class="cp-section-title">Movement Standards</div><div class="cp-pat-grid">`;
@@ -1146,12 +1159,12 @@ function openClientPage(athleteId){
       <div class="cp-pat-ex">${std?std.test_exercise:'Not assessed'}</div>
       ${pending?`<div class="cp-pending">
         <div class="cp-pending-label">⏳ L${pending.level_tested} test pending</div>
-        <div class="cp-pending-ex">${pendingStd?.test_exercise||'—'}</div>
+        <div class="cp-pending-ex">${pendingStd?.test_exercise||'—'} · ${pendingStd?.load_standard||'—'}</div>
         ${pending.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:5px">"${pending.notes}"</div>`:''}
-        ${pending.video_url?`<video style="width:100%;border-radius:4px;margin-bottom:6px;max-height:140px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
+        ${pending.video_url?`<video style="width:100%;border-radius:4px;margin-bottom:6px;max-height:160px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
         <div class="cp-pending-actions">
-          <button class="btn-pass" style="flex:1;font-size:11px;padding:5px" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},true)">✓ Pass</button>
-          <button class="btn-fail" style="flex:1;font-size:11px;padding:5px" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},false)">✕ Fail</button>
+          <button class="btn-pass" style="flex:1;font-size:12px;padding:6px" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},true)">✓ Pass L${pending.level_tested}</button>
+          <button class="btn-fail" style="flex:1;font-size:12px;padding:6px" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},false)">✕ Fail</button>
         </div>
       </div>`:''}
     </div>`;
@@ -1166,8 +1179,6 @@ function openClientPage(athleteId){
       const d=s.session_date||s.logged_at?.split('T')[0]||'?';
       if(!byDate[d])byDate[d]=[];byDate[d].push(s);
     });
-    const card=document.createElement('div');
-    card.style.cssText='background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden';
     let wh='';
     Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8).forEach(([date,sets])=>{
       const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
@@ -1181,28 +1192,22 @@ function openClientPage(athleteId){
   h+=`</div>`;
 
   // ── TEST HISTORY ──
-  // Load all assessments for this athlete
-  sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}).then(({data})=>{
-    const tests=data||[];
-    if(!tests.length)return;
-    let th=`<div class="cp-section"><div class="cp-section-title">Test History</div><div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:0 14px">`;
-    tests.forEach(t=>{
+  if(allTests.length){
+    h+=`<div class="cp-section"><div class="cp-section-title">Test History</div><div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:0 14px">`;
+    allTests.forEach(t=>{
       const std=STD.find(s=>s.pattern_id===t.pattern_id&&s.level===t.level_tested);
       const sc=t.passed===true?'var(--gm)':t.passed===false?'var(--red)':'var(--amber)';
       const sl=t.passed===true?'Passed':t.passed===false?'Failed':'Pending';
       const dt=new Date(t.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-      th+=`<div class="cp-test-row">
+      h+=`<div class="cp-test-row">
         <div><div style="font-weight:500">${PF[t.pattern_id]} L${t.level_tested}</div><div style="font-size:11px;color:var(--mt)">${std?.test_exercise||'—'}</div></div>
         <div style="text-align:right"><div style="font-size:12px;font-weight:600;color:${sc}">${sl}</div><div style="font-size:11px;color:var(--mt)">${dt}</div></div>
       </div>`;
     });
-    th+=`</div></div>`;
-    const cpBody=document.getElementById('cp-body');
-    if(cpBody)cpBody.innerHTML+=th;
-  });
+    h+=`</div></div>`;
+  }
 
   document.getElementById('cp-body').innerHTML=h;
-  document.getElementById('client-page').classList.add('active');
 }
 
 function closeClientPage(){
@@ -1242,7 +1247,8 @@ async function judgeTest(assessmentId,athleteId,patId,level,pass){
     }
   }
   ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);
-  openClientPage(athleteId);
+  // Reopen client page to reflect updated state
+  await openClientPage(athleteId);
 }
 
 // ── HISTORY ──
