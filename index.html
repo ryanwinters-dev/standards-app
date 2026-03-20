@@ -1219,7 +1219,7 @@ async function logCircuit(ck){
   if(error){if(msg){msg.textContent='Error: '+error.message;msg.style.color='var(--red)';}if(btn)btn.disabled=false;return;}
   SETS.unshift(...inserts.map(i=>({...i,logged_at:new Date().toISOString()})));
   if(msg){msg.textContent=`✓ ${inserts.length} sets saved`;msg.style.color='var(--gm)';}
-  const hdr=document.getElementById('cb-'+ck)?.previousElementSibling;
+  toast(`✓ ${inserts.length} sets logged`,'ok');  const hdr=document.getElementById('cb-'+ck)?.previousElementSibling;
   if(hdr){hdr.classList.add('logged');const letter=hdr.querySelector('.circuit-letter');if(letter){letter.classList.add('logged');letter.textContent='✓';}}
   if(btn){btn.textContent='✓ Circuit logged';btn.classList.add('logged');}
 }
@@ -1787,8 +1787,7 @@ async function setLevel(athleteId,patId,newLevel){
     passed_at:newLevel>0?new Date().toISOString():null,
     updated_at:new Date().toISOString()
   },{onConflict:'athlete_id,pattern_id'});
-  if(error){alert('Error: '+error.message);return}
-  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
+  if(error){toast('Failed to update level: '+error.message);return}
   if(a)a.scores[patId]=newLevel;
   if(athleteId===CU.id){AP[patId]=newLevel;rWorkout();rHome();}
   openClientPage(athleteId);
@@ -1796,7 +1795,7 @@ async function setLevel(athleteId,patId,newLevel){
 
 async function judgeTest(assessmentId,athleteId,patId,level,pass){
   const{error}=await sb.from('assessments').update({passed:pass}).eq('id',assessmentId);
-  if(error){alert('Error: '+error.message);return;}
+  if(error){toast('Failed to update test: '+error.message);return;}
   if(pass){
     const current=ALL_ATHLETES.find(x=>x.id===athleteId)?.scores[patId]||0;
     if(level>current){
@@ -1804,13 +1803,13 @@ async function judgeTest(assessmentId,athleteId,patId,level,pass){
         athlete_id:athleteId,pattern_id:patId,current_level:level,
         passed_at:new Date().toISOString(),updated_at:new Date().toISOString()
       },{onConflict:'athlete_id,pattern_id'});
-      if(upErr){alert('Level update error: '+upErr.message);return;}
+      if(upErr){toast('Failed to update level: '+upErr.message);return;}
       const a=ALL_ATHLETES.find(x=>x.id===athleteId);
       if(a)a.scores[patId]=level;
     }
   }
   ALL_PENDING=ALL_PENDING.filter(p=>p.id!==assessmentId);
-  // Reopen client page to reflect updated state
+  toast(pass?'✓ Test passed — level updated':'Test marked as failed','ok');
   await openClientPage(athleteId);
 }
 
@@ -1857,6 +1856,22 @@ function toggleSess(id){
   el.style.display=open?'block':'none';
   if(arr)arr.textContent=open?'▲':'▼';
 }
+// ── TOAST ──
+let toastTimer=null;
+function toast(msg,type='err'){
+  const el=document.getElementById('toast');
+  if(!el)return;
+  el.textContent=msg;
+  el.style.background=type==='ok'?'var(--gm)':type==='warn'?'var(--amber)':'#c0392b';
+  el.style.opacity='1';
+  el.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{
+    el.style.opacity='0';
+    el.style.transform='translateX(-50%) translateY(80px)';
+  },3000);
+}
+
 function showTab(t,btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
@@ -1865,5 +1880,7 @@ function showTab(t,btn){
 }
 function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 </script>
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dk);color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;font-weight:500;z-index:300;transition:transform .25s ease,opacity .25s ease;opacity:0;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
 </body>
 </html>
