@@ -1440,41 +1440,56 @@ const ACCESSORY_CIRCUITS=[
 
 // Build warm up HTML for current day and tier
 function buildWarmUp(dayIndex){
-  const tier=getWarmUpTier();
+  const tierName=getWarmUpTier();
+  const tierIndex={Foundation:0,Development:1,Performance:2,Athletic:3}[tierName];
+  const tierCol={Foundation:'#888',Development:'var(--amber)',Performance:'var(--gm)',Athletic:'var(--gd)'}[tierName];
   const phases=['Mobilise','Activate','Stabilise','React'];
   const phaseIcons={Mobilise:'🔄',Activate:'⚡',Stabilise:'🎯',React:'🚀'};
+  const phaseDuration={Mobilise:'45–60s each',Activate:'10–12 reps',Stabilise:'30–45s each side',React:'4–6 reps'};
   const wuKey=`wu-d${dayIndex}`;
   const isOpen=!!openCircuits[wuKey];
 
-  let h=`<div style="border:0.5px solid var(--br);border-radius:10px 10px 0 0;overflow:hidden;background:var(--cd)">
-    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleCircuit('${wuKey}')">
+  let h=`<div style="border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--cd);border-bottom:${isOpen?'0.5px solid var(--br)':'none'}" onclick="toggleCircuit('${wuKey}')">
       <div style="width:28px;height:28px;border-radius:6px;background:var(--dk);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">WU</div>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:600">Warm Up</div>
-        <div style="font-size:11px;color:var(--mt);margin-top:1px">${tier} tier · 4 phases · ~10 mins</div>
+        <div style="font-size:13px;font-weight:600">Warm Up Protocol</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:1px">4 phases · ~10 mins</div>
       </div>
-      <span style="font-size:11px;font-weight:600;color:var(--gd);background:var(--gl);padding:2px 8px;border-radius:99px">${tier}</span>
+      <span style="font-size:11px;font-weight:600;color:${tierCol};background:var(--bg);padding:2px 8px;border-radius:99px;border:0.5px solid ${tierCol}">${tierName}</span>
       <span style="font-size:12px;color:var(--mt);margin-left:4px">${isOpen?'▲':'▼'}</span>
     </div>`;
 
   if(isOpen){
-    h+=`<div style="padding:12px 14px;border-top:0.5px solid var(--br)">`;
     phases.forEach(phase=>{
       const data=WARM_UP[phase];
-      const ex1=data.ex1[tier][dayIndex];
-      const ex2=data.ex2[tier][dayIndex];
-      const meta=data.meta[dayIndex];
-      h+=`<div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--mt);margin-bottom:5px">${phaseIcons[phase]} ${phase}</div>
-        <div style="background:var(--bg);border-radius:8px;padding:10px 12px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:2px">${ex1}</div>
-          <div style="font-size:13px;font-weight:600;margin-bottom:6px">${ex2}</div>
-          <div style="font-size:11px;color:var(--mt);font-style:italic">${meta}</div>
+      const ex1=data.ex1[tierName][dayIndex];
+      const ex2=data.ex2[tierName][dayIndex];
+      const meta=data.meta[tierIndex];
+      h+=`<div style="padding:12px 14px;border-bottom:0.5px solid var(--br);background:var(--cd)">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-size:14px">${phaseIcons[phase]}</span>
+          <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mt)">${phase}</span>
+          <span style="font-size:11px;color:var(--mt);margin-left:auto">${phaseDuration[phase]}</span>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="wu-${wuKey}-${phase}-1" style="width:16px;height:16px;accent-color:var(--gm);flex-shrink:0"/>
+            <label for="wu-${wuKey}-${phase}-1" style="font-size:13px;font-weight:500;cursor:pointer">${ex1}</label>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="wu-${wuKey}-${phase}-2" style="width:16px;height:16px;accent-color:var(--gm);flex-shrink:0"/>
+            <label for="wu-${wuKey}-${phase}-2" style="font-size:13px;font-weight:500;cursor:pointer">${ex2}</label>
+          </div>
+          <div style="font-size:11px;color:var(--mt);font-style:italic;margin-top:2px">${meta}</div>
         </div>
       </div>`;
     });
-    h+=`</div>`;
+    h+=`<div style="padding:10px 14px;background:var(--cd)">
+      <button style="width:100%;padding:8px;background:var(--gl);border:0.5px solid var(--gm);border-radius:8px;font-size:13px;font-weight:600;color:var(--gd);cursor:pointer;font-family:var(--fn)" onclick="markWarmUpDone('${wuKey}')">✓ Warm Up Complete</button>
+    </div>`;
   }
+
   h+=`</div>`;
   return h;
 }
@@ -1489,7 +1504,7 @@ function buildAccessories(dayIndex){
     const isLast=ci===circuits.length-1;
 
     h+=`<div style="border:0.5px solid var(--br);border-top:none;background:var(--cd)${isLast?';border-radius:0 0 10px 10px;overflow:hidden':''}">
-      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleCircuit('${ck}')">
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--cd)" onclick="toggleCircuit('${ck}')">
         <div style="width:28px;height:28px;border-radius:6px;background:#888;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-.3px">ACC</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:600">${circuit.name}</div>
@@ -1576,6 +1591,12 @@ async function logAccCircuit(ck,dayIndex,ci){
   const{data}=await sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false});
   SETS=data||[];
   toast(`✓ ${inserts.length} sets logged`,'ok');
+  rWorkout();
+}
+
+function markWarmUpDone(wuKey){
+  openCircuits[wuKey]=false;
+  toast('✓ Warm up complete — time to train','ok');
   rWorkout();
 }
 
