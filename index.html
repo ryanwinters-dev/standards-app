@@ -639,12 +639,64 @@ async function load(){
   }
 }
 
+// ── STARTER WORKOUT (Level 0 — pre-assessment) ──
+// Uses placeholder exercises until Level 0 library is built
+// Each circuit follows the same push/pull/hinge/squat/core pairing logic
+function buildStarterWorkout(){
+  const L0_CIRCUITS=[
+    {
+      letter:'A',name:'Horizontal',
+      exercises:[
+        {name:'[PLACEHOLDER] Floor Push-Up — Isometric Hold',type:'Main',pattern:'HPush',meta:'3×30s hold · Focus: chest to floor, body rigid'},
+        {name:'[PLACEHOLDER] Band Pull-Apart or Door Row Hold',type:'Bridge',pattern:'HPull',meta:'3×30s hold · Focus: shoulder blades together'},
+      ]
+    },
+    {
+      letter:'B',name:'Lower Body',
+      exercises:[
+        {name:'[PLACEHOLDER] Wall Sit — Isometric Hold',type:'Main',pattern:'Squat',meta:'3×30–45s hold · Focus: knees over toes, back flat'},
+        {name:'[PLACEHOLDER] Hip Hinge with Dowel — Slow Eccentric',type:'Bridge',pattern:'Hinge',meta:'3×8 reps · 5s lowering · Focus: hinge at hip not waist'},
+      ]
+    },
+    {
+      letter:'C',name:'Vertical & Core',
+      exercises:[
+        {name:'[PLACEHOLDER] Dead Hang or Flexed Arm Hang',type:'Main',pattern:'VPull',meta:'3×20–30s hold · Focus: active shoulders, no shrug'},
+        {name:'[PLACEHOLDER] Dead Bug — Isometric Hold',type:'Bridge',pattern:'Core',meta:'3×8 reps · Focus: lower back pressed to floor'},
+      ]
+    },
+  ];
+
+  let h='';
+  L0_CIRCUITS.forEach(circuit=>{
+    h+=`<div style="border-top:0.5px solid var(--br)">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg)">
+        <div style="width:22px;height:22px;border-radius:5px;background:var(--dk);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${circuit.letter}</div>
+        <span style="font-size:12px;font-weight:600;color:var(--md)">${circuit.name} circuit</span>
+        <span style="font-size:11px;color:var(--mt);margin-left:auto">Bodyweight</span>
+      </div>`;
+    circuit.exercises.forEach((ex,xi)=>{
+      const tagCls=ex.type==='Main'?'tm':'tb';
+      h+=`<div style="padding:10px 14px;border-top:0.5px solid var(--br)">
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px">
+          <span style="font-size:10px;font-weight:700;color:var(--mt);flex-shrink:0">${circuit.letter}${xi+1}</span>
+          <span style="font-size:13px;font-weight:600;flex:1;color:var(--amber)">${ex.name}</span>
+          <span class="cx-badge ${tagCls}" style="flex-shrink:0">${ex.type}</span>
+        </div>
+        <div style="font-size:11px;color:var(--mt);padding-left:18px">${ex.meta}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+  return h;
+}
+
 // ── HOME ──
 function rHome(){
   const nm=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
   const hour=new Date().getHours();
-  const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0);
+  const isNew=tot===0&&LOGS.length===0;
 
   // 7-day streak
   const today=new Date();
@@ -660,9 +712,86 @@ function rHome(){
 
   let h=`<div class="home-greeting">
     <h1>${hour<12?'Good morning':hour<17?'Good afternoon':'Good evening'}, ${nm}</h1>
-    <p>${tot}/40 standards achieved</p>
+    <p>${isNew?'Welcome to STANDARDS':tot+'/40 standards achieved'}</p>
   </div>`;
 
+  // ── NEW ATHLETE ONBOARDING STATE ──
+  if(isNew){
+    h+=`
+    <!-- Welcome card -->
+    <div style="background:var(--dk);border-radius:16px;padding:20px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:12px">Welcome to STANDARDS</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">1</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">Your coach will assess your movement</div>
+            <div style="font-size:12px;color:#666">8 patterns. 5 levels each. Your score out of 40 reflects exactly where you are.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">2</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">Your programme is built from your levels</div>
+            <div style="font-size:12px;color:#666">Every session targets your weakest patterns with the right exercises at the right intensity.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">3</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">Test when you're ready. Progress when you pass.</div>
+            <div style="font-size:12px;color:#666">Submit a video test for any pattern. Your coach reviews it and your level updates automatically.</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#111;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div style="width:8px;height:8px;border-radius:50%;background:#F0A500;flex-shrink:0"></div>
+        <div style="font-size:13px;color:#aaa">Your movement assessment is pending. Start with the starter workout below while you wait.</div>
+      </div>
+    </div>
+
+    <!-- Spider diagram — shows all zeros, framed positively -->
+    <div class="spider-card">
+      <div class="spider-card-top">
+        <span class="spider-card-title">Movement Profile</span>
+        <span class="spider-score" style="background:#f1efe8;color:#888">Pending</span>
+      </div>
+      ${drawSpider()}
+      <div style="font-size:12px;color:var(--mt);text-align:center;margin-top:6px">Your profile will fill in as you get assessed across all 8 patterns</div>
+    </div>
+
+    <!-- Starter workout -->
+    <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:14px">
+      <div style="background:var(--dk);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#fff">Starter Workout</div>
+          <div style="font-size:11px;color:#777;margin-top:1px">Pattern foundations — no equipment needed</div>
+        </div>
+        <div style="font-size:11px;color:#666;background:#1a1a1a;padding:3px 8px;border-radius:99px">L0 — Pre-Assessment</div>
+      </div>
+      ${buildStarterWorkout()}
+      <button class="start-workout-btn" onclick="goToWorkout()">Go to Workout →</button>
+    </div>`;
+
+    // Check-in strip still shows for new athletes
+    h+=`<div class="checkin-strip" onclick="openCIModal()">
+      <div class="checkin-strip-top"><span class="checkin-strip-title">Daily Check-In</span><span class="checkin-strip-arrow">›</span></div>
+      <div class="checkin-days">`;
+    days7.forEach(({d,done,isToday})=>{
+      h+=`<div class="checkin-day">
+        <div class="checkin-dot${done?' done':isToday?' today':''}">${done?'✓':''}</div>
+        <div class="checkin-day-label">${dayNames[d.getDay()]}</div>
+        <div class="checkin-day-num">${d.getDate()}</div>
+      </div>`;
+    });
+    h+=`</div></div>`;
+    document.getElementById('v-home').innerHTML=h;
+    return;
+  }
+
+  // ── RETURNING ATHLETE HOME ──
+
+  // ── RETURNING ATHLETE HOME ──
   // Check-in strip
   h+=`<div class="checkin-strip" onclick="openCIModal()">
     <div class="checkin-strip-top"><span class="checkin-strip-title">Daily Check-In</span><span class="checkin-strip-arrow">›</span></div>
@@ -693,10 +822,12 @@ function rHome(){
   // Next session preview
   const nextDay=buildDay(curDay);
   const totalSets=nextDay.circuits.reduce((s,c)=>s+(c.circuitSets*c.exercises.length),0);
+  const wib=weekInBlock();
+  const wl=['','Base','Build','Overreach','Deload'];
   h+=`<div class="session-preview">
     <div class="session-preview-hdr">
       <span class="session-preview-title">Next Session — Day ${curDay+1}</span>
-      <span class="session-preview-sub">${totalSets} sets · Week ${curWeek}</span>
+      <span class="session-preview-sub">${totalSets} sets · Block ${blockNumber()} W${wib} ${wl[wib]}</span>
     </div>`;
   nextDay.circuits.forEach(circuit=>{
     const exNames=circuit.exercises.map(e=>e.ex?e.ex.name:PL[e.pid]).join(' · ');
@@ -849,12 +980,62 @@ async function submitCheckin(){
 }
 
 // ── PROGRAMME ENGINE ──
+
+// Block tracking — stored in localStorage per user
+function getCurrentBlock(){
+  try{return parseInt(localStorage.getItem(`block_${CU.id}`)||'1');}
+  catch(e){return 1;}
+}
+function setCurrentBlock(b){
+  try{localStorage.setItem(`block_${CU.id}`,b);}catch(e){}
+}
+
+// Week in block (1-4) derived from curWeek
+function weekInBlock(){return((curWeek-1)%4)+1;}
+function blockNumber(){return Math.ceil(curWeek/4);}
+
+// Volume targets wave across the 4-week block based on pattern priority
 function getSetTargets(){
   const ranked=[...PATS].sort((a,b)=>(AP[a]||0)-(AP[b]||0));
-  const t={};ranked.forEach((p,i)=>{t[p]=i<2?20:i<6?15:10});return t;
+  const wib=weekInBlock();
+  // Base volumes by priority rank, waving across block
+  const volumes={
+    1:{low:15,mid:12,high:9},   // Week 1 — Base
+    2:{low:18,mid:14,high:11},  // Week 2 — Build
+    3:{low:21,mid:16,high:13},  // Week 3 — Overreach
+    4:{low:10,mid:8,high:6},    // Week 4 — Deload
+  };
+  const v=volumes[wib];
+  const t={};
+  ranked.forEach((p,i)=>{
+    t[p]=i<2?v.low:i<6?v.mid:v.high;
+  });
+  return t;
 }
+
+// Get Main exercise for a pattern — rotates between blocks so athletes
+// don't do the same exercise forever, but stays consistent within a block
+function getMainExercise(pid,usedNames){
+  const lv=Math.max(1,AP[pid]||1);
+  const block=blockNumber();
+  // Get all Main candidates at this level
+  const mains=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type==='Main');
+  if(!mains.length){
+    // Fallback — any exercise at this level not used today
+    const any=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv).find(e=>!usedNames.has(e.name));
+    return any||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
+  }
+  // Rotate through mains by block number — consistent within block, fresh each block
+  const blockIndex=(block-1)%mains.length;
+  const preferred=mains[blockIndex];
+  if(!usedNames.has(preferred.name))return preferred;
+  // If preferred is already used today, try others
+  const fresh=mains.find(e=>!usedNames.has(e.name));
+  return fresh||preferred;
+}
+
+// Get Bridge or Limiter exercise — can vary each session for variety
 function getExercise(pid,type,usedNames){
-  // If athlete has no level yet, use level 1 as starter
   const lv=Math.max(1,AP[pid]||1);
   const cands=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type);
   const fresh=cands.find(e=>!usedNames.has(e.name));
@@ -868,12 +1049,18 @@ function getExercise(pid,type,usedNames){
   }
   return cands[0]||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
 }
+
+// Rep range based on intent — rep ceiling rises weeks 1-3, drops on deload
 function repStr(intent,sets,week){
-  const r=RR[intent]||RR.Control,wib=((week-1)%4)+1;
+  const r=RR[intent]||RR.Control;
+  const wib=((week-1)%4)+1;
   let lo=r.lo,hi=r.hi,s=sets;
-  if(wib===2)hi++;if(wib===3)hi+=2;if(wib===4)s=Math.max(2,s-1);
+  if(wib===2)hi++;
+  if(wib===3)hi+=2;
+  if(wib===4){s=Math.max(2,s-1);} // deload — drop a set
   return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
 }
+
 function suggestedLoad(exId,intent){
   if(!exId)return null;
   const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
@@ -883,6 +1070,7 @@ function suggestedLoad(exId,intent){
   if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
   return load;
 }
+
 function buildDay(di){
   const setTargets=getSetTargets();
   const circuitMap={};CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
@@ -898,11 +1086,17 @@ function buildDay(di){
       const types=['Main','Bridge','Limiter'],ta={};
       pwl.forEach((p,i)=>{ta[p.pid]=types[Math.min(i,2)]});
       const mainPat=pwl[0].pid;
-      const circuitSets=Math.min(4,Math.max(2,Math.round(((setTargets[mainPat]||15)/Math.max(1,patAppearances[mainPat]))*0.4)));
+      // Sets per circuit derived from weekly target / appearances, capped at 4
+      const circuitSets=Math.min(4,Math.max(2,Math.round(
+        ((setTargets[mainPat]||12)/Math.max(1,patAppearances[mainPat]))*0.4
+      )));
       const exList=[];
       pwl.forEach(({pid})=>{
         const type=ta[pid];
-        const ex=getExercise(pid,type,usedToday);
+        // Main exercise is block-consistent, bridge/limiter vary for freshness
+        const ex=type==='Main'
+          ?getMainExercise(pid,usedToday)
+          :getExercise(pid,type,usedToday);
         if(ex)usedToday.add(ex.name);
         if(type==='Main')exList.unshift({pid,type:'Main',ex,sets:circuitSets});
         else exList.push({pid,type,ex,sets:circuitSets});
@@ -924,8 +1118,36 @@ function isCircuitLogged(ck,exercises,sets){
 // ── WORKOUT ──
 function rWorkout(){
   const hasLvl=PATS.some(p=>(AP[p]||0)>0);
-  const wib=((curWeek-1)%4)+1,wl=['','Base','Build','Overreach','Deload'];
-  let h=`<div class="week-bar"><div><div class="week-info">Week ${curWeek} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div><div class="week-sub">Block ${Math.ceil(curWeek/4)}</div></div><div class="week-nav"><button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button><button class="wn-btn" onclick="changeWeek(1)">Next →</button></div></div>`;
+  const wib=weekInBlock();
+  const wl=['','Base','Build','Overreach','Deload'];
+  const blockNum=blockNumber();
+  let h=`<div class="week-bar">
+    <div>
+      <div class="week-info">Block ${blockNum} · Week ${wib} <span style="font-size:12px;font-weight:400;color:var(--mt)">— ${wl[wib]}</span></div>
+      <div class="week-sub">Week ${curWeek} overall · ${wib===4?'Recovery week — lower volume':'Push hard this week'}</div>
+    </div>
+    <div class="week-nav">
+      <button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>← Prev</button>
+      <button class="wn-btn" onclick="changeWeek(1)">Next →</button>
+    </div>
+  </div>`;
+  if(!hasLvl){
+    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:14px">
+      <div style="background:var(--dk);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#fff">Starter Workout</div>
+          <div style="font-size:11px;color:#777;margin-top:1px">Pattern foundations — no equipment needed</div>
+        </div>
+        <div style="font-size:11px;color:#666;background:#1a1a1a;padding:3px 8px;border-radius:99px">L0 — Pre-Assessment</div>
+      </div>
+      ${buildStarterWorkout()}
+    </div>
+    <div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--amber);text-align:center">
+      ⏳ Your full programme unlocks once your coach completes your assessment
+    </div>`;
+    document.getElementById('v-workout').innerHTML=h;
+    return;
+  }
   h+=`<div class="day-sub-tabs">`;
   for(let d=0;d<4;d++)h+=`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}</button>`;
   h+=`</div>`;
