@@ -204,7 +204,62 @@
     .log-test-btn{display:block;width:100%;margin-top:8px;padding:6px;background:var(--bg);border:0.5px solid var(--br);border-radius:6px;font-size:11px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);text-align:center;transition:all .15s}
     .log-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
 
-    /* ── COACH TAB ── */
+    /* ── ASSESSMENT SLIDESHOW ── */
+    .assessment-overlay{position:fixed;inset:0;background:var(--bg);z-index:180;display:flex;flex-direction:column;overflow:hidden}
+    .assessment-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .assessment-back{padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)}
+    .assessment-close{padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)}
+    .assessment-progress-wrap{flex:1;height:4px;background:var(--br);border-radius:2px;overflow:hidden}
+    .assessment-progress-bar{height:100%;background:var(--gm);border-radius:2px;transition:width .3s ease}
+    .assessment-body{flex:1;overflow-y:auto;padding:20px 16px;max-width:640px;margin:0 auto;width:100%}
+    .assessment-pattern-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:6px}
+    .assessment-pattern-name{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+    .assessment-pattern-sub{font-size:14px;color:var(--mt);margin-bottom:20px}
+    .assessment-demo{background:var(--dk);border-radius:12px;overflow:hidden;margin-bottom:20px}
+    .assessment-demo-placeholder{padding:32px 20px;text-align:center}
+    .assessment-demo-icon{font-size:32px;margin-bottom:8px}
+    .assessment-demo-text{font-size:13px;color:#666;margin-bottom:4px}
+    .assessment-demo-sub{font-size:12px;color:#444}
+    .assessment-video-embed{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
+    .assessment-video-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+    .assessment-targets{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:20px}
+    .assessment-targets-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
+    .assessment-target-row{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:0.5px solid var(--br);font-size:13px}
+    .assessment-target-row:last-child{border-bottom:none}
+    .assessment-target-dot{width:6px;height:6px;border-radius:50%;background:var(--gm);flex-shrink:0;margin-top:5px}
+    .assessment-upload{border:2px dashed var(--br);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px;position:relative}
+    .assessment-upload:hover{border-color:var(--gm);background:var(--gl)}
+    .assessment-upload input{display:none}
+    .assessment-upload-icon{font-size:28px;margin-bottom:8px}
+    .assessment-upload-text{font-size:14px;font-weight:500;color:var(--md);margin-bottom:4px}
+    .assessment-upload-sub{font-size:12px;color:var(--mt)}
+    .assessment-video-preview{width:100%;border-radius:8px;margin-bottom:14px;max-height:200px;background:#000;display:none}
+    .assessment-upload.has-video{border-color:var(--gm);background:var(--gl)}
+    .assessment-status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600}
+    .assessment-status.done{background:var(--gl);color:var(--gd)}
+    .assessment-status.pending{background:#FFF8EC;color:var(--amber)}
+    .assessment-status.empty{background:var(--bg);color:var(--mt);border:0.5px solid var(--br)}
+    .assessment-nav{display:flex;gap:10px;margin-top:8px;padding-bottom:20px}
+    .assessment-skip{padding:11px 16px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:14px;color:var(--mt);font-family:var(--fn);transition:all .15s}
+    .assessment-skip:hover{border-color:#bbb;color:var(--dk)}
+
+    /* Summary slide */
+    .assess-summary-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:0.5px solid var(--br)}
+    .assess-summary-row:last-child{border-bottom:none}
+    .assess-summary-pat{font-size:14px;font-weight:600;flex:1}
+    .assess-summary-sub{font-size:12px;color:var(--mt);margin-top:1px}
+
+    /* ── START ASSESSMENT CARD ── */
+    .start-assess-card{background:var(--dk);border-radius:14px;overflow:hidden;margin-bottom:14px;cursor:pointer;transition:opacity .15s}
+    .start-assess-card:hover{opacity:.92}
+    .start-assess-body{padding:20px}
+    .start-assess-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:6px}
+    .start-assess-sub{font-size:13px;color:#888;margin-bottom:16px;line-height:1.5}
+    .start-assess-patterns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+    .start-assess-pat{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:#1a1a1a;color:#666}
+    .start-assess-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--gm);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn)}
+
+
     .coach-client-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
     .coach-client-card:hover{border-color:var(--gm);transform:translateY(-1px)}
     .ccc-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0}
@@ -331,6 +386,18 @@
     <div id="v-leaderboard" class="view"></div>
     <div id="v-coach" class="view"></div>
   </div>
+</div>
+
+<!-- ASSESSMENT SLIDESHOW -->
+<div class="assessment-overlay" id="assessment-overlay" style="display:none">
+  <div class="assessment-topbar">
+    <button class="assessment-back" id="assessment-back-btn" onclick="assessBack()">← Back</button>
+    <div class="assessment-progress-wrap">
+      <div class="assessment-progress-bar" id="assessment-progress-bar"></div>
+    </div>
+    <button class="assessment-close" onclick="closeAssessment()">✕</button>
+  </div>
+  <div class="assessment-body" id="assessment-body"></div>
 </div>
 
 <!-- CLIENT PROFILE PAGE -->
@@ -702,6 +769,7 @@ function rHome(){
   const hour=new Date().getHours();
   const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0);
   const isNew=tot===0&&LOGS.length===0;
+  const awaitingReview=tot===0&&LOGS.length>0;
 
   // 7-day streak
   const today=new Date();
@@ -717,11 +785,11 @@ function rHome(){
 
   let h=`<div class="home-greeting">
     <h1>${hour<12?'Good morning':hour<17?'Good afternoon':'Good evening'}, ${nm}</h1>
-    <p>${isNew?'Welcome to STANDARDS':tot+'/40 standards achieved'}</p>
+    <p>${isNew?'Welcome to STANDARDS':awaitingReview?'Assessment submitted — awaiting review':tot+'/40 standards achieved'}</p>
   </div>`;
 
   // ── NEW ATHLETE ONBOARDING STATE ──
-  if(isNew){
+  if(isNew||awaitingReview){
     h+=`
     <!-- Welcome card -->
     <div style="background:var(--dk);border-radius:16px;padding:20px;margin-bottom:14px">
@@ -749,9 +817,13 @@ function rHome(){
           </div>
         </div>
       </div>
-      <div style="background:#111;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px">
-        <div style="width:8px;height:8px;border-radius:50%;background:#F0A500;flex-shrink:0"></div>
-        <div style="font-size:13px;color:#aaa">Your movement assessment is pending. Start with the starter workout below while you wait.</div>
+      <div style="background:#111;border-radius:10px;padding:14px 16px;margin-top:4px">
+        ${awaitingReview
+          ?`<div style="font-size:12px;color:#888;margin-bottom:6px">✓ Assessment submitted — your coach is reviewing your videos.</div>
+             <div style="font-size:12px;color:#555">You'll be notified once your levels are assigned and your programme is ready.</div>`
+          :`<div style="font-size:12px;color:#888;margin-bottom:10px">Your movement assessment is pending. Complete it now so your coach can build your programme.</div>
+             <button class="start-assess-btn" onclick="openAssessment()">🎥 Start Assessment →</button>`
+        }
       </div>
     </div>
 
@@ -765,18 +837,17 @@ function rHome(){
       <div style="font-size:12px;color:var(--mt);text-align:center;margin-top:6px">Your profile will fill in as you get assessed across all 8 patterns</div>
     </div>
 
-    <!-- Starter workout -->
-    <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:14px">
-      <div style="background:var(--dk);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:#fff">Starter Workout</div>
-          <div style="font-size:11px;color:#777;margin-top:1px">Pattern foundations — no equipment needed</div>
+    <!-- Assessment CTA card or submitted state -->
+    ${!awaitingReview?`<div class="start-assess-card" onclick="openAssessment()">
+      <div class="start-assess-body">
+        <div class="start-assess-title">Complete Your Assessment</div>
+        <div class="start-assess-sub">Film yourself performing each of the 8 movement patterns. Your coach reviews your videos and assigns your levels. Your programme unlocks immediately after.</div>
+        <div class="start-assess-patterns">
+          ${PATS.map(p=>`<span class="start-assess-pat">${PL[p]}</span>`).join('')}
         </div>
-        <div style="font-size:11px;color:#666;background:#1a1a1a;padding:3px 8px;border-radius:99px">L0 — Pre-Assessment</div>
+        <button class="start-assess-btn" onclick="event.stopPropagation();openAssessment()">🎥 Start Assessment →</button>
       </div>
-      ${buildStarterWorkout()}
-      <button class="start-workout-btn" onclick="goToWorkout()">Go to Workout →</button>
-    </div>`;
+    </div>`:''}`;
 
     // Check-in strip still shows for new athletes
     h+=`<div class="checkin-strip" onclick="openCIModal()">
@@ -984,6 +1055,258 @@ async function submitCheckin(){
   setTimeout(()=>{document.getElementById('ci-modal').style.display='none';rHome();},1200);
 }
 
+// ── ASSESSMENT SLIDESHOW ──
+let assessStep=0; // current pattern index 0-7
+let assessData={}; // {patternId: {videoFile, videoUrl, notes, uploaded}}
+let assessUploading=false;
+
+// What to demonstrate for each pattern at L1
+const ASSESS_TARGETS={
+  Squat:['Hip crease below parallel','Knees track over toes throughout','Heels remain in contact with floor','Neutral spine maintained — no excessive rounding','Controlled 3-second descent'],
+  Hinge:['Hinge at the hip — not the lower back','Spine stays long and neutral','Hamstrings feel loaded at the bottom','Soft knee bend, not a squat','Controlled return to standing'],
+  HPush:['Full range of motion — chest to bar/floor','Elbows track at 45 degrees to body','Body moves as one rigid unit','Full lockout at the top','Controlled 3-second lowering phase'],
+  VPush:['Ribs stay down — no excessive arch','Press directly overhead, not forward','Full lockout without shrugging','Controlled return to shoulder height','Core braced throughout'],
+  HPull:['Shoulder blades retract fully at the end','Elbows drive back and down','No excessive lean back','Controlled 5-second return to start','Chest stays open, no rounding'],
+  VPull:['Elbows drive down to back pockets','Full hang at the top — shoulders active','Chin clears the bar or bar to chest','Controlled 5-second return to top','No kipping or momentum'],
+  Carry:['Upright posture — no lateral lean','Shoulders packed and level','Braced core throughout','Controlled deliberate steps','20m minimum distance'],
+  Core:['Lower back pressed flat throughout','Breathing remains controlled','No hip rotation during movement','Full extension of arms and legs','Held for minimum 60 seconds'],
+};
+
+const ASSESS_DESCRIPTIONS={
+  Squat:'Demonstrate a loaded squat pattern. Use a goblet hold with a weight that lets you show your best movement.',
+  Hinge:'Demonstrate a hip hinge pattern. Use a Romanian deadlift — the goal is showing hip drive and hamstring loading.',
+  HPush:'Demonstrate a horizontal push. Use a dumbbell bench press or push-up to show your pressing pattern.',
+  VPush:'Demonstrate a vertical push. Use a dumbbell shoulder press to show your overhead pattern.',
+  HPull:'Demonstrate a horizontal pull. Use a seated cable row to show your pulling pattern.',
+  VPull:'Demonstrate a vertical pull. Use a lat pulldown or pull-up to show your vertical pulling pattern.',
+  Carry:'Demonstrate a loaded carry. Use a farmer carry — show your ability to maintain posture under load.',
+  Core:'Demonstrate core stability. Hold a front plank — show your ability to maintain a rigid position.',
+};
+
+function openAssessment(){
+  assessStep=0;
+  assessData={};
+  PATS.forEach(p=>{assessData[p]={videoFile:null,videoUrl:null,notes:'',uploaded:false};});
+  document.getElementById('assessment-overlay').style.display='flex';
+  renderAssessSlide();
+}
+function closeAssessment(){
+  document.getElementById('assessment-overlay').style.display='none';
+  // Stop any playing videos
+  document.getElementById('assessment-body').innerHTML='';
+}
+function assessBack(){
+  if(assessStep>0){assessStep--;renderAssessSlide();}
+}
+function assessNext(){
+  if(assessStep<PATS.length){assessStep++;renderAssessSlide();}
+}
+function assessSkip(){
+  assessNext();
+}
+
+function renderAssessSlide(){
+  const total=PATS.length;
+  const isSummary=assessStep===total;
+  const progress=isSummary?100:((assessStep)/total)*100;
+  document.getElementById('assessment-progress-bar').style.width=progress+'%';
+  document.getElementById('assessment-back-btn').style.visibility=assessStep>0?'visible':'hidden';
+
+  if(isSummary){
+    renderAssessSummary();
+    return;
+  }
+
+  const pid=PATS[assessStep];
+  const std=STD.find(s=>s.pattern_id===pid&&s.level===1);
+  const data=assessData[pid];
+  const targets=ASSESS_TARGETS[pid]||[];
+  const desc=ASSESS_DESCRIPTIONS[pid]||'';
+  const hasVideo=!!data.videoFile||!!data.videoUrl;
+
+  let h=`
+    <div class="assessment-pattern-label">Pattern ${assessStep+1} of ${total}</div>
+    <div class="assessment-pattern-name">${PF[pid]}</div>
+    <div class="assessment-pattern-sub">${desc}</div>
+
+    <!-- Demo video slot -->
+    <div class="assessment-demo">
+      ${std?.demo_url
+        ?`<div class="assessment-video-embed"><iframe src="${getYouTubeEmbed(std.demo_url)}" allow="autoplay;encrypted-media" allowfullscreen></iframe></div>`
+        :`<div class="assessment-demo-placeholder">
+          <div class="assessment-demo-icon">🎬</div>
+          <div class="assessment-demo-text" style="color:#888">Coach demo coming soon</div>
+          <div class="assessment-demo-sub">Video guide will appear here once uploaded</div>
+        </div>`
+      }
+    </div>
+
+    <!-- What we're looking for -->
+    <div class="assessment-targets">
+      <div class="assessment-targets-title">What we're looking for</div>
+      ${targets.map(t=>`<div class="assessment-target-row"><div class="assessment-target-dot"></div><span>${t}</span></div>`).join('')}
+    </div>
+
+    <!-- Video upload -->
+    <div style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+      <label style="margin-bottom:0">Your attempt</label>
+      ${hasVideo?`<span class="assessment-status done">✓ Video added</span>`:`<span class="assessment-status empty">No video yet</span>`}
+    </div>
+    <div class="assessment-upload${hasVideo?' has-video':''}" onclick="document.getElementById('assess-video-${pid}').click()">
+      <input type="file" id="assess-video-${pid}" accept="video/*" onchange="handleAssessVideo('${pid}',this)"/>
+      <div class="assessment-upload-icon">${hasVideo?'✓':'🎥'}</div>
+      <div class="assessment-upload-text">${hasVideo?'Video ready — tap to replace':'Record or upload your attempt'}</div>
+      <div class="assessment-upload-sub">${hasVideo?'':'Film yourself performing the movement'}</div>
+    </div>
+    <video class="assessment-video-preview" id="assess-preview-${pid}" ${hasVideo&&data.videoFile?'style="display:block"':''} controls playsinline></video>
+
+    <!-- Notes -->
+    <label>Notes for coach (optional)</label>
+    <textarea id="assess-notes-${pid}" placeholder="How did it feel? Anything you want your coach to know…" style="margin-bottom:16px">${data.notes}</textarea>
+
+    <!-- Navigation -->
+    <div class="assessment-nav">
+      <button class="assessment-skip" onclick="assessSkip()">Skip for now</button>
+      <button class="btn btn-full btn-gm" onclick="saveAndNext('${pid}')">${hasVideo?'Save & Continue →':'Continue without video →'}</button>
+    </div>
+  `;
+
+  document.getElementById('assessment-body').innerHTML=h;
+  document.getElementById('assessment-body').scrollTop=0;
+
+  // Restore video preview if file exists
+  if(data.videoFile){
+    const preview=document.getElementById(`assess-preview-${pid}`);
+    if(preview){
+      preview.src=URL.createObjectURL(data.videoFile);
+      preview.style.display='block';
+    }
+  }
+  // Restore notes
+  const notesEl=document.getElementById(`assess-notes-${pid}`);
+  if(notesEl)notesEl.value=data.notes||'';
+}
+
+function handleAssessVideo(pid,input){
+  const file=input.files[0];if(!file)return;
+  assessData[pid].videoFile=file;
+  assessData[pid].uploaded=false;
+  const preview=document.getElementById(`assess-preview-${pid}`);
+  if(preview){preview.src=URL.createObjectURL(file);preview.style.display='block';}
+  // Re-render slide to show "Video added" status
+  renderAssessSlide();
+}
+
+function saveAndNext(pid){
+  const notesEl=document.getElementById(`assess-notes-${pid}`);
+  if(notesEl)assessData[pid].notes=notesEl.value.trim();
+  assessNext();
+}
+
+function getYouTubeEmbed(url){
+  const match=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  return match?`https://www.youtube.com/embed/${match[1]}?rel=0`:url;
+}
+
+function renderAssessSummary(){
+  const submittedCount=PATS.filter(p=>assessData[p].videoFile).length;
+  let h=`
+    <div style="margin-bottom:20px">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;margin-bottom:6px">Assessment ready</div>
+      <div style="font-size:14px;color:var(--mt)">${submittedCount} of 8 patterns have video attached. Your coach will review each one and assign your levels.</div>
+    </div>
+
+    <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px">`;
+
+  PATS.forEach(pid=>{
+    const data=assessData[pid];
+    const hasVideo=!!data.videoFile;
+    h+=`<div class="assess-summary-row">
+      <div style="flex:1">
+        <div class="assess-summary-pat">${PF[pid]}</div>
+        <div class="assess-summary-sub">${hasVideo?'Video attached':'No video — coach will note as pending'}</div>
+      </div>
+      <div class="assessment-status ${hasVideo?'done':'empty'}">${hasVideo?'✓ Ready':'Skipped'}</div>
+      <button style="margin-left:8px;padding:4px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:12px;color:var(--mt);font-family:var(--fn)" onclick="goToPattern(${PATS.indexOf(pid)})">Edit</button>
+    </div>`;
+  });
+
+  h+=`</div>
+
+    ${submittedCount===0?`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--amber)">⚠ No videos attached. Your coach will still be notified but won't be able to assess your movement remotely. Add at least one video to get the most from your assessment.</div>`:''}
+
+    <button class="btn btn-full btn-gm" id="submit-assess-btn" onclick="submitFullAssessment()" style="margin-bottom:10px">Submit Assessment →</button>
+    <div class="msg" id="assess-submit-msg"></div>
+  `;
+
+  document.getElementById('assessment-body').innerHTML=h;
+  document.getElementById('assessment-body').scrollTop=0;
+}
+
+function goToPattern(index){
+  assessStep=index;
+  renderAssessSlide();
+}
+
+async function submitFullAssessment(){
+  const btn=document.getElementById('submit-assess-btn');
+  const msg=document.getElementById('assess-submit-msg');
+  btn.disabled=true;
+  msg.textContent='Uploading videos and submitting…';msg.className='msg';
+
+  const today=new Date().toISOString();
+  let successCount=0;
+
+  for(const pid of PATS){
+    const data=assessData[pid];
+    let videoUrl=null;
+
+    // Upload video if present
+    if(data.videoFile){
+      try{
+        const ext=data.videoFile.name.split('.').pop();
+        const path=`${CU.id}/${pid.toLowerCase()}_${Date.now()}.${ext}`;
+        const{error:upErr}=await sb.storage.from('test-videos').upload(path,data.videoFile,{contentType:data.videoFile.type,upsert:false});
+        if(!upErr){
+          const{data:urlData}=sb.storage.from('test-videos').getPublicUrl(path);
+          videoUrl=urlData?.publicUrl||path;
+        }
+      }catch(e){console.warn('Video upload failed for',pid,e);}
+    }
+
+    // Submit assessment row — even without video so coach knows to assess this pattern
+    const{error}=await sb.from('assessments').insert({
+      athlete_id:CU.id,
+      pattern_id:pid,
+      level_tested:1,
+      passed:null,
+      notes:data.notes||null,
+      video_url:videoUrl,
+      assessed_at:today,
+    });
+
+    if(!error)successCount++;
+    msg.textContent=`Submitting… ${successCount}/${PATS.length}`;
+  }
+
+  if(successCount>0){
+    msg.textContent='✓ Assessment submitted! Your coach will review your videos and assign your levels.';
+    msg.className='msg ok';
+    // Reload logs
+    const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
+    LOGS=data||[];
+    setTimeout(()=>{
+      closeAssessment();
+      rHome();rProfile();
+      toast('✓ Assessment submitted to your coach','ok');
+    },2000);
+  } else {
+    msg.textContent='Something went wrong. Please try again.';
+    msg.className='msg err';
+    btn.disabled=false;
+  }
+}
+
 // ── PROGRAMME ENGINE ──
 
 // Block tracking — stored in localStorage per user
@@ -1133,19 +1456,25 @@ function rWorkout(){
     </div>
   </div>`;
   if(!hasLvl){
-    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:14px">
-      <div style="background:var(--dk);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:#fff">Starter Workout</div>
-          <div style="font-size:11px;color:#777;margin-top:1px">Pattern foundations — no equipment needed</div>
+    h+=`<div class="start-assess-card" onclick="openAssessment()">
+      <div class="start-assess-body">
+        <div class="start-assess-title">Complete Your Assessment</div>
+        <div class="start-assess-sub">Film yourself performing each of the 8 movement patterns. Your coach reviews your videos and assigns your levels. Your programme unlocks immediately after.</div>
+        <div class="start-assess-patterns">
+          ${PATS.map(p=>`<span class="start-assess-pat">${PL[p]}</span>`).join('')}
         </div>
-        <div style="font-size:11px;color:#666;background:#1a1a1a;padding:3px 8px;border-radius:99px">L0 — Pre-Assessment</div>
+        <button class="start-assess-btn" onclick="event.stopPropagation();openAssessment()">🎥 Start Assessment →</button>
       </div>
-      ${buildStarterWorkout()}
-    </div>
-    <div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--amber);text-align:center">
-      ⏳ Your full programme unlocks once your coach completes your assessment
     </div>`;
+
+    // Check if they've already submitted
+    const submitted=LOGS.filter(l=>l.passed===null).length;
+    if(submitted>0){
+      h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--amber);text-align:center;margin-top:-4px">
+        ⏳ ${submitted} pattern${submitted>1?'s':''} submitted — awaiting coach review
+      </div>`;
+    }
+
     document.getElementById('v-workout').innerHTML=h;
     return;
   }
