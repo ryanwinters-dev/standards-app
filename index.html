@@ -1818,9 +1818,14 @@ function setDay(d){curDay=d;openCircuits={};rWorkout();rHome();}
 function toggleCircuit(key){
   openCircuits[key]=!openCircuits[key];
   const body=document.getElementById('cb-'+key);
-  if(body)body.classList.toggle('open',!!openCircuits[key]);
-  const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
-  if(arr)arr.textContent=openCircuits[key]?'▲':'▼';
+  if(body){
+    body.classList.toggle('open',!!openCircuits[key]);
+    const arr=body?.previousElementSibling?.querySelector('.circuit-arrow');
+    if(arr)arr.textContent=openCircuits[key]?'▲':'▼';
+  } else {
+    // Warm up and accessory circuits use conditional rendering — need full re-render
+    rWorkout();
+  }
 }
 function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};extraSets={};rWorkout();rHome();}
 function addSet(ck,exKey){
