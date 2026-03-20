@@ -590,6 +590,19 @@ function showApp(user){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tu').textContent=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
+  // Reset to home tab
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab')[0]?.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('v-home')?.classList.add('active');
+  // Show single clean loading state — no flash of empty/wrong content
+  ['home','workout','profile','leaderboard'].forEach(t=>{
+    const el=document.getElementById('v-'+t);
+    if(el)el.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px">
+      <div style="width:24px;height:24px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div>
+      <div style="font-size:13px;color:var(--mt)">Loading your profile…</div>
+    </div>`;
+  });
 }
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(ev==='SIGNED_IN'&&sess?.user){showApp(sess.user);await load();}
@@ -644,11 +657,6 @@ async function load(){
   IS_COACH=CU.app_metadata?.role==='coach';
   document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
   document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
-
-  // Show spinners
-  ['home','workout','profile','leaderboard'].forEach(t=>{
-    document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
-  });
 
   // Safe query wrapper — never throws, never hangs
   const q=async(query)=>{
