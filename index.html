@@ -1375,10 +1375,76 @@ async function submitTest(){
 }
 
 // ── COACH TAB ──
+async function inviteAthlete(){
+  const name=document.getElementById('invite-name').value.trim();
+  const email=document.getElementById('invite-email').value.trim().toLowerCase();
+  const msg=document.getElementById('invite-msg');
+  if(!name||!email){msg.textContent='Please enter both name and email.';msg.className='msg err';return;}
+  if(!email.includes('@')){msg.textContent='Please enter a valid email address.';msg.className='msg err';return;}
+  msg.textContent='Sending invitation…';msg.className='msg';
+
+  // Use Supabase admin invite — sends email with password setup link
+  const{data,error}=await sb.auth.admin.inviteUserByEmail(email,{
+    data:{full_name:name},
+    redirectTo:window.location.origin,
+  });
+
+  // admin.inviteUserByEmail requires service role key — use our edge function fallback instead
+  if(error&&error.message.includes('not authorized')){
+    // Fallback: create profile record and show manual invite instructions
+    const{error:profileErr}=await sb.from('profiles').upsert({
+      email,full_name:name,role:'athlete'
+    },{onConflict:'email',ignoreDuplicates:false});
+
+    if(profileErr&&!profileErr.message.includes('duplicate')){
+      msg.textContent='Error: '+profileErr.message;msg.className='msg err';return;
+    }
+    msg.textContent=`✓ ${name} added. Share the app link with them to sign up: ${window.location.origin}`;
+    msg.className='msg ok';
+    document.getElementById('invite-name').value='';
+    document.getElementById('invite-email').value='';
+    return;
+  }
+
+  if(error){msg.textContent='Error: '+error.message;msg.className='msg err';return;}
+
+  // Success — also ensure profile row exists
+  await sb.from('profiles').upsert({
+    id:data.user?.id,email,full_name:name,role:'athlete'
+  },{onConflict:'id',ignoreDuplicates:false});
+
+  msg.textContent=`✓ Invitation sent to ${email}. They'll receive an email to set their password.`;
+  msg.className='msg ok';
+  document.getElementById('invite-name').value='';
+  document.getElementById('invite-email').value='';
+
+  // Reload athletes list after short delay
+  setTimeout(async()=>{
+    const allProfiles=await sb.from('profiles').select('id,full_name,email,role').neq('id',CU.id).then(r=>r.data||[]);
+    const allAP=await sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level').then(r=>r.data||[]);
+    const am={};
+    allProfiles.forEach(p=>{if(p.role!=='coach')am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{}};});
+    allAP.forEach(r=>{if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;});
+    ALL_ATHLETES=Object.values(am);
+    rCoach();
+  },2000);
+}
+
 function rCoach(){
   if(!IS_COACH){document.getElementById('v-coach').innerHTML='';return;}
   const pendingCount=ALL_PENDING.length;
   let h='';
+
+  // Invite athlete form
+  h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:16px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Invite an Athlete</div>
+    <label>Full name</label>
+    <input type="text" id="invite-name" placeholder="e.g. John Smith" style="margin-bottom:10px"/>
+    <label>Email address</label>
+    <input type="email" id="invite-email" placeholder="athlete@email.com" style="margin-bottom:12px"/>
+    <button class="btn btn-full btn-dk" onclick="inviteAthlete()">Send Invitation</button>
+    <div class="msg" id="invite-msg"></div>
+  </div>`;
 
   // Pending banner at top
   if(pendingCount>0){
