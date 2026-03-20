@@ -181,15 +181,49 @@
     .pn{font-size:17px;font-weight:600}.ps{font-size:13px;color:var(--mt);margin-top:2px}
     .sc{margin-left:auto;background:var(--gl);color:var(--gd);padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
     .pg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px;cursor:pointer;transition:border-color .15s,transform .1s}
+
+    /* Pattern tile — new universal design */
+    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative}
     .pc:hover{border-color:#bbb;transform:translateY(-1px)}.pc.act{border-color:var(--gm);border-width:1.5px}
-    .pt{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-    .pname{font-size:13px;font-weight:600}
-    .lc{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
-    .bt{height:4px;background:var(--br);border-radius:2px;margin-bottom:5px;overflow:hidden}
-    .bf{height:100%;border-radius:2px;transition:width .5s ease}
-    .pb2{display:flex;justify-content:space-between}
-    .pex{font-size:11px;color:var(--mt)}.pst{font-size:11px;font-weight:600;color:var(--gm)}
+    .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+    .pc-name{font-size:12px;font-weight:600;color:var(--md)}
+    .pc-level{font-size:26px;font-weight:700;line-height:1;letter-spacing:-1px}
+    .pc-of5{font-size:11px;color:var(--mt);font-weight:400;margin-left:1px}
+    .pc-bar{height:5px;background:var(--br);border-radius:3px;margin-bottom:6px;overflow:hidden}
+    .pc-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+    .pc-ex{font-size:11px;color:var(--mt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pc-test-btn{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:8px;padding:5px;background:var(--bg);border:0.5px solid var(--br);border-radius:6px;font-size:11px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);transition:all .15s}
+    .pc-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
+    .pc-hist-btn{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:10px;color:var(--mt);display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .pc-hist-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
+    .pc-pending{margin-top:8px;padding:7px 8px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:6px}
+    .pc-pending-label{font-size:10px;font-weight:600;color:var(--amber);margin-bottom:4px}
+
+    /* Pattern test history dropdown */
+    .pat-hist{background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px}
+    .pat-hist-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--br)}
+    .pat-hist-row:last-child{border-bottom:none}
+
+    /* Calendar */
+    .cal-wrap{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px}
+    .cal-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:0.5px solid var(--br)}
+    .cal-title{font-size:13px;font-weight:600}
+    .cal-nav{display:flex;gap:4px}
+    .cal-nav-btn{padding:3px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:12px;color:var(--md);font-family:var(--fn);transition:all .15s}
+    .cal-nav-btn:hover{background:var(--bg)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:10px}
+    .cal-dow{font-size:10px;font-weight:600;color:var(--mt);text-align:center;padding:4px 0;letter-spacing:.05em}
+    .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;font-weight:500;color:var(--md);cursor:default;position:relative}
+    .cal-day.worked{background:var(--gm);color:#fff;font-weight:700}
+    .cal-day.today{outline:1.5px solid var(--gm)}
+    .cal-day.empty{color:transparent}
+    .cal-day.other-month{color:var(--br)}
+    .cal-list-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border-top:0.5px solid var(--br);font-size:12px;font-weight:500;color:var(--mt);cursor:pointer;background:transparent;border-left:none;border-right:none;border-bottom:none;font-family:var(--fn);transition:all .15s}
+    .cal-list-btn:hover{color:var(--gm);background:var(--bg)}
+    .cal-sessions-list{border-top:0.5px solid var(--br)}
+    .cal-sess-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:0.5px solid var(--br);font-size:13px}
+    .cal-sess-row:last-child{border-bottom:none}
+
     .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
     .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .dt{font-size:14px;font-weight:600}
@@ -525,6 +559,8 @@ const sb=createClient(
 let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[],CHECKINS=[];
 let ALL_ATHLETES=[],ALL_PENDING=[],ALL_CHECKINS={},ALL_CLIENT_SETS={};
 let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
+let profCalDate=new Date();
+let openPatHist={},calListOpen=false;
 let testModalPat=null,selectedVideoFile=null,extraSets={};
 let ciAlcohol=false,ciScales={energy:null,stress:null,hunger:null};
 let openClients={};
@@ -1888,74 +1924,209 @@ function closeDemoModal(e){
 }
 
 // ── PROFILE ──
-function rProfile(){
-  const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0),fullName=CU.user_metadata?.full_name||CU.email,nm=fullName.split(' ')[0],init=gi(fullName);
-  let h=`<div class="ph"><div class="av">${init}</div><div><div class="pn">${nm}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`;
+function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId){
+  // Called for both athlete self-view and coach client view
+  // scores = AP (athlete) or a.scores (coach)
+  // logs = LOGS (athlete) or allTests (coach)
+  // sets = SETS (athlete) or clientSets (coach)
+  // pendingTests = [] (athlete) or clientPending (coach)
+  // athleteId = CU.id (athlete) or client id (coach)
+  if(!scores)scores=AP;
+  if(!logs)logs=LOGS;
+  if(!sets)sets=SETS;
+  if(!isCoach)isCoach=false;
+  if(!pendingTests)pendingTests=[];
+  if(!athleteId)athleteId=CU?.id;
+
+  const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
+  let h='';
+
+  // ── PATTERN TILES ──
   h+=`<div class="sl">Movement Standards</div><div class="pg">`;
   PATS.forEach(pid=>{
-    const lv=AP[pid]||0,col=LC[lv],bg=LL[lv],std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+    const lv=scores[pid]||0;
+    const col=LC[lv];
+    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
     const nextStd=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
-    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')"><div class="pt"><span class="pname">${PL[pid]}</span><span class="lc" style="background:${bg};color:${col}">L${lv}</span></div><div class="bt"><div class="bf" style="width:${(lv/5)*100}%;background:${col}"></div></div><div class="pb2"><span class="pex">${std?std.test_exercise:'Not assessed'}</span><span class="pst">${std?std.load_standard:'—'}</span></div>${nextStd?`<button class="log-test-btn" onclick="event.stopPropagation();openTestModal('${pid}')">+ Log Level ${lv+1} Test</button>`:''}</div>`;
+    const patLogs=logs.filter(l=>l.pattern_id===pid).sort((a,b)=>new Date(b.assessed_at)-new Date(a.assessed_at));
+    const pending=pendingTests.find(p=>p.pattern_id===pid);
+    const histOpen=!!openPatHist[pid];
+
+    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
+      <div class="pc-top">
+        <span class="pc-name">${PL[pid]}</span>
+        ${patLogs.length?`<button class="pc-hist-btn" onclick="event.stopPropagation();togglePatHist('${pid}')" title="Test history">≡</button>`:''}
+      </div>
+      <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:8px">
+        <span class="pc-level" style="color:${col}">${lv}</span>
+        <span class="pc-of5">/ 5</span>
+      </div>
+      <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+      <div class="pc-ex">${std?std.test_exercise:'Not assessed'}</div>`;
+
+    // Coach pending test controls
+    if(isCoach&&pending){
+      const pStd=STD.find(s=>s.pattern_id===pid&&s.level===pending.level_tested);
+      h+=`<div class="pc-pending">
+        <div class="pc-pending-label">⏳ L${pending.level_tested} pending review</div>
+        <div style="font-size:11px;color:var(--mt);margin-bottom:5px">${pStd?.test_exercise||'—'}</div>
+        ${pending.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:5px">"${pending.notes}"</div>`:''}
+        ${pending.video_url?`<video style="width:100%;border-radius:4px;margin-bottom:6px;max-height:140px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
+        <div style="display:flex;gap:5px;margin-top:4px">
+          <button class="btn-pass" style="flex:1;font-size:11px;padding:5px" onclick="event.stopPropagation();judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},true)">✓ Pass</button>
+          <button class="btn-fail" style="flex:1;font-size:11px;padding:5px" onclick="event.stopPropagation();judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},false)">✕ Fail</button>
+        </div>
+      </div>`;
+    }
+
+    // Athlete log test button
+    if(!isCoach&&nextStd){
+      h+=`<button class="pc-test-btn" onclick="event.stopPropagation();openTestModal('${pid}')">+ Log L${lv+1} Test</button>`;
+    }
+
+    // Collapsible test history
+    if(histOpen&&patLogs.length){
+      h+=`<div class="pat-hist" onclick="event.stopPropagation()">`;
+      patLogs.slice(0,8).forEach(log=>{
+        const sc=log.passed===true?'var(--gm)':log.passed===false?'var(--red)':'var(--amber)';
+        const sl=log.passed===true?'✓':'✕';
+        const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        const pStd=STD.find(s=>s.pattern_id===pid&&s.level===log.level_tested);
+        h+=`<div class="pat-hist-row">
+          <span style="color:var(--mt)">${dt} · L${log.level_tested}</span>
+          <span style="font-size:11px;color:var(--mt)">${pStd?.test_exercise||'—'}</span>
+          <span style="font-weight:700;color:${sc}">${log.passed===null?'⏳':sl}</span>
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+
+    h+=`</div>`;
   });
   h+=`</div>`;
+
+  // Pattern detail panel
   if(selPat)h+=rDetail(selPat);
-  if(LOGS.length){
-    h+=`<div class="sl">Test history</div>`;
-    LOGS.forEach(log=>{
-      const std=STD.find(s=>s.pattern_id===log.pattern_id&&s.level===log.level_tested);
-      const sc=log.passed===true?'var(--gm)':log.passed===false?'var(--red)':'var(--amber)';
-      const sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending';
-      const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-      h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:13px;font-weight:600">${PF[log.pattern_id]} — Level ${log.level_tested}</div><div style="font-size:12px;color:var(--mt);margin-top:2px">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>${log.notes?`<div style="font-size:11px;color:var(--mt);margin-top:2px;font-style:italic">"${log.notes}"</div>`:''}</div><div style="text-align:right"><div><span style="width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;background:${sc}"></span><span style="font-size:12px;font-weight:500">${sl}</span></div><div style="font-size:11px;color:var(--mt)">${dt}</div></div></div>`;
-    });
+
+  // ── WORKOUT CALENDAR ──
+  h+=buildProfileCalendar(sets);
+
+  // ── RENDER ──
+  if(!isCoach){
+    document.getElementById('v-profile').innerHTML=
+      `<div class="ph"><div class="av">${gi(CU.user_metadata?.full_name||CU.email)}</div><div><div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`
+      +h;
+  } else {
+    document.getElementById('cp-body').innerHTML=h;
+  }
+}
+
+function buildProfileCalendar(sets){
+  const today=new Date();
+  const yr=profCalDate.getFullYear();
+  const mo=profCalDate.getMonth();
+  const monthName=profCalDate.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+
+  // Build set of worked dates this month
+  const workedDates=new Set();
+  sets.forEach(s=>{
+    const d=s.session_date||s.logged_at?.split('T')[0];
+    if(d&&d.startsWith(`${yr}-${String(mo+1).padStart(2,'0')}`))workedDates.add(d);
+  });
+
+  // Calendar grid
+  const firstDay=new Date(yr,mo,1).getDay(); // 0=Sun
+  const daysInMonth=new Date(yr,mo+1,0).getDate();
+  const offset=(firstDay+6)%7; // Mon start
+
+  let h=`<div class="cal-wrap">
+    <div class="cal-hdr">
+      <span class="cal-title">${monthName}</span>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="profCalNav(-1)">←</button>
+        <button class="cal-nav-btn" onclick="profCalNav(1)">→</button>
+      </div>
+    </div>
+    <div class="cal-grid">`;
+
+  // Day headers Mon-Sun
+  ['M','T','W','T','F','S','S'].forEach(d=>{
+    h+=`<div class="cal-dow">${d}</div>`;
+  });
+
+  // Empty cells before first day
+  for(let i=0;i<offset;i++)h+=`<div class="cal-day empty"></div>`;
+
+  // Day cells
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=dateStr===today.toISOString().split('T')[0];
+    const worked=workedDates.has(dateStr);
+    h+=`<div class="cal-day${worked?' worked':''}${isToday?' today':''}">${d}</div>`;
   }
 
-  // Session history — collapsible
-  if(SETS.length){
-    const byDate={};
-    SETS.forEach(s=>{const d=s.session_date||s.logged_at?.split('T')[0]||'Unknown';if(!byDate[d])byDate[d]=[];byDate[d].push(s)});
-    const sessions=Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20);
-    h+=`<div class="sl">Session history</div>`;
-    sessions.forEach(([date,sets],si)=>{
-      const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
-      const sid=`sess-${si}`;
-      // Group sets by exercise — show best set per exercise
-      const byEx={};
-      sets.forEach(s=>{
-        const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
-        if(!byEx[nm])byEx[nm]=[];
-        byEx[nm].push(s);
-      });
-      const exCount=Object.keys(byEx).length;
-      const totalSets=sets.length;
-      h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;margin-bottom:8px;overflow:hidden">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;background:var(--bg)" onclick="toggleSess('${sid}')">
-          <div>
-            <div style="font-size:13px;font-weight:600">${label}</div>
-            <div style="font-size:12px;color:var(--mt);margin-top:2px">${exCount} exercises · ${totalSets} sets</div>
-          </div>
-          <span id="arr-${sid}" style="font-size:12px;color:var(--mt)">▼</span>
-        </div>
-        <div id="${sid}" style="display:none">`;
-      Object.entries(byEx).forEach(([nm,exSets])=>{
-        exSets.sort((a,b)=>a.set_number-b.set_number);
-        h+=`<div style="border-top:0.5px solid var(--br);padding:10px 14px">
-          <div style="font-size:12px;font-weight:600;color:var(--md);margin-bottom:6px">${nm}</div>`;
-        exSets.forEach(s=>{
-          const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
-          const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
-          h+=`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px">
-            <span style="color:var(--mt)">Set ${s.set_number}</span>
-            <span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?'600':'400'}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span>
-          </div>`;
+  h+=`</div>`;
+
+  // Session list toggle
+  const sessionDates=Object.entries(
+    sets.reduce((acc,s)=>{
+      const d=s.session_date||s.logged_at?.split('T')[0]||'';
+      if(d)acc[d]=(acc[d]||0)+1;
+      return acc;
+    },{})
+  ).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20);
+
+  if(sessionDates.length){
+    h+=`<button class="cal-list-btn" onclick="toggleCalList()">
+      ${calListOpen?'▲ Hide session log':'▼ View session log'}
+    </button>`;
+
+    if(calListOpen){
+      h+=`<div class="cal-sessions-list">`;
+      sessionDates.forEach(([date,count])=>{
+        const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+        const daySets=sets.filter(s=>(s.session_date||s.logged_at?.split('T')[0])===date);
+        const byEx={};
+        daySets.forEach(s=>{
+          const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
+          if(!byEx[nm])byEx[nm]=[];byEx[nm].push(s);
         });
+        const sid=`cal-${date}`;
+        const isOpen=!!openPatHist[sid];
+        h+=`<div>
+          <div class="cal-sess-row" onclick="togglePatHist('${sid}');event.stopPropagation()" style="cursor:pointer">
+            <div>
+              <div style="font-weight:500">${label}</div>
+              <div style="font-size:11px;color:var(--mt);margin-top:1px">${Object.keys(byEx).length} exercises · ${daySets.length} sets</div>
+            </div>
+            <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
+          </div>`;
+        if(isOpen){
+          h+=`<div style="background:var(--bg);padding:8px 14px">`;
+          Object.entries(byEx).forEach(([nm,exSets])=>{
+            exSets.sort((a,b)=>a.set_number-b.set_number);
+            h+=`<div style="margin-bottom:8px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:4px">${nm}</div>`;
+            exSets.forEach(s=>{
+              const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
+              const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
+              h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0">
+                <span style="color:var(--mt)">Set ${s.set_number}</span>
+                <span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?600:400}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span>
+              </div>`;
+            });
+            h+=`</div>`;
+          });
+          h+=`</div>`;
+        }
         h+=`</div>`;
       });
-      h+=`</div></div>`;
-    });
+      h+=`</div>`;
+    }
   }
 
-  document.getElementById('v-profile').innerHTML=h;
+  h+=`</div>`;
+  return h;
 }
 function rDetail(pid){
   const lv=AP[pid]||0;
@@ -1964,6 +2135,12 @@ function rDetail(pid){
   const std=STD.find(s=>s.pattern_id===pid&&s.level===lv),nx=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
   function eb(x,tag,cls){if(!x)return'';const i=x.intent||'Control',r=RR[i];return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`}
   return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}${nx?`<div class="ns"><strong>Next →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
+}
+function togglePatHist(pid){openPatHist[pid]=!openPatHist[pid];rProfile();}
+function toggleCalList(){calListOpen=!calListOpen;rProfile();}
+function profCalNav(dir){
+  profCalDate=new Date(profCalDate.getFullYear(),profCalDate.getMonth()+dir,1);
+  rProfile();
 }
 function selP(p){selPat=selPat===p?null:p;rProfile();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
 function cD(){selPat=null;rProfile()}
@@ -2143,8 +2320,83 @@ async function openClientPage(athleteId){
   const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
   document.getElementById('cp-name').textContent=a.name;
   document.getElementById('cp-score').textContent=`${total} / 40`;
-  document.getElementById('cp-body').innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
+  document.getElementById('cp-body').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
   document.getElementById('client-page').classList.add('active');
+
+  const[pendingRes,allTestsRes,checkinsRes,setsRes]=await Promise.all([
+    sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
+    sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
+    sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
+    sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}),
+  ]);
+  const clientPending=pendingRes.data||[];
+  const allTests=allTestsRes.data||[];
+  const clientSets=setsRes.data||[];
+
+  // Reset state for new client view
+  openPatHist={};calListOpen=false;selPat=null;
+
+  // Pending banner
+  let banner='';
+  if(clientPending.length>0){
+    banner=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting your review</div>`;
+  }
+
+  document.getElementById('cp-body').innerHTML=banner;
+
+  // Use universal rProfile in coach mode
+  rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId);
+
+  // Check-in section
+  const clientCheckins=checkinsRes.data||[];
+  if(clientCheckins.length){
+    const latest=clientCheckins[0];
+    const last7=clientCheckins.slice(0,7).reverse();
+    const latestDate=new Date(latest.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    let ciHtml=`<div class="cp-section"><div class="cp-section-title">Daily Check-Ins</div>
+      <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:12px;font-weight:600;color:var(--mt)">LATEST — ${latestDate}</span>
+          <span style="font-size:11px;color:var(--mt)">${clientCheckins.length} entries</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--dk)">${latest.weight?latest.weight+'kg':'—'}</div>
+            <div style="font-size:11px;color:var(--mt);margin-top:2px">Weight</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:${latest.hours_slept>=7?'var(--gm)':latest.hours_slept>=5?'var(--amber)':'var(--red)'}">${latest.hours_slept?latest.hours_slept+'h':'—'}</div>
+            <div style="font-size:11px;color:var(--mt);margin-top:2px">Sleep</div>
+          </div>
+        </div>
+      </div>`;
+
+    // Collapsible all entries
+    const ciKey='ci-all-'+athleteId.slice(0,8);
+    ciHtml+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleSess('${ciKey}')">
+        <span style="font-size:13px;font-weight:600">All entries (${clientCheckins.length})</span>
+        <span id="arr-${ciKey}" style="font-size:12px;color:var(--mt)">▼</span>
+      </div>
+      <div id="${ciKey}" style="display:none">`;
+    clientCheckins.forEach(c=>{
+      const dt=new Date(c.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+      const metrics=[];
+      if(c.weight)metrics.push(`${c.weight}kg`);
+      if(c.hours_slept)metrics.push(`${c.hours_slept}h sleep`);
+      if(c.energy)metrics.push(`Energy ${c.energy}/10`);
+      if(c.stress)metrics.push(`Stress ${c.stress}/10`);
+      if(c.protein_g)metrics.push(`${c.protein_g}g protein`);
+      if(c.steps)metrics.push(`${c.steps.toLocaleString()} steps`);
+      ciHtml+=`<div style="padding:10px 14px;border-top:0.5px solid var(--br)">
+        <div style="font-size:12px;font-weight:600;margin-bottom:3px">${dt}</div>
+        <div style="font-size:12px;color:var(--mt)">${metrics.join(' · ')||'No data'}</div>
+      </div>`;
+    });
+    ciHtml+=`</div></div></div>`;
+    document.getElementById('cp-body').innerHTML+=ciHtml;
+  }
+}
 
   // Fetch this client's data fresh — don't rely on preloaded ALL_PENDING
   const[pendingRes,allTestsRes,checkinsRes]=await Promise.all([
@@ -2305,121 +2557,6 @@ async function openClientPage(athleteId){
     h+=`</div></div></div></div>`;
   }
 
-  // ── CHECK-IN SUMMARY ──
-  if(clientCheckins.length){
-    const latest=clientCheckins[0];
-    const last7=clientCheckins.slice(0,7).reverse(); // oldest first for chart
-
-    // Sparkline SVG for weight and sleep
-    const wVals=last7.map(c=>c.weight||null);
-    const sVals=last7.map(c=>c.hours_slept||null);
-    const hasWeight=wVals.some(v=>v!==null);
-    const hasSleep=sVals.some(v=>v!==null);
-
-    function sparkline(vals,color){
-      const valid=vals.filter(v=>v!==null);
-      if(valid.length<2)return'';
-      const min=Math.min(...valid),max=Math.max(...valid);
-      const range=max-min||1;
-      const w=260,h=40,pad=4;
-      const pts=vals.map((v,i)=>{
-        if(v===null)return null;
-        const x=pad+(i/(vals.length-1))*(w-pad*2);
-        const y=h-pad-((v-min)/range)*(h-pad*2);
-        return`${x},${y}`;
-      }).filter(Boolean);
-      const path=pts.map((p,i)=>i===0?`M${p}`:`L${p}`).join(' ');
-      return`<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-    }
-
-    function dayLabel(dateStr){
-      return new Date(dateStr+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'});
-    }
-
-    h+=`<div class="cp-section"><div class="cp-section-title">Check-In</div>`;
-
-    // Snapshot row
-    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px">
-        <div style="font-size:11px;color:var(--mt);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Latest Weight</div>
-        <div style="font-size:22px;font-weight:700;color:var(--dk)">${latest.weight?latest.weight+'kg':'—'}</div>
-        <div style="font-size:11px;color:var(--mt);margin-top:2px">${new Date(latest.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
-      </div>
-      <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px">
-        <div style="font-size:11px;color:var(--mt);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Last Sleep</div>
-        <div style="font-size:22px;font-weight:700;color:var(--dk)">${latest.hours_slept?latest.hours_slept+'h':'—'}</div>
-        <div style="font-size:11px;color:var(--mt);margin-top:2px">${latest.energy?`Energy: ${latest.energy}/10`:'—'}</div>
-      </div>
-    </div>`;
-
-    // 7-day sparkline chart
-    if(last7.length>=2&&(hasWeight||hasSleep)){
-      const dayLabels=last7.map(c=>dayLabel(c.checkin_date));
-      h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">7-Day Trend</div>
-        <svg viewBox="0 0 268 48" width="100%" style="display:block;overflow:visible">
-          ${hasWeight?sparkline(wVals,'#1D9E75'):''}
-          ${hasSleep?sparkline(sVals,'#5DCAA5'):''}
-          ${last7.map((_,i)=>{
-            const x=4+(i/(last7.length-1))*260;
-            return`<text x="${x}" y="47" text-anchor="middle" font-size="8" font-family="-apple-system,sans-serif" fill="#888">${dayLabels[i]}</text>`;
-          }).join('')}
-        </svg>
-        <div style="display:flex;gap:12px;margin-top:4px">
-          ${hasWeight?`<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mt)"><div style="width:10px;height:2px;background:#1D9E75;border-radius:1px"></div>Weight</div>`:''}
-          ${hasSleep?`<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mt)"><div style="width:10px;height:2px;background:#5DCAA5;border-radius:1px"></div>Sleep (h)</div>`:''}
-        </div>
-      </div>`;
-    }
-
-    // All entries dropdown
-    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleSess('ci-all-${athleteId.slice(0,8)}')">
-        <span style="font-size:13px;font-weight:600">All entries (${clientCheckins.length})</span>
-        <span id="arr-ci-all-${athleteId.slice(0,8)}" style="font-size:12px;color:var(--mt)">▼</span>
-      </div>
-      <div id="ci-all-${athleteId.slice(0,8)}" style="display:none">`;
-    clientCheckins.forEach(c=>{
-      const dt=new Date(c.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-      const metrics=[];
-      if(c.weight)metrics.push(`Weight: ${c.weight}kg`);
-      if(c.hours_slept)metrics.push(`Sleep: ${c.hours_slept}h`);
-      if(c.energy)metrics.push(`Energy: ${c.energy}/10`);
-      if(c.stress)metrics.push(`Stress: ${c.stress}/10`);
-      if(c.resting_hr)metrics.push(`HR: ${c.resting_hr}bpm`);
-      if(c.calories)metrics.push(`Kcal: ${c.calories}`);
-      if(c.protein_g)metrics.push(`Protein: ${c.protein_g}g`);
-      if(c.water_litres)metrics.push(`Water: ${c.water_litres}L`);
-      if(c.steps)metrics.push(`Steps: ${c.steps.toLocaleString()}`);
-      if(c.alcohol_consumed)metrics.push(`Alcohol: Yes`);
-      h+=`<div style="padding:10px 14px;border-top:0.5px solid var(--br)">
-        <div style="font-size:12px;font-weight:600;margin-bottom:4px">${dt}</div>
-        <div style="font-size:12px;color:var(--mt);line-height:1.7">${metrics.join(' · ')||'No data'}</div>
-      </div>`;
-    });
-    h+=`</div></div></div>`;
-  } else {
-    h+=`<div class="cp-section"><div class="cp-section-title">Check-In</div><div style="color:var(--mt);font-size:13px;padding:8px 0">No check-ins logged yet.</div></div>`;
-  }
-
-  // ── TEST HISTORY ──
-  if(allTests.length){
-    h+=`<div class="cp-section"><div class="cp-section-title">Test History</div><div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:0 14px">`;
-    allTests.forEach(t=>{
-      const std=STD.find(s=>s.pattern_id===t.pattern_id&&s.level===t.level_tested);
-      const sc=t.passed===true?'var(--gm)':t.passed===false?'var(--red)':'var(--amber)';
-      const sl=t.passed===true?'Passed':t.passed===false?'Failed':'Pending';
-      const dt=new Date(t.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-      h+=`<div class="cp-test-row">
-        <div><div style="font-weight:500">${PF[t.pattern_id]} L${t.level_tested}</div><div style="font-size:11px;color:var(--mt)">${std?.test_exercise||'—'}</div></div>
-        <div style="text-align:right"><div style="font-size:12px;font-weight:600;color:${sc}">${sl}</div><div style="font-size:11px;color:var(--mt)">${dt}</div></div>
-      </div>`;
-    });
-    h+=`</div></div>`;
-  }
-
-  document.getElementById('cp-body').innerHTML=h;
-}
 
 function closeClientPage(){
   document.getElementById('client-page').classList.remove('active');
@@ -2436,7 +2573,8 @@ async function setLevel(athleteId,patId,newLevel){
     updated_at:new Date().toISOString()
   },{onConflict:'athlete_id,pattern_id'});
   if(error){toast('Failed to update level: '+error.message);return}
-  if(a)a.scores[patId]=newLevel;
+  const athlete=ALL_ATHLETES.find(x=>x.id===athleteId);
+  if(athlete)athlete.scores[patId]=newLevel;
   if(athleteId===CU.id){AP[patId]=newLevel;rWorkout();rHome();}
   openClientPage(athleteId);
 }
