@@ -537,10 +537,43 @@ document.addEventListener('visibilitychange',async()=>{
   }
 });
 
+// ── STATIC DATA CACHE ──
+// Standards and exercises never change — cache them in localStorage
+// Cache version bump forces a refresh if data structure changes
+const CACHE_VERSION='std_v1';
+
+async function loadStaticData(){
+  try{
+    const cached=localStorage.getItem(CACHE_VERSION);
+    if(cached){
+      const{std,ex}=JSON.parse(cached);
+      if(std?.length&&ex?.length){
+        STD=std;EX=ex;
+        return; // served from cache — instant
+      }
+    }
+  }catch(e){console.warn('Cache read failed:',e);}
+
+  // Not cached or stale — fetch from Supabase
+  const[stdRes,exRes]=await Promise.all([
+    sb.from('standards').select('*').order('pattern_id').order('level'),
+    sb.from('exercises').select('*'),
+  ]);
+  STD=stdRes.data||[];
+  EX=exRes.data||[];
+
+  // Store in cache
+  try{
+    localStorage.setItem(CACHE_VERSION,JSON.stringify({std:STD,ex:EX}));
+  }catch(e){console.warn('Cache write failed:',e);}
+}
+
+// Call this from dev console to force refresh static data after exercise updates
+window.clearStdCache=()=>{localStorage.removeItem(CACHE_VERSION);console.log('Cache cleared — reload to refresh');};
+
 // ── LOAD ──
 async function load(){
   lastLoad=Date.now();
-  // Read role from JWT immediately — no query needed
   IS_COACH=CU.app_metadata?.role==='coach';
   document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
   document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
@@ -550,31 +583,35 @@ async function load(){
     document.getElementById('v-'+t).innerHTML=`<div style="text-align:center;padding:40px 20px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
   });
 
-  // Safe wrapper — never throws, times out after 5s
+  // Safe query wrapper — never throws, never hangs
   const q=async(query)=>{
     try{
-      const timeout=new Promise(resolve=>setTimeout(()=>resolve({data:[]}),5000));
+      const timeout=new Promise(resolve=>setTimeout(()=>resolve({data:[]}),6000));
       const r=await Promise.race([query,timeout]);
       return r.data||[];
     }catch(e){console.warn('Query err:',e.message);return[];}
-  };;
+  };
 
   try{
-    // Run all athlete queries in parallel
-    const[std,ex,myAP,aap,logs,sets,checkins]=await Promise.all([
-      q(sb.from('standards').select('*').order('pattern_id').order('level')),
-      q(sb.from('exercises').select('*')),
+    // Load static data from cache first (instant for returning users)
+    await loadStaticData();
+
+    // Load all personal data in one parallel batch
+    const[myAP,aap,logs,sets,checkins]=await Promise.all([
       q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
       q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30)),
     ]);
-    STD=std;EX=ex;AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
+    AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
     AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
 
+    // Render athlete views immediately — don't wait for coach data
+    rHome();rWorkout();rProfile();rLB();
+
     if(IS_COACH){
-      // Run coach queries in parallel
+      // Coach data loads after athlete views are already rendered
       const[allProfiles,allAP,pending,allSets]=await Promise.all([
         q(sb.from('profiles').select('id,full_name,email,role').neq('id',CU.id)),
         q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
@@ -590,11 +627,12 @@ async function load(){
       ALL_ATHLETES=Object.values(am);
       ALL_PENDING=pending;
       ALL_CLIENT_SETS={};
-      allSets.forEach(s=>{if(!ALL_CLIENT_SETS[s.athlete_id])ALL_CLIENT_SETS[s.athlete_id]=[];ALL_CLIENT_SETS[s.athlete_id].push(s);});
+      allSets.forEach(s=>{
+        if(!ALL_CLIENT_SETS[s.athlete_id])ALL_CLIENT_SETS[s.athlete_id]=[];
+        ALL_CLIENT_SETS[s.athlete_id].push(s);
+      });
+      rCoach();
     }
-
-    rHome();rWorkout();rProfile();rLB();
-    if(IS_COACH)rCoach();
   }catch(err){
     console.error('Load error:',err);
     document.getElementById('v-home').innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}<br><br><button class="btn btn-dk" onclick="load()" style="margin-top:8px">Retry</button></div>`;
