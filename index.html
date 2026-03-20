@@ -540,7 +540,7 @@ document.addEventListener('visibilitychange',async()=>{
 // ── STATIC DATA CACHE ──
 // Standards and exercises never change — cache them in localStorage
 // Cache version bump forces a refresh if data structure changes
-const CACHE_VERSION='std_v1';
+const CACHE_VERSION='std_v2';
 
 async function loadStaticData(){
   try{
@@ -640,29 +640,34 @@ async function load(){
 }
 
 // ── STARTER WORKOUT (Level 0 — pre-assessment) ──
-// Uses placeholder exercises until Level 0 library is built
-// Each circuit follows the same push/pull/hinge/squat/core pairing logic
 function buildStarterWorkout(){
   const L0_CIRCUITS=[
     {
       letter:'A',name:'Horizontal',
       exercises:[
-        {name:'[PLACEHOLDER] Floor Push-Up — Isometric Hold',type:'Main',pattern:'HPush',meta:'3×30s hold · Focus: chest to floor, body rigid'},
-        {name:'[PLACEHOLDER] Band Pull-Apart or Door Row Hold',type:'Bridge',pattern:'HPull',meta:'3×30s hold · Focus: shoulder blades together'},
+        {name:'Wall Push-Up Hold',type:'Main',pattern:'HPush',meta:'3×30s hold · Chest to wall, elbows at 45°'},
+        {name:'Isometric Cable Row Hold',type:'Bridge',pattern:'HPull',meta:'3×8 reps · 3s hold each · Squeeze shoulder blades'},
       ]
     },
     {
       letter:'B',name:'Lower Body',
       exercises:[
-        {name:'[PLACEHOLDER] Wall Sit — Isometric Hold',type:'Main',pattern:'Squat',meta:'3×30–45s hold · Focus: knees over toes, back flat'},
-        {name:'[PLACEHOLDER] Hip Hinge with Dowel — Slow Eccentric',type:'Bridge',pattern:'Hinge',meta:'3×8 reps · 5s lowering · Focus: hinge at hip not waist'},
+        {name:'Wall Sit',type:'Main',pattern:'Squat',meta:'3×30–45s hold · Knees over toes, back flat'},
+        {name:'Hip Hinge Hold',type:'Bridge',pattern:'Hinge',meta:'3×8 reps · 3s pause · Hinge at hip, spine long'},
       ]
     },
     {
       letter:'C',name:'Vertical & Core',
       exercises:[
-        {name:'[PLACEHOLDER] Dead Hang or Flexed Arm Hang',type:'Main',pattern:'VPull',meta:'3×20–30s hold · Focus: active shoulders, no shrug'},
-        {name:'[PLACEHOLDER] Dead Bug — Isometric Hold',type:'Bridge',pattern:'Core',meta:'3×8 reps · Focus: lower back pressed to floor'},
+        {name:'Dead Hang',type:'Main',pattern:'VPull',meta:'3×20–30s hold · Pull shoulders into sockets'},
+        {name:'Dead Bug Hold',type:'Bridge',pattern:'Core',meta:'3×8 reps · Breathe out, rib cage down'},
+      ]
+    },
+    {
+      letter:'D',name:'Carry & Press',
+      exercises:[
+        {name:'Suitcase Hold',type:'Main',pattern:'Carry',meta:'3×30s each side · Stand tall, don\'t let side dip'},
+        {name:'Serratus Wall Slide',type:'Bridge',pattern:'VPush',meta:'3×10 reps · Push wall away as you slide up'},
       ]
     },
   ];
@@ -673,14 +678,14 @@ function buildStarterWorkout(){
       <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg)">
         <div style="width:22px;height:22px;border-radius:5px;background:var(--dk);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${circuit.letter}</div>
         <span style="font-size:12px;font-weight:600;color:var(--md)">${circuit.name} circuit</span>
-        <span style="font-size:11px;color:var(--mt);margin-left:auto">Bodyweight</span>
+        <span style="font-size:11px;color:var(--mt);margin-left:auto">Bodyweight / Cable</span>
       </div>`;
     circuit.exercises.forEach((ex,xi)=>{
       const tagCls=ex.type==='Main'?'tm':'tb';
       h+=`<div style="padding:10px 14px;border-top:0.5px solid var(--br)">
         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px">
           <span style="font-size:10px;font-weight:700;color:var(--mt);flex-shrink:0">${circuit.letter}${xi+1}</span>
-          <span style="font-size:13px;font-weight:600;flex:1;color:var(--amber)">${ex.name}</span>
+          <span style="font-size:13px;font-weight:600;flex:1">${ex.name}</span>
           <span class="cx-badge ${tagCls}" style="flex-shrink:0">${ex.type}</span>
         </div>
         <div style="font-size:11px;color:var(--mt);padding-left:18px">${ex.meta}</div>
@@ -1016,34 +1021,30 @@ function getSetTargets(){
 // Get Main exercise for a pattern — rotates between blocks so athletes
 // don't do the same exercise forever, but stays consistent within a block
 function getMainExercise(pid,usedNames){
-  const lv=Math.max(1,AP[pid]||1);
+  const lv=AP[pid]||0; // 0 = unassessed, gets Level 0 exercises
   const block=blockNumber();
-  // Get all Main candidates at this level
   const mains=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type==='Main');
   if(!mains.length){
-    // Fallback — any exercise at this level not used today
     const any=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv).find(e=>!usedNames.has(e.name));
     return any||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
   }
-  // Rotate through mains by block number — consistent within block, fresh each block
   const blockIndex=(block-1)%mains.length;
   const preferred=mains[blockIndex];
   if(!usedNames.has(preferred.name))return preferred;
-  // If preferred is already used today, try others
   const fresh=mains.find(e=>!usedNames.has(e.name));
   return fresh||preferred;
 }
 
 // Get Bridge or Limiter exercise — can vary each session for variety
 function getExercise(pid,type,usedNames){
-  const lv=Math.max(1,AP[pid]||1);
+  const lv=AP[pid]||0; // 0 = unassessed, gets Level 0 exercises
   const cands=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type);
   const fresh=cands.find(e=>!usedNames.has(e.name));
   if(fresh)return fresh;
   const anyFresh=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv).find(e=>!usedNames.has(e.name));
   if(anyFresh)return anyFresh;
-  for(const la of[lv-1,lv+1,lv-2,lv+2]){
-    if(la<1||la>5)continue;
+  for(const la of[lv+1,lv-1,lv+2]){
+    if(la<0||la>5)continue;
     const adj=EX.filter(e=>e.pattern_id===pid&&e.level_focus===la).find(e=>!usedNames.has(e.name));
     if(adj)return adj;
   }
