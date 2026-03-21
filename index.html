@@ -51,8 +51,8 @@
     .home-greeting h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
     .home-greeting p{font-size:14px;color:var(--mt);margin-top:2px}
 
-    .checkin-strip{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:border-color .15s}
-    .checkin-strip:hover{border-color:#bbb}
+    .checkin-strip{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px 14px;margin-bottom:14px;cursor:pointer;transition:border-color .15s}
+    .checkin-strip:hover{border-color:var(--gm)}
     .checkin-strip-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .checkin-strip-title{font-size:14px;font-weight:600;color:var(--dk)}
     .checkin-strip-arrow{font-size:16px;color:var(--mt)}
@@ -180,49 +180,54 @@
     .av{width:50px;height:50px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0}
     .pn{font-size:17px;font-weight:600}.ps{font-size:13px;color:var(--mt);margin-top:2px}
     .sc{margin-left:auto;background:var(--gl);color:var(--gd);padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
-    .pg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
 
-    /* Pattern tile — new universal design */
-    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative}
+    /* Pattern tile — compact 4-col design */
+    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:9px 8px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative}
     .pc:hover{border-color:#bbb;transform:translateY(-1px)}.pc.act{border-color:var(--gm);border-width:1.5px}
-    .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-    .pc-name{font-size:12px;font-weight:600;color:var(--md)}
-    .pc-level{font-size:26px;font-weight:700;line-height:1;letter-spacing:-1px}
-    .pc-of5{font-size:11px;color:var(--mt);font-weight:400;margin-left:1px}
-    .pc-bar{height:5px;background:var(--br);border-radius:3px;margin-bottom:6px;overflow:hidden}
-    .pc-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
-    .pc-ex{font-size:11px;color:var(--mt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pc-test-btn{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:8px;padding:5px;background:var(--bg);border:0.5px solid var(--br);border-radius:6px;font-size:11px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);transition:all .15s}
+    .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+    .pc-name{font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.04em}
+    .pc-level{font-size:22px;font-weight:700;line-height:1;letter-spacing:-1px}
+    .pc-of5{font-size:10px;color:var(--mt);font-weight:400;margin-left:1px}
+    .pc-bar{height:3px;background:var(--br);border-radius:2px;margin-bottom:4px;overflow:hidden}
+    .pc-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+    .pc-ex{font-size:10px;color:var(--mt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pc-test-btn{display:flex;align-items:center;justify-content:center;width:100%;margin-top:6px;padding:4px;background:var(--bg);border:0.5px solid var(--br);border-radius:5px;font-size:10px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);transition:all .15s}
     .pc-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
-    .pc-hist-btn{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:10px;color:var(--mt);display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .pc-hist-btn{position:absolute;top:7px;right:7px;width:16px;height:16px;border-radius:50%;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:9px;color:var(--mt);display:flex;align-items:center;justify-content:center;transition:all .15s}
     .pc-hist-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
-    .pc-pending{margin-top:8px;padding:7px 8px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:6px}
-    .pc-pending-label{font-size:10px;font-weight:600;color:var(--amber);margin-bottom:4px}
+    .pc-pending{margin-top:6px;padding:5px 6px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:5px}
+    .pc-pending-label{font-size:9px;font-weight:600;color:var(--amber);margin-bottom:3px}
 
     /* Pattern test history dropdown */
-    .pat-hist{background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px}
-    .pat-hist-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--br)}
+    .pat-hist{background:var(--bg);border-radius:6px;padding:6px 8px;margin-top:6px;font-size:11px}
+    .pat-hist-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:0.5px solid var(--br)}
     .pat-hist-row:last-child{border-bottom:none}
 
     /* Calendar */
     .cal-wrap{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px}
-    .cal-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:0.5px solid var(--br)}
+    .cal-hdr{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--br)}
     .cal-title{font-size:13px;font-weight:600}
     .cal-nav{display:flex;gap:4px}
-    .cal-nav-btn{padding:3px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:12px;color:var(--md);font-family:var(--fn);transition:all .15s}
+    .cal-nav-btn{padding:2px 9px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:12px;color:var(--md);font-family:var(--fn);transition:all .15s}
     .cal-nav-btn:hover{background:var(--bg)}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:10px}
-    .cal-dow{font-size:10px;font-weight:600;color:var(--mt);text-align:center;padding:4px 0;letter-spacing:.05em}
-    .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;font-weight:500;color:var(--md);cursor:default;position:relative}
-    .cal-day.worked{background:var(--gm);color:#fff;font-weight:700}
-    .cal-day.today{outline:1.5px solid var(--gm)}
-    .cal-day.empty{color:transparent}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:8px 6px}
+    .cal-dow{font-size:9px;font-weight:600;color:var(--mt);text-align:center;padding:3px 0;letter-spacing:.04em}
+    .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:11px;font-weight:500;color:var(--md);cursor:default;transition:all .15s}
+    .cal-day.worked{background:var(--gm);color:#fff;font-weight:700;cursor:pointer}
+    .cal-day.worked:hover{background:var(--gd);transform:scale(1.1)}
+    .cal-day.selected{outline:2px solid var(--gd);outline-offset:1px}
+    .cal-day.today{outline:1.5px solid var(--gm);outline-offset:1px}
+    .cal-day.empty{color:transparent;pointer-events:none}
     .cal-day.other-month{color:var(--br)}
     .cal-list-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border-top:0.5px solid var(--br);font-size:12px;font-weight:500;color:var(--mt);cursor:pointer;background:transparent;border-left:none;border-right:none;border-bottom:none;font-family:var(--fn);transition:all .15s}
     .cal-list-btn:hover{color:var(--gm);background:var(--bg)}
     .cal-sessions-list{border-top:0.5px solid var(--br)}
     .cal-sess-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:0.5px solid var(--br);font-size:13px}
     .cal-sess-row:last-child{border-bottom:none}
+    .cal-day-detail{background:var(--bg);border-top:0.5px solid var(--br);padding:12px 14px;animation:fi .15s ease}
+    .cal-day-detail-hdr{font-size:12px;font-weight:600;color:var(--md);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+    .cal-day-close{font-size:11px;color:var(--mt);cursor:pointer;padding:2px 6px;border:0.5px solid var(--br);border-radius:4px;background:var(--cd)}
 
     .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
     .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
@@ -560,7 +565,7 @@ let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[],CHECKINS=[]
 let ALL_ATHLETES=[],ALL_PENDING=[],ALL_CHECKINS={},ALL_CLIENT_SETS={};
 let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
 let profCalDate=new Date();
-let openPatHist={},calListOpen=false;
+let openPatHist={},calListOpen=false,selectedCalDay=null;
 let profContext={scores:null,logs:null,sets:null,isCoach:false,pendingTests:[],athleteId:null};
 let testModalPat=null,selectedVideoFile=null,extraSets={};
 let ciAlcohol=false,ciScales={energy:null,stress:null,hunger:null};
@@ -816,6 +821,33 @@ function buildStarterWorkout(){
   return h;
 }
 
+function buildCheckinStrip(days7,dayNames,streak){
+  const todayDone=days7[6]?.done;
+  let h=`<div class="checkin-strip" onclick="openCIModal()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--dk)">Daily Check-In</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:1px">${todayDone?'✓ Done today':'Tap to check in'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${streak>0?`<div style="display:flex;align-items:center;gap:4px;background:var(--gl);padding:3px 9px;border-radius:99px">
+          <span style="font-size:14px">🔥</span>
+          <span style="font-size:12px;font-weight:700;color:var(--gd)">${streak}</span>
+        </div>`:''}
+        <span style="font-size:16px;color:var(--mt)">›</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;justify-content:space-between">`;
+  days7.forEach(({d,done,isToday})=>{
+    h+=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:26px;height:26px;border-radius:50%;border:1.5px solid ${done?'var(--gm)':isToday?'var(--gm)':'var(--br)'};background:${done?'var(--gm)':'transparent'};display:flex;align-items:center;justify-content:center;font-size:11px;color:${done?'#fff':isToday?'var(--gm)':'var(--mt)'}">${done?'✓':''}</div>
+      <div style="font-size:9px;color:var(--mt);font-weight:500">${dayNames[d.getDay()].slice(0,1)}</div>
+    </div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
 // ── HOME ──
 function rHome(){
   const nm=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
@@ -903,36 +935,17 @@ function rHome(){
     </div>`:''}`;
 
     // Check-in strip still shows for new athletes
-    h+=`<div class="checkin-strip" onclick="openCIModal()">
-      <div class="checkin-strip-top"><span class="checkin-strip-title">Daily Check-In</span><span class="checkin-strip-arrow">›</span></div>
-      <div class="checkin-days">`;
-    days7.forEach(({d,done,isToday})=>{
-      h+=`<div class="checkin-day">
-        <div class="checkin-dot${done?' done':isToday?' today':''}">${done?'✓':''}</div>
-        <div class="checkin-day-label">${dayNames[d.getDay()]}</div>
-        <div class="checkin-day-num">${d.getDate()}</div>
-      </div>`;
-    });
-    h+=`</div></div>`;
+    const streak7=days7.filter(x=>x.done).length;
+    h+=buildCheckinStrip(days7,dayNames,streak7);
     document.getElementById('v-home').innerHTML=h;
     return;
   }
 
   // ── RETURNING ATHLETE HOME ──
 
-  // ── RETURNING ATHLETE HOME ──
   // Check-in strip
-  h+=`<div class="checkin-strip" onclick="openCIModal()">
-    <div class="checkin-strip-top"><span class="checkin-strip-title">Daily Check-In</span><span class="checkin-strip-arrow">›</span></div>
-    <div class="checkin-days">`;
-  days7.forEach(({d,done,isToday})=>{
-    h+=`<div class="checkin-day">
-      <div class="checkin-dot${done?' done':isToday?' today':''}">${done?'✓':''}</div>
-      <div class="checkin-day-label">${dayNames[d.getDay()]}</div>
-      <div class="checkin-day-num">${d.getDate()}</div>
-    </div>`;
-  });
-  h+=`</div></div>`;
+  const streak7=days7.filter(x=>x.done).length;
+  h+=buildCheckinStrip(days7,dayNames,streak7);
 
   // Spider diagram
   h+=`<div class="spider-card">
@@ -2059,12 +2072,45 @@ function buildProfileCalendar(sets){
     const dateStr=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday=dateStr===today.toISOString().split('T')[0];
     const worked=workedDates.has(dateStr);
-    h+=`<div class="cal-day${worked?' worked':''}${isToday?' today':''}">${d}</div>`;
+    const isSelected=selectedCalDay===dateStr;
+    const onclick=worked?`onclick="selectCalDay('${dateStr}')"`:'' ;
+    h+=`<div class="cal-day${worked?' worked':''}${isToday?' today':''}${isSelected?' selected':''}" ${onclick}>${d}</div>`;
   }
 
   h+=`</div>`;
 
-  // Session list toggle
+  // Selected day session detail
+  if(selectedCalDay){
+    const daySets=sets.filter(s=>(s.session_date||s.logged_at?.split('T')[0])===selectedCalDay);
+    const label=new Date(selectedCalDay+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+    h+=`<div class="cal-day-detail">
+      <div class="cal-day-detail-hdr">
+        <span>${label} · ${daySets.length} sets</span>
+        <span class="cal-day-close" onclick="selectCalDay(null)">✕</span>
+      </div>`;
+    if(daySets.length){
+      const byEx={};
+      daySets.forEach(s=>{
+        const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
+        if(!byEx[nm])byEx[nm]=[];byEx[nm].push(s);
+      });
+      Object.entries(byEx).forEach(([nm,exSets])=>{
+        exSets.sort((a,b)=>a.set_number-b.set_number);
+        h+=`<div style="margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:3px">${nm}</div>`;
+        exSets.forEach(s=>{
+          const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
+          const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
+          h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--mt)">
+            <span>Set ${s.set_number}</span>
+            <span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?600:400}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span>
+          </div>`;
+        });
+        h+=`</div>`;
+      });
+    }
+    h+=`</div>`;
+  }
   const sessionDates=Object.entries(
     sets.reduce((acc,s)=>{
       const d=s.session_date||s.logged_at?.split('T')[0]||'';
@@ -2133,6 +2179,7 @@ function rDetail(pid){
   function eb(x,tag,cls){if(!x)return'';const i=x.intent||'Control',r=RR[i];return`<div class="eb"><div class="et ${cls}">${tag}</div><div class="en">${x.name}</div><div class="er2"><span class="ec">"${x.coaching_cue||'—'}"</span><span class="em2">${r.lo}–${r.hi} reps · ${TM[i]}</span></div></div>`}
   return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}${nx?`<div class="ns"><strong>Next →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
 }
+function selectCalDay(date){selectedCalDay=date;_reprof();}
 function _reprof(){rProfile(profContext.scores,profContext.logs,profContext.sets,profContext.isCoach,profContext.pendingTests,profContext.athleteId);}
 function togglePatHist(pid){openPatHist[pid]=!openPatHist[pid];_reprof();}
 function toggleCalList(){calListOpen=!calListOpen;_reprof();}
