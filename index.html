@@ -2032,44 +2032,39 @@ function buildProfileCalendar(sets){
   const today=new Date();
   const todayStr=today.toISOString().split('T')[0];
 
-  // Build worked dates set for all time
   const workedDates=new Set();
   sets.forEach(s=>{
     const d=s.session_date||s.logged_at?.split('T')[0];
     if(d)workedDates.add(d);
   });
 
-  // Week starting from profCalDate (Mon-based, show 5 weeks = 35 days scrollable)
-  // Centre on the most recent session or today
-  const refDate=profCalDate;
-  const dayOfWeek=(refDate.getDay()+6)%7; // Mon=0
-  const weekStart=new Date(refDate);
-  weekStart.setDate(refDate.getDate()-dayOfWeek);
+  // Find Monday of the current week (profCalDate determines which week)
+  const ref=new Date(profCalDate);
+  const dayOfWeek=(ref.getDay()+6)%7; // Mon=0
+  const weekStart=new Date(ref);
+  weekStart.setDate(ref.getDate()-dayOfWeek);
 
-  // Build 5 weeks of days (35 days)
+  // Build 7 days Mon-Sun
   const days=[];
-  for(let i=0;i<35;i++){
+  for(let i=0;i<7;i++){
     const d=new Date(weekStart);
     d.setDate(weekStart.getDate()+i);
     const ds=d.toISOString().split('T')[0];
-    days.push({d,ds,
-      worked:workedDates.has(ds),
-      isToday:ds===todayStr,
-      isSelected:selectedCalDay===ds,
-    });
+    days.push({d,ds,worked:workedDates.has(ds),isToday:ds===todayStr,isSelected:selectedCalDay===ds});
   }
 
   const dayLabels=['M','T','W','T','F','S','S'];
+  const weekLabel=weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
 
   let h=`<div class="cal-wrap">
     <div class="cal-hdr">
-      <span class="cal-title">Sessions</span>
+      <span class="cal-title">w/c ${weekLabel}</span>
       <div class="cal-nav">
         <button class="cal-nav-btn" onclick="profCalNav(-1)">←</button>
         <button class="cal-nav-btn" onclick="profCalNav(1)">→</button>
       </div>
     </div>
-    <div class="cal-week-scroll">`;
+    <div class="cal-week-scroll" style="justify-content:space-around">`;
 
   days.forEach(({d,ds,worked,isToday,isSelected})=>{
     const dow=(d.getDay()+6)%7;
@@ -2082,7 +2077,7 @@ function buildProfileCalendar(sets){
 
   h+=`</div>`;
 
-  // Selected day session detail
+  // Selected day detail
   if(selectedCalDay){
     const daySets=sets.filter(s=>(s.session_date||s.logged_at?.split('T')[0])===selectedCalDay);
     const label=new Date(selectedCalDay+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
@@ -2099,8 +2094,7 @@ function buildProfileCalendar(sets){
       });
       Object.entries(byEx).forEach(([nm,exSets])=>{
         exSets.sort((a,b)=>a.set_number-b.set_number);
-        h+=`<div style="margin-bottom:8px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:3px">${nm}</div>`;
+        h+=`<div style="margin-bottom:8px"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${nm}</div>`;
         exSets.forEach(s=>{
           const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
           const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
@@ -2127,9 +2121,7 @@ function buildProfileCalendar(sets){
   ).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20);
 
   if(sessionDates.length){
-    h+=`<button class="cal-list-btn" onclick="toggleCalList()">
-      ${calListOpen?'▲ Hide session log':'▼ View all sessions'}
-    </button>`;
+    h+=`<button class="cal-list-btn" onclick="toggleCalList()">${calListOpen?'▲ Hide session log':'▼ View all sessions'}</button>`;
     if(calListOpen){
       h+=`<div style="border-top:0.5px solid var(--br)">`;
       sessionDates.forEach(([date])=>{
@@ -2143,11 +2135,8 @@ function buildProfileCalendar(sets){
         const sid=`cal-${date}`;
         const isOpen=!!openPatHist[sid];
         h+=`<div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;cursor:pointer;font-size:13px" onclick="togglePatHist('${sid}')">
-            <div>
-              <span style="font-weight:500">${label}</span>
-              <span style="font-size:11px;color:var(--mt);margin-left:8px">${Object.keys(byEx).length} ex · ${daySets.length} sets</span>
-            </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:0.5px solid var(--br)" onclick="togglePatHist('${sid}')">
+            <div><span style="font-weight:500">${label}</span><span style="font-size:11px;color:var(--mt);margin-left:8px">${Object.keys(byEx).length} ex · ${daySets.length} sets</span></div>
             <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
           </div>`;
         if(isOpen){
@@ -2158,10 +2147,7 @@ function buildProfileCalendar(sets){
             exSets.forEach(s=>{
               const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
               const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
-              h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0">
-                <span style="color:var(--mt)">Set ${s.set_number}</span>
-                <span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?600:400}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span>
-              </div>`;
+              h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span style="color:var(--mt)">Set ${s.set_number}</span><span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?600:400}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span></div>`;
             });
             h+=`</div>`;
           });
