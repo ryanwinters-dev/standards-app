@@ -1935,15 +1935,15 @@ function closeDemoModal(e){
 }
 
 // ── PROFILE ──
-function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId){
+function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   if(!scores)scores=AP;
   if(!logs)logs=LOGS;
   if(!sets)sets=SETS;
   if(!isCoach)isCoach=false;
   if(!pendingTests)pendingTests=[];
   if(!athleteId)athleteId=CU?.id;
-  // Save context so calendar nav and toggles can re-render correctly
-  profContext={scores,logs,sets,isCoach,pendingTests,athleteId};
+  if(!checkins)checkins=CHECKINS;
+  profContext={scores,logs,sets,isCoach,pendingTests,athleteId,checkins};
 
   const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
   let h='';
@@ -2018,6 +2018,11 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId){
   // ── WORKOUT CALENDAR ──
   h+=buildProfileCalendar(sets);
 
+  // ── CHECK-IN TILES ──
+  if(checkins&&checkins.length){
+    h+=buildCheckinTiles(checkins,isCoach,athleteId);
+  }
+
   // ── RENDER ──
   if(!isCoach){
     document.getElementById('v-profile').innerHTML=
@@ -2026,6 +2031,173 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId){
   } else {
     document.getElementById('cp-body').innerHTML=h;
   }
+}
+
+function buildCheckinTiles(checkins,isCoach,athleteId){
+  if(!checkins||!checkins.length)return'';
+  const recent=checkins.slice(0,7).reverse(); // oldest→newest for trends
+  const latest=checkins[0];
+
+  const avg=(arr,key)=>{const v=arr.map(c=>c[key]).filter(x=>x!=null&&x!==0);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null;}
+  const last2trend=(key)=>{const v=checkins.slice(0,2).map(c=>c[key]).filter(Boolean);if(v.length<2)return'';const d=v[0]-v[1];return d>0.5?'↑ up':d<-0.5?'↓ down':'→ stable';}
+  const streak=()=>{let s=0;const today=new Date();for(let i=0;i<checkins.length;i++){const d=new Date(checkins[i].checkin_date+'T12:00:00');const diff=Math.round((today-d)/(1000*60*60*24));if(diff===i)s++;else break;}return s;}
+
+  // Weight sparkline SVG
+  const wVals=recent.map(c=>c.weight).filter(Boolean);
+  let sparkline='';
+  if(wVals.length>=2){
+    const min=Math.min(...wVals),max=Math.max(...wVals),range=max-min||0.5;
+    const W=60,H=22,pad=2;
+    const pts=wVals.map((v,i)=>`${pad+i*(W-pad*2)/(wVals.length-1)},${H-pad-((v-min)/range)*(H-pad*2)}`).join(' ');
+    const wTrend=wVals[wVals.length-1]-wVals[0];
+    const lineCol=wTrend<=0?'var(--gm)':'var(--red)';
+    sparkline=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;margin-top:4px"><polyline points="${pts}" fill="none" stroke="${lineCol}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+  }
+
+  // Steps fill bar
+  const latestSteps=latest.steps||0;
+  const stepsPct=Math.min(100,Math.round((latestSteps/10000)*100));
+  const stepsCol=stepsPct>=100?'var(--gm)':stepsPct>=70?'var(--amber)':'var(--red)';
+  const stepsBar=`<div style="height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden"><div style="width:${stepsPct}%;height:100%;background:${stepsCol};border-radius:2px"></div></div>
+    <div style="font-size:9px;color:var(--mt);margin-top:2px">${stepsPct}% of 10k</div>`;
+
+  // Colour helpers
+  const sleepVal=latest.hours_slept;
+  const sleepCol=sleepVal>=7?'var(--gm)':sleepVal>=6?'var(--amber)':'var(--red)';
+  const energyAvg=avg(recent,'energy');
+  const energyCol=energyAvg>=7?'var(--gm)':energyAvg>=5?'var(--amber)':'var(--red)';
+  const stressAvg=avg(recent,'stress');
+  const stressCol=stressAvg<=3?'var(--gm)':stressAvg<=6?'var(--amber)':'var(--red)';
+  const hrTrend=last2trend('resting_hr');
+  const avgWater=avg(recent,'water_litres');
+  const avgProtein=avg(recent,'protein_g');
+  const cs=streak();
+
+  const TILES=[
+    {
+      icon:'⚖',label:'Weight',
+      val:latest.weight?latest.weight+'kg':'—',
+      extra:sparkline||(last2trend('weight')?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${last2trend('weight')}</div>`:''),
+      col:'var(--dk)'
+    },
+    {
+      icon:'😴',label:'Sleep',
+      val:sleepVal?sleepVal+'h':'—',
+      extra:`<div style="font-size:10px;color:var(--mt);margin-top:3px">${checkins.slice(0,7).filter(c=>c.hours_slept>=7).length}/7 days ≥7h</div>`,
+      col:sleepCol
+    },
+    {
+      icon:'⚡',label:'Energy',
+      val:energyAvg?energyAvg+'/10':'—',
+      extra:`<div style="font-size:10px;color:var(--mt);margin-top:3px">7-day avg</div>`,
+      col:energyCol
+    },
+    {
+      icon:'🧠',label:'Stress',
+      val:stressAvg?stressAvg+'/10':'—',
+      extra:`<div style="font-size:10px;color:var(--mt);margin-top:3px">7-day avg</div>`,
+      col:stressCol
+    },
+    {
+      icon:'❤',label:'Resting HR',
+      val:latest.resting_hr?latest.resting_hr+'bpm':'—',
+      extra:hrTrend?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${hrTrend}</div>`:'',
+      col:'var(--dk)'
+    },
+    {
+      icon:'💪',label:'Protein',
+      val:latest.protein_g?latest.protein_g+'g':'—',
+      extra:avgProtein?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${avgProtein}g avg</div>`:'',
+      col:'var(--dk)'
+    },
+    {
+      icon:'👟',label:'Steps',
+      val:latestSteps?latestSteps.toLocaleString():'—',
+      extra:latestSteps?stepsBar:'',
+      col:stepsCol
+    },
+    {
+      icon:'💧',label:'Water',
+      val:latest.water_litres?latest.water_litres+'L':'—',
+      extra:avgWater?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${avgWater}L avg</div>`:'',
+      col:'var(--dk)'
+    },
+  ];
+
+  let h=`<div class="sl">Wellness Snapshot</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">`;
+
+  TILES.forEach(({icon,label,val,extra,col})=>{
+    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:9px 8px">
+      <div style="font-size:9px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">${icon} ${label}</div>
+      <div style="font-size:18px;font-weight:700;color:${col};line-height:1;letter-spacing:-.5px">${val}</div>
+      ${extra}
+    </div>`;
+  });
+
+  h+=`</div>`;
+
+  // Check-in log — collapsible with full entry expansion
+  const ciKey=`ci-entries-${athleteId?athleteId.slice(0,8):'me'}`;
+  const isOpen=!!openPatHist[ciKey];
+  h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer" onclick="togglePatHist('${ciKey}')">
+      <span style="font-size:13px;font-weight:600">Check-in log (${checkins.length})</span>
+      <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
+    </div>`;
+
+  if(isOpen){
+    h+=`<div>`;
+    checkins.forEach((c,ci)=>{
+      const dt=new Date(c.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+      const entryKey=`ci-entry-${ciKey}-${ci}`;
+      const entryOpen=!!openPatHist[entryKey];
+
+      // Summary chips for collapsed row
+      const chips=[];
+      if(c.weight)chips.push(`${c.weight}kg`);
+      if(c.hours_slept)chips.push(`${c.hours_slept}h`);
+      if(c.energy)chips.push(`E${c.energy}`);
+
+      h+=`<div style="border-top:0.5px solid var(--br)">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;cursor:pointer" onclick="togglePatHist('${entryKey}')">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;font-weight:500">${dt}</span>
+            ${chips.map(ch=>`<span style="font-size:11px;color:var(--mt);background:var(--bg);padding:1px 6px;border-radius:99px;border:0.5px solid var(--br)">${ch}</span>`).join('')}
+          </div>
+          <span style="font-size:12px;color:var(--mt)">${entryOpen?'▲':'▼'}</span>
+        </div>`;
+
+      if(entryOpen){
+        const fields=[
+          ['Weight',c.weight?c.weight+'kg':null,'var(--dk)'],
+          ['Sleep',c.hours_slept?c.hours_slept+'h':null,c.hours_slept>=7?'var(--gm)':c.hours_slept>=6?'var(--amber)':'var(--red)'],
+          ['Energy',c.energy?c.energy+'/10':null,c.energy>=7?'var(--gm)':c.energy>=5?'var(--amber)':'var(--red)'],
+          ['Stress',c.stress?c.stress+'/10':null,c.stress<=3?'var(--gm)':c.stress<=6?'var(--amber)':'var(--red)'],
+          ['Resting HR',c.resting_hr?c.resting_hr+'bpm':null,'var(--dk)'],
+          ['Calories',c.calories?c.calories+'kcal':null,'var(--dk)'],
+          ['Protein',c.protein_g?c.protein_g+'g':null,'var(--dk)'],
+          ['Water',c.water_litres?c.water_litres+'L':null,'var(--dk)'],
+          ['Steps',c.steps?c.steps.toLocaleString():null,'var(--dk)'],
+          ['Hunger',c.hunger?c.hunger+'/10':null,'var(--dk)'],
+          ['Alcohol',(c.alcohol_consumed===true||c.alcohol_consumed==='true')?'Yes':null,'var(--amber)'],
+        ].filter(([,v])=>v!=null);
+
+        h+=`<div style="background:var(--bg);padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px">`;
+        fields.forEach(([label,val,col])=>{
+          h+=`<div style="background:var(--cd);border-radius:8px;padding:8px 10px">
+            <div style="font-size:9px;color:var(--mt);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${label}</div>
+            <div style="font-size:15px;font-weight:700;color:${col}">${val}</div>
+          </div>`;
+        });
+        h+=`</div>`;
+      }
+      h+=`</div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  return h;
 }
 
 function buildProfileCalendar(sets){
@@ -2171,7 +2343,7 @@ function rDetail(pid){
   return`<div class="dc"><div class="dh"><div class="dt">${PF[pid]} · L${lv} — ${std?.quality_focus||''}</div><button class="dx" onclick="cD()">✕</button></div>${std?`<div style="font-size:12px;color:var(--mt);padding:8px 0;border-bottom:0.5px solid var(--br)">Pass criteria: <span style="color:var(--dk)">${std.pass_criteria}</span></div>`:''}${eb(mx,'MAIN','tm')}${eb(bx,'BRIDGE','tb')}${eb(lx,'LIMITER','tl2')}${nx?`<div class="ns"><strong>Next →</strong> L${lv+1}: ${nx.test_exercise} · ${nx.load_standard}</div>`:`<div class="mlvl">🏆 Maximum level achieved</div>`}</div>`;
 }
 function selectCalDay(date){selectedCalDay=date;_reprof();}
-function _reprof(){rProfile(profContext.scores,profContext.logs,profContext.sets,profContext.isCoach,profContext.pendingTests,profContext.athleteId);}
+function _reprof(){rProfile(profContext.scores,profContext.logs,profContext.sets,profContext.isCoach,profContext.pendingTests,profContext.athleteId,profContext.checkins);}
 function togglePatHist(pid){openPatHist[pid]=!openPatHist[pid];_reprof();}
 function toggleCalList(){calListOpen=!calListOpen;_reprof();}
 function profCalNav(dir){
@@ -2367,72 +2539,23 @@ async function openClientPage(athleteId){
   ]);
   const clientPending=pendingRes.data||[];
   const allTests=allTestsRes.data||[];
+  const clientCheckins=checkinsRes.data||[];
   const clientSets=setsRes.data||[];
 
   // Reset state for new client view
-  openPatHist={};calListOpen=false;selPat=null;
+  openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
 
   // Pending banner
   let banner='';
   if(clientPending.length>0){
     banner=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting your review</div>`;
   }
-
   document.getElementById('cp-body').innerHTML=banner;
 
-  // Use universal rProfile in coach mode
-  rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId);
-
-  // Check-in section
-  const clientCheckins=checkinsRes.data||[];
-  if(clientCheckins.length){
-    const latest=clientCheckins[0];
-    const last7=clientCheckins.slice(0,7).reverse();
-    const latestDate=new Date(latest.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    let ciHtml=`<div class="cp-section"><div class="cp-section-title">Daily Check-Ins</div>
-      <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <span style="font-size:12px;font-weight:600;color:var(--mt)">LATEST — ${latestDate}</span>
-          <span style="font-size:11px;color:var(--mt)">${clientCheckins.length} entries</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:22px;font-weight:700;color:var(--dk)">${latest.weight?latest.weight+'kg':'—'}</div>
-            <div style="font-size:11px;color:var(--mt);margin-top:2px">Weight</div>
-          </div>
-          <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:22px;font-weight:700;color:${latest.hours_slept>=7?'var(--gm)':latest.hours_slept>=5?'var(--amber)':'var(--red)'}">${latest.hours_slept?latest.hours_slept+'h':'—'}</div>
-            <div style="font-size:11px;color:var(--mt);margin-top:2px">Sleep</div>
-          </div>
-        </div>
-      </div>`;
-
-    // Collapsible all entries
-    const ciKey='ci-all-'+athleteId.slice(0,8);
-    ciHtml+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleSess('${ciKey}')">
-        <span style="font-size:13px;font-weight:600">All entries (${clientCheckins.length})</span>
-        <span id="arr-${ciKey}" style="font-size:12px;color:var(--mt)">▼</span>
-      </div>
-      <div id="${ciKey}" style="display:none">`;
-    clientCheckins.forEach(c=>{
-      const dt=new Date(c.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-      const metrics=[];
-      if(c.weight)metrics.push(`${c.weight}kg`);
-      if(c.hours_slept)metrics.push(`${c.hours_slept}h sleep`);
-      if(c.energy)metrics.push(`Energy ${c.energy}/10`);
-      if(c.stress)metrics.push(`Stress ${c.stress}/10`);
-      if(c.protein_g)metrics.push(`${c.protein_g}g protein`);
-      if(c.steps)metrics.push(`${c.steps.toLocaleString()} steps`);
-      ciHtml+=`<div style="padding:10px 14px;border-top:0.5px solid var(--br)">
-        <div style="font-size:12px;font-weight:600;margin-bottom:3px">${dt}</div>
-        <div style="font-size:12px;color:var(--mt)">${metrics.join(' · ')||'No data'}</div>
-      </div>`;
-    });
-    ciHtml+=`</div></div></div>`;
-    document.getElementById('cp-body').innerHTML+=ciHtml;
-  }
+  // Use universal rProfile in coach mode — pass checkins directly
+  rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
 }
+
 
 function closeClientPage(){
   document.getElementById('client-page').classList.remove('active');
