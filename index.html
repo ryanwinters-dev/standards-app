@@ -204,30 +204,27 @@
     .pat-hist-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:0.5px solid var(--br)}
     .pat-hist-row:last-child{border-bottom:none}
 
-    /* Calendar */
+    /* Calendar — horizontal week scroll */
     .cal-wrap{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px}
     .cal-hdr{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--br)}
     .cal-title{font-size:13px;font-weight:600}
     .cal-nav{display:flex;gap:4px}
     .cal-nav-btn{padding:2px 9px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:12px;color:var(--md);font-family:var(--fn);transition:all .15s}
     .cal-nav-btn:hover{background:var(--bg)}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:8px 6px}
-    .cal-dow{font-size:9px;font-weight:600;color:var(--mt);text-align:center;padding:3px 0;letter-spacing:.04em}
-    .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:11px;font-weight:500;color:var(--md);cursor:default;transition:all .15s}
-    .cal-day.worked{background:var(--gm);color:#fff;font-weight:700;cursor:pointer}
-    .cal-day.worked:hover{background:var(--gd);transform:scale(1.1)}
-    .cal-day.selected{outline:2px solid var(--gd);outline-offset:1px}
-    .cal-day.today{outline:1.5px solid var(--gm);outline-offset:1px}
-    .cal-day.empty{color:transparent;pointer-events:none}
-    .cal-day.other-month{color:var(--br)}
-    .cal-list-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border-top:0.5px solid var(--br);font-size:12px;font-weight:500;color:var(--mt);cursor:pointer;background:transparent;border-left:none;border-right:none;border-bottom:none;font-family:var(--fn);transition:all .15s}
-    .cal-list-btn:hover{color:var(--gm);background:var(--bg)}
-    .cal-sessions-list{border-top:0.5px solid var(--br)}
-    .cal-sess-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:0.5px solid var(--br);font-size:13px}
-    .cal-sess-row:last-child{border-bottom:none}
-    .cal-day-detail{background:var(--bg);border-top:0.5px solid var(--br);padding:12px 14px;animation:fi .15s ease}
+    .cal-week-scroll{display:flex;gap:4px;overflow-x:auto;padding:10px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .cal-week-scroll::-webkit-scrollbar{display:none}
+    .cal-week-day{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;width:34px}
+    .cal-week-label{font-size:9px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.03em}
+    .cal-week-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--md);transition:all .15s}
+    .cal-week-num.worked{background:var(--gm);color:#fff;font-weight:700;cursor:pointer}
+    .cal-week-num.worked:hover{background:var(--gd);transform:scale(1.08)}
+    .cal-week-num.today{box-shadow:0 0 0 2px var(--gm)}
+    .cal-week-num.selected{box-shadow:0 0 0 2px var(--gd)}
+    .cal-day-detail{border-top:0.5px solid var(--br);padding:10px 14px;animation:fi .15s ease;background:var(--bg)}
     .cal-day-detail-hdr{font-size:12px;font-weight:600;color:var(--md);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
     .cal-day-close{font-size:11px;color:var(--mt);cursor:pointer;padding:2px 6px;border:0.5px solid var(--br);border-radius:4px;background:var(--cd)}
+    .cal-list-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:7px;border-top:0.5px solid var(--br);font-size:11px;font-weight:500;color:var(--mt);cursor:pointer;background:transparent;border-left:none;border-right:none;border-bottom:none;font-family:var(--fn);transition:all .15s}
+    .cal-list-btn:hover{color:var(--gm);background:var(--bg)}
 
     .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
     .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
@@ -2033,49 +2030,55 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId){
 
 function buildProfileCalendar(sets){
   const today=new Date();
-  const yr=profCalDate.getFullYear();
-  const mo=profCalDate.getMonth();
-  const monthName=profCalDate.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const todayStr=today.toISOString().split('T')[0];
 
-  // Build set of worked dates this month
+  // Build worked dates set for all time
   const workedDates=new Set();
   sets.forEach(s=>{
     const d=s.session_date||s.logged_at?.split('T')[0];
-    if(d&&d.startsWith(`${yr}-${String(mo+1).padStart(2,'0')}`))workedDates.add(d);
+    if(d)workedDates.add(d);
   });
 
-  // Calendar grid
-  const firstDay=new Date(yr,mo,1).getDay(); // 0=Sun
-  const daysInMonth=new Date(yr,mo+1,0).getDate();
-  const offset=(firstDay+6)%7; // Mon start
+  // Week starting from profCalDate (Mon-based, show 5 weeks = 35 days scrollable)
+  // Centre on the most recent session or today
+  const refDate=profCalDate;
+  const dayOfWeek=(refDate.getDay()+6)%7; // Mon=0
+  const weekStart=new Date(refDate);
+  weekStart.setDate(refDate.getDate()-dayOfWeek);
+
+  // Build 5 weeks of days (35 days)
+  const days=[];
+  for(let i=0;i<35;i++){
+    const d=new Date(weekStart);
+    d.setDate(weekStart.getDate()+i);
+    const ds=d.toISOString().split('T')[0];
+    days.push({d,ds,
+      worked:workedDates.has(ds),
+      isToday:ds===todayStr,
+      isSelected:selectedCalDay===ds,
+    });
+  }
+
+  const dayLabels=['M','T','W','T','F','S','S'];
 
   let h=`<div class="cal-wrap">
     <div class="cal-hdr">
-      <span class="cal-title">${monthName}</span>
+      <span class="cal-title">Sessions</span>
       <div class="cal-nav">
         <button class="cal-nav-btn" onclick="profCalNav(-1)">←</button>
         <button class="cal-nav-btn" onclick="profCalNav(1)">→</button>
       </div>
     </div>
-    <div class="cal-grid">`;
+    <div class="cal-week-scroll">`;
 
-  // Day headers Mon-Sun
-  ['M','T','W','T','F','S','S'].forEach(d=>{
-    h+=`<div class="cal-dow">${d}</div>`;
+  days.forEach(({d,ds,worked,isToday,isSelected})=>{
+    const dow=(d.getDay()+6)%7;
+    const onclick=worked?`onclick="selectCalDay('${ds}')"`:'' ;
+    h+=`<div class="cal-week-day">
+      <div class="cal-week-label">${dayLabels[dow]}</div>
+      <div class="cal-week-num${worked?' worked':''}${isToday?' today':''}${isSelected?' selected':''}" ${onclick}>${d.getDate()}</div>
+    </div>`;
   });
-
-  // Empty cells before first day
-  for(let i=0;i<offset;i++)h+=`<div class="cal-day empty"></div>`;
-
-  // Day cells
-  for(let d=1;d<=daysInMonth;d++){
-    const dateStr=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday=dateStr===today.toISOString().split('T')[0];
-    const worked=workedDates.has(dateStr);
-    const isSelected=selectedCalDay===dateStr;
-    const onclick=worked?`onclick="selectCalDay('${dateStr}')"`:'' ;
-    h+=`<div class="cal-day${worked?' worked':''}${isToday?' today':''}${isSelected?' selected':''}" ${onclick}>${d}</div>`;
-  }
 
   h+=`</div>`;
 
@@ -2101,16 +2104,20 @@ function buildProfileCalendar(sets){
         exSets.forEach(s=>{
           const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
           const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
-          h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--mt)">
-            <span>Set ${s.set_number}</span>
+          h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0">
+            <span style="color:var(--mt)">Set ${s.set_number}</span>
             <span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?600:400}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span>
           </div>`;
         });
         h+=`</div>`;
       });
+    } else {
+      h+=`<div style="font-size:12px;color:var(--mt)">No sets logged this day.</div>`;
     }
     h+=`</div>`;
   }
+
+  // Session log toggle
   const sessionDates=Object.entries(
     sets.reduce((acc,s)=>{
       const d=s.session_date||s.logged_at?.split('T')[0]||'';
@@ -2121,12 +2128,11 @@ function buildProfileCalendar(sets){
 
   if(sessionDates.length){
     h+=`<button class="cal-list-btn" onclick="toggleCalList()">
-      ${calListOpen?'▲ Hide session log':'▼ View session log'}
+      ${calListOpen?'▲ Hide session log':'▼ View all sessions'}
     </button>`;
-
     if(calListOpen){
-      h+=`<div class="cal-sessions-list">`;
-      sessionDates.forEach(([date,count])=>{
+      h+=`<div style="border-top:0.5px solid var(--br)">`;
+      sessionDates.forEach(([date])=>{
         const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
         const daySets=sets.filter(s=>(s.session_date||s.logged_at?.split('T')[0])===date);
         const byEx={};
@@ -2137,19 +2143,18 @@ function buildProfileCalendar(sets){
         const sid=`cal-${date}`;
         const isOpen=!!openPatHist[sid];
         h+=`<div>
-          <div class="cal-sess-row" onclick="togglePatHist('${sid}');event.stopPropagation()" style="cursor:pointer">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;cursor:pointer;font-size:13px" onclick="togglePatHist('${sid}')">
             <div>
-              <div style="font-weight:500">${label}</div>
-              <div style="font-size:11px;color:var(--mt);margin-top:1px">${Object.keys(byEx).length} exercises · ${daySets.length} sets</div>
+              <span style="font-weight:500">${label}</span>
+              <span style="font-size:11px;color:var(--mt);margin-left:8px">${Object.keys(byEx).length} ex · ${daySets.length} sets</span>
             </div>
             <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
           </div>`;
         if(isOpen){
-          h+=`<div style="background:var(--bg);padding:8px 14px">`;
+          h+=`<div style="background:var(--bg);padding:6px 14px 10px">`;
           Object.entries(byEx).forEach(([nm,exSets])=>{
             exSets.sort((a,b)=>a.set_number-b.set_number);
-            h+=`<div style="margin-bottom:8px">
-              <div style="font-size:12px;font-weight:600;margin-bottom:4px">${nm}</div>`;
+            h+=`<div style="margin-bottom:8px"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${nm}</div>`;
             exSets.forEach(s=>{
               const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
               const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
@@ -2184,7 +2189,7 @@ function _reprof(){rProfile(profContext.scores,profContext.logs,profContext.sets
 function togglePatHist(pid){openPatHist[pid]=!openPatHist[pid];_reprof();}
 function toggleCalList(){calListOpen=!calListOpen;_reprof();}
 function profCalNav(dir){
-  profCalDate=new Date(profCalDate.getFullYear(),profCalDate.getMonth()+dir,1);
+  profCalDate=new Date(profCalDate.getFullYear(),profCalDate.getMonth(),profCalDate.getDate()+(dir*7));
   _reprof();
 }
 function selP(p){selPat=selPat===p?null:p;_reprof();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
