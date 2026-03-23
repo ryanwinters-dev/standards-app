@@ -1817,7 +1817,7 @@ function isCircuitLogged(ck,exercises,sets){
 
 // ── WORKOUT ──
 function rWorkout(){
-  const hasLvl=PATS.some(p=>(AP[p]||0)>0);
+  const hasLvl=IS_COACH||PATS.some(p=>(AP[p]||0)>0);
   const wib=weekInBlock();
   const wl=['','Base','Build','Overreach','Deload'];
   const blockNum=blockNumber();
@@ -2532,6 +2532,19 @@ let coachWorkoutDay=0;
 let coachWorkoutExtraSets={};
 let coachWorkoutOpenCircuits={};
 
+function openCoachTestForPattern(pid,lvl){
+  // Open coach test modal pre-selected to this pattern and level
+  openCoachTestModal();
+  // Pre-select the option after modal renders
+  setTimeout(()=>{
+    const sel=document.getElementById('tm-level');
+    if(sel){
+      const val=`${pid}|${lvl}`;
+      sel.value=val;
+    }
+  },50);
+}
+
 function openCoachTestModal(){
   const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
   if(!a)return;
@@ -2997,9 +3010,12 @@ function openPatternPage(pid,athleteId,isCoach){
         </div>`;
       }
 
-      // Log test button (athlete only, if this is the current level and there's a next)
+      // Log test button — athlete logs own; coach logs for client
       if(!isCoach&&current&&nextStd){
         h+=`<button class="btn btn-full btn-dk" onclick="openTestModal('${pid}');closePatternPage()">+ Log Level ${lvl+1} Test</button>`;
+      }
+      if(isCoach&&nextStd){
+        h+=`<button class="btn btn-full" style="margin-top:8px;background:var(--gm);color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)" onclick="openCoachTestForPattern('${pid}',${lvl+1})">+ Log Level ${lvl+1} Test for ${profContext.athleteId?'Client':'Athlete'}</button>`;
       }
 
       h+=`</div>`; // end expanded content
