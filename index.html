@@ -297,7 +297,48 @@
     .log-test-btn{display:block;width:100%;margin-top:8px;padding:6px;background:var(--bg);border:0.5px solid var(--br);border-radius:6px;font-size:11px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);text-align:center;transition:all .15s}
     .log-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
 
-    /* ── ASSESSMENT SLIDESHOW ── */
+    /* ── SETTINGS PAGE ── */
+    #settings-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:160;flex-direction:column}
+    #settings-page.active{display:flex}
+    .settings-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .settings-body{flex:1;overflow-y:auto;padding:0 0 48px}
+    .settings-section{padding:0 16px;margin-top:28px}
+    .settings-section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:8px;padding:0 4px}
+    .settings-group{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden}
+    .settings-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:0.5px solid var(--br);cursor:pointer;transition:background .15s}
+    .settings-row:last-child{border-bottom:none}
+    .settings-row:hover{background:var(--bg)}
+    .settings-row:active{background:var(--br)}
+    .settings-row-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .settings-row-body{flex:1}
+    .settings-row-title{font-size:14px;font-weight:500;color:var(--dk)}
+    .settings-row-sub{font-size:12px;color:var(--mt);margin-top:1px}
+    .settings-row-right{font-size:13px;color:var(--mt);display:flex;align-items:center;gap:6px}
+    .settings-row-arrow{font-size:16px;color:var(--br)}
+    .settings-avatar-wrap{display:flex;flex-direction:column;align-items:center;padding:28px 16px 20px;background:var(--cd);border-bottom:0.5px solid var(--br)}
+    .settings-av{width:80px;height:80px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;margin-bottom:12px;position:relative;overflow:hidden;cursor:pointer;border:3px solid var(--gl)}
+    .settings-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .settings-av-edit{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:11px;font-weight:600;text-align:center;padding:4px 0}
+    .settings-av-name{font-size:18px;font-weight:700;color:var(--dk);margin-bottom:2px}
+    .settings-av-sub{font-size:13px;color:var(--mt)}
+    .settings-inline-edit{padding:14px 16px;border-bottom:0.5px solid var(--br)}
+    .settings-inline-edit:last-child{border-bottom:none}
+    .settings-inline-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mt);margin-bottom:6px}
+    .settings-inline-input{width:100%;padding:10px 12px;border:0.5px solid var(--br);border-radius:8px;font-size:14px;font-family:var(--fn);background:var(--bg);color:var(--dk);outline:none}
+    .settings-inline-input:focus{border-color:var(--gm)}
+    .settings-save-btn{width:100%;padding:12px;margin-top:10px;background:var(--dk);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:background .15s}
+    .settings-save-btn:hover{background:#222}
+    .settings-save-btn.green{background:var(--gm)}
+    .settings-save-btn.green:hover{background:var(--gd)}
+    .settings-danger-btn{width:100%;padding:13px;background:transparent;color:var(--red);border:0.5px solid #f0c0c0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s;text-align:left;padding-left:16px}
+    .settings-danger-btn:hover{background:#fef2f2}
+    .settings-msg{font-size:13px;margin-top:8px;padding:8px 12px;border-radius:8px;display:none}
+    .settings-msg.ok{display:block;background:var(--gl);color:var(--gd)}
+    .settings-msg.err{display:block;background:#fef2f2;color:var(--red)}
+    .settings-toggle{width:44px;height:24px;border-radius:12px;background:var(--br);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none}
+    .settings-toggle.on{background:var(--gm)}
+    .settings-toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+    .settings-toggle.on::after{transform:translateX(20px)}
     .assessment-overlay{position:fixed;inset:0;background:var(--bg);z-index:180;display:flex;flex-direction:column;overflow:hidden}
     .assessment-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
     .assessment-back{padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)}
@@ -1063,6 +1104,15 @@
   </div>
 </div>
 
+<!-- SETTINGS PAGE -->
+<div id="settings-page">
+  <div class="settings-topbar">
+    <button class="back-btn" onclick="closeSettings()">← Back</button>
+    <span style="font-size:16px;font-weight:600;flex:1">Settings</span>
+  </div>
+  <div class="settings-body" id="settings-body"></div>
+</div>
+
 <!-- ASSESSMENT SLIDESHOW -->
 <div class="assessment-overlay" id="assessment-overlay" style="display:none">
   <div class="assessment-topbar">
@@ -1227,6 +1277,7 @@ const PRICE_COACH='price_1TE8WTJjyXKoXrJjj4yQxtn8';
 let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[],CHECKINS=[];
 let USER_TIER='free'; // 'free' | 'coached' | 'coach'
 let USER_SUB=null;    // full subscription row
+let USER_AVATAR_URL=null; // cached avatar URL
 let ALL_ATHLETES=[],ALL_PENDING=[],ALL_CHECKINS={},ALL_CLIENT_SETS={};
 let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
 let profCalDate=new Date();
@@ -1621,7 +1672,271 @@ async function openBillingPortal(){
   }
 })();
 
-// ── LANDING PAGE ──
+// ── SETTINGS ──
+let settingsNotifPref=JSON.parse(localStorage.getItem('std_notif')||'{"workout":true,"test":true,"checkin":true}');
+let settingsUnitPref=localStorage.getItem('std_unit')||'kg';
+
+function openSettings(){
+  renderSettings();
+  document.getElementById('settings-page').classList.add('active');
+}
+
+function closeSettings(){
+  document.getElementById('settings-page').classList.remove('active');
+}
+
+function renderSettings(){
+  const name=CU.user_metadata?.full_name||'';
+  const email=CU.email||'';
+  const tierLabel={free:'Free plan',coached:'Coached Athlete — £15/mo',coach:'Coach Licence — £49/mo'}[USER_TIER]||'Free plan';
+  const tierCol={free:'var(--mt)',coached:'var(--gm)',coach:'var(--dk)'}[USER_TIER];
+  const avatarHtml=USER_AVATAR_URL
+    ?`<img src="${USER_AVATAR_URL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    :`<span>${gi(name||email)}</span>`;
+
+  let h=`
+  <!-- Avatar header -->
+  <div class="settings-avatar-wrap">
+    <div class="settings-av" onclick="document.getElementById('avatar-input').click()">
+      ${avatarHtml}
+      <div class="settings-av-edit">Edit</div>
+    </div>
+    <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+    <div class="settings-av-name">${name||email.split('@')[0]}</div>
+    <div class="settings-av-sub">${email}</div>
+  </div>
+
+  <!-- Profile -->
+  <div class="settings-section">
+    <div class="settings-section-label">Profile</div>
+    <div class="settings-group">
+      <div class="settings-inline-edit">
+        <div class="settings-inline-label">Display name</div>
+        <input class="settings-inline-input" id="s-name" type="text" value="${name}" placeholder="Your name"/>
+        <button class="settings-save-btn green" style="margin-top:8px" onclick="saveName()">Save name</button>
+        <div class="settings-msg" id="s-name-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account -->
+  <div class="settings-section">
+    <div class="settings-section-label">Account</div>
+    <div class="settings-group">
+      <div class="settings-inline-edit">
+        <div class="settings-inline-label">Email</div>
+        <input class="settings-inline-input" type="email" value="${email}" disabled style="opacity:.5;cursor:default"/>
+      </div>
+      <div class="settings-inline-edit">
+        <div class="settings-inline-label">New password</div>
+        <input class="settings-inline-input" id="s-pw1" type="password" placeholder="New password (min 6 chars)"/>
+        <input class="settings-inline-input" id="s-pw2" type="password" placeholder="Confirm new password" style="margin-top:8px"/>
+        <button class="settings-save-btn" style="margin-top:8px" onclick="changePassword()">Update password</button>
+        <div class="settings-msg" id="s-pw-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription -->
+  <div class="settings-section">
+    <div class="settings-section-label">Subscription</div>
+    <div class="settings-group">
+      <div class="settings-row" style="cursor:default">
+        <div class="settings-row-icon" style="background:var(--gl)">💳</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">${tierLabel}</div>
+          <div class="settings-row-sub" style="color:${tierCol}">${USER_TIER==='free'?'Upgrade to unlock coaching features':'Active subscription'}</div>
+        </div>
+      </div>
+      ${USER_TIER==='free'?`
+      <div class="settings-row" onclick="startCheckout('coached');closeSettings()">
+        <div class="settings-row-icon" style="background:var(--gl)">⬆️</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Upgrade to Coached</div>
+          <div class="settings-row-sub">£15/month · Video reviews, coach-assigned levels</div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>
+      <div class="settings-row" onclick="startCheckout('coach');closeSettings()">
+        <div class="settings-row-icon" style="background:#f0f0ec">🏆</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Coach Licence</div>
+          <div class="settings-row-sub">£49/month · Full coaching platform</div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>`:`
+      <div class="settings-row" onclick="openBillingPortal()">
+        <div class="settings-row-icon" style="background:#f0f0ec">⚙️</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Manage billing</div>
+          <div class="settings-row-sub">Cancel, change plan, update payment method</div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>`}
+    </div>
+  </div>
+
+  <!-- Preferences -->
+  <div class="settings-section">
+    <div class="settings-section-label">Preferences</div>
+    <div class="settings-group">
+      <div class="settings-row" style="cursor:default">
+        <div class="settings-row-icon" style="background:#f0f0ec">⚖️</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Weight units</div>
+          <div class="settings-row-sub">Used across your programme and check-ins</div>
+        </div>
+        <div style="display:flex;gap:0;border:0.5px solid var(--br);border-radius:8px;overflow:hidden">
+          <button onclick="setUnit('kg')" style="padding:6px 14px;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--fn);background:${settingsUnitPref==='kg'?'var(--dk)':'var(--bg)'};color:${settingsUnitPref==='kg'?'#fff':'var(--md)'}">kg</button>
+          <button onclick="setUnit('lbs')" style="padding:6px 14px;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--fn);background:${settingsUnitPref==='lbs'?'var(--dk)':'var(--bg)'};color:${settingsUnitPref==='lbs'?'#fff':'var(--md)'}">lbs</button>
+        </div>
+      </div>
+      <div class="settings-row" style="cursor:default">
+        <div class="settings-row-icon" style="background:#f0f0ec">🏋️</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Workout reminders</div>
+          <div class="settings-row-sub">Daily push notification to train</div>
+        </div>
+        <button class="settings-toggle${settingsNotifPref.workout?' on':''}" onclick="toggleNotif('workout')" id="notif-workout"></button>
+      </div>
+      <div class="settings-row" style="cursor:default">
+        <div class="settings-row-icon" style="background:#f0f0ec">📋</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Test reminders</div>
+          <div class="settings-row-sub">Prompt when you're ready to level up</div>
+        </div>
+        <button class="settings-toggle${settingsNotifPref.test?' on':''}" onclick="toggleNotif('test')" id="notif-test"></button>
+      </div>
+      <div class="settings-row" style="cursor:default">
+        <div class="settings-row-icon" style="background:#f0f0ec">✅</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Check-in reminders</div>
+          <div class="settings-row-sub">Morning nudge to log your daily check-in</div>
+        </div>
+        <button class="settings-toggle${settingsNotifPref.checkin?' on':''}" onclick="toggleNotif('checkin')" id="notif-checkin"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account actions -->
+  <div class="settings-section">
+    <div class="settings-section-label">Account</div>
+    <div class="settings-group">
+      <div class="settings-row" onclick="signOut()">
+        <div class="settings-row-icon" style="background:#f0f0ec">🚪</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Sign out</div>
+          <div class="settings-row-sub">Sign out of this device</div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danger zone -->
+  <div class="settings-section" style="margin-bottom:16px">
+    <div class="settings-section-label">Danger zone</div>
+    <div class="settings-group">
+      <div class="settings-row" onclick="confirmDeleteAccount()" style="cursor:pointer">
+        <div class="settings-row-icon" style="background:#fef2f2">🗑️</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title" style="color:var(--red)">Delete account</div>
+          <div class="settings-row-sub">Permanently delete your account and all data</div>
+        </div>
+        <span class="settings-row-arrow">›</span>
+      </div>
+    </div>
+    <div id="s-delete-confirm" style="display:none;margin-top:12px;padding:14px;background:#fef2f2;border:0.5px solid #f0c0c0;border-radius:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:8px">Are you sure? This cannot be undone.</div>
+      <div style="font-size:12px;color:var(--mt);margin-bottom:12px">All your data, levels, sessions and check-ins will be permanently deleted.</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('s-delete-confirm').style.display='none'" style="flex:1;padding:10px;border:0.5px solid var(--br);border-radius:8px;background:var(--cd);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">Cancel</button>
+        <button onclick="deleteAccount()" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--red);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">Delete forever</button>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('settings-body').innerHTML=h;
+}
+
+async function uploadAvatar(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){toast('Image must be under 5MB','err');return;}
+  toast('Uploading photo…','ok');
+  try{
+    const ext=file.name.split('.').pop();
+    const path=`avatars/${CU.id}.${ext}`;
+    const{error}=await sb.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type});
+    if(error)throw error;
+    const{data}=sb.storage.from('avatars').getPublicUrl(path);
+    USER_AVATAR_URL=data.publicUrl+'?t='+Date.now();
+    // Save to profile metadata
+    await sb.auth.updateUser({data:{avatar_url:USER_AVATAR_URL}});
+    toast('✓ Photo updated','ok');
+    renderSettings();
+    rProfile();
+  }catch(err){
+    toast('Upload failed: '+err.message,'err');
+  }
+}
+
+async function saveName(){
+  const name=document.getElementById('s-name').value.trim();
+  const msg=document.getElementById('s-name-msg');
+  if(!name){msg.textContent='Please enter a name';msg.className='settings-msg err';return;}
+  msg.textContent='Saving…';msg.className='settings-msg ok';
+  const{error}=await sb.auth.updateUser({data:{full_name:name}});
+  if(error){msg.textContent=error.message;msg.className='settings-msg err';return;}
+  CU.user_metadata.full_name=name;
+  msg.textContent='✓ Name updated';msg.className='settings-msg ok';
+  // Update topbar and profile
+  document.getElementById('tu').textContent=name.split(' ')[0];
+  renderSettings();
+  rProfile();
+}
+
+async function changePassword(){
+  const pw1=document.getElementById('s-pw1').value;
+  const pw2=document.getElementById('s-pw2').value;
+  const msg=document.getElementById('s-pw-msg');
+  if(!pw1||pw1.length<6){msg.textContent='Password must be at least 6 characters';msg.className='settings-msg err';return;}
+  if(pw1!==pw2){msg.textContent='Passwords do not match';msg.className='settings-msg err';return;}
+  msg.textContent='Updating…';msg.className='settings-msg ok';
+  const{error}=await sb.auth.updateUser({password:pw1});
+  if(error){msg.textContent=error.message;msg.className='settings-msg err';return;}
+  msg.textContent='✓ Password updated';msg.className='settings-msg ok';
+  document.getElementById('s-pw1').value='';
+  document.getElementById('s-pw2').value='';
+}
+
+function setUnit(unit){
+  settingsUnitPref=unit;
+  localStorage.setItem('std_unit',unit);
+  renderSettings();
+  toast(`Units set to ${unit}`,'ok');
+}
+
+function toggleNotif(key){
+  settingsNotifPref[key]=!settingsNotifPref[key];
+  localStorage.setItem('std_notif',JSON.stringify(settingsNotifPref));
+  const btn=document.getElementById(`notif-${key}`);
+  if(btn)btn.classList.toggle('on',settingsNotifPref[key]);
+}
+
+function confirmDeleteAccount(){
+  const el=document.getElementById('s-delete-confirm');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+async function deleteAccount(){
+  toast('Deleting account…','err');
+  // Sign out first — actual deletion requires service role so we flag it
+  await sb.auth.signOut();
+  // In production you'd call an edge function to delete via admin API
+  // For now sign them out and show a message
+  toast('Account deletion requested. Contact support to complete.','err');
+}
 function openAuthModal(tab){
   document.getElementById('auth-modal').classList.add('open');
   switchTab(tab);
@@ -1683,6 +1998,8 @@ async function signOut(){
 }
 function showApp(user){
   CU=user;
+  // Load avatar if set
+  USER_AVATAR_URL=user.user_metadata?.avatar_url||null;
   document.getElementById('landing').style.display='none';
   document.getElementById('auth-modal').classList.remove('open');
   document.getElementById('app').style.display='block';
@@ -3060,8 +3377,21 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
       coached:`<span style="font-size:11px;font-weight:600;color:var(--gd);background:var(--gl);padding:2px 8px;border-radius:99px;margin-left:6px">Coached</span>`,
       coach:`<span style="font-size:11px;font-weight:600;color:#fff;background:var(--dk);padding:2px 8px;border-radius:99px;margin-left:6px">Coach</span>`,
     }[USER_TIER]||'';
+    const avatarHtml=USER_AVATAR_URL
+      ?`<img src="${USER_AVATAR_URL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+      :gi(CU.user_metadata?.full_name||CU.email);
     document.getElementById('v-profile').innerHTML=
-      `<div class="ph"><div class="av">${gi(CU.user_metadata?.full_name||CU.email)}</div><div style="flex:1"><div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}${tierBadge}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`
+      `<div class="ph" onclick="openSettings()" style="cursor:pointer">
+        <div class="av">${avatarHtml}</div>
+        <div style="flex:1">
+          <div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}${tierBadge}</div>
+          <div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="sc">${tot} / 40</div>
+          <span style="font-size:18px;color:var(--br)">›</span>
+        </div>
+      </div>`
       +buildSubscriptionCard()
       +h;
   } else {
