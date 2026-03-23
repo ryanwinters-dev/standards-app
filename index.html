@@ -435,6 +435,16 @@
   <div class="assessment-body" id="assessment-body"></div>
 </div>
 
+<!-- PATTERN DETAIL PAGE -->
+<div id="pattern-page" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:160;overflow-y:auto">
+  <div style="background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10">
+    <button id="pp-back" style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)" onclick="closePatternPage()">← Back</button>
+    <span id="pp-title" style="font-size:16px;font-weight:700;flex:1"></span>
+    <span id="pp-level" style="font-size:13px;font-weight:600;background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px"></span>
+  </div>
+  <div id="pp-body" style="padding:16px;max-width:640px;margin:0 auto"></div>
+</div>
+
 <!-- CLIENT PROFILE PAGE -->
 <div class="client-page" id="client-page">
   <div class="client-page-topbar">
@@ -1958,60 +1968,19 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     const pending=pendingTests.find(p=>p.pattern_id===pid);
     const histOpen=!!openPatHist[pid];
 
-    h+=`<div class="pc${selPat===pid?' act':''}" onclick="selP('${pid}')">
+    h+=`<div class="pc${pending&&isCoach?' has-pending':''}" onclick="openPatternPage('${pid}',${JSON.stringify(patLogs).replace(/'/g,"\\'")},'${athleteId||''}',${isCoach})">
       <div class="pc-top">
         <span class="pc-name">${PL[pid]}</span>
-        ${patLogs.length?`<button class="pc-hist-btn" onclick="event.stopPropagation();togglePatHist('${pid}')" title="Test history">≡</button>`:''}
+        ${pending&&isCoach?`<span style="font-size:8px;color:var(--amber)">⏳</span>`:''}
       </div>
       <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:6px">
         <span class="pc-level" style="color:${col}">${lv}</span>
         <span class="pc-of5">/ 5</span>
       </div>
-      <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>`;
-
-    // Coach pending test controls
-    if(isCoach&&pending){
-      const pStd=STD.find(s=>s.pattern_id===pid&&s.level===pending.level_tested);
-      h+=`<div class="pc-pending">
-        <div class="pc-pending-label">⏳ L${pending.level_tested} pending review</div>
-        <div style="font-size:11px;color:var(--mt);margin-bottom:5px">${pStd?.test_exercise||'—'}</div>
-        ${pending.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:5px">"${pending.notes}"</div>`:''}
-        ${pending.video_url?`<video style="width:100%;border-radius:4px;margin-bottom:6px;max-height:140px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
-        <div style="display:flex;gap:5px;margin-top:4px">
-          <button class="btn-pass" style="flex:1;font-size:11px;padding:5px" onclick="event.stopPropagation();judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},true)">✓ Pass</button>
-          <button class="btn-fail" style="flex:1;font-size:11px;padding:5px" onclick="event.stopPropagation();judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},false)">✕ Fail</button>
-        </div>
-      </div>`;
-    }
-
-    // Athlete log test button
-    if(!isCoach&&nextStd){
-      h+=`<button class="pc-test-btn" onclick="event.stopPropagation();openTestModal('${pid}')">+ Log L${lv+1} Test</button>`;
-    }
-
-    // Collapsible test history
-    if(histOpen&&patLogs.length){
-      h+=`<div class="pat-hist" onclick="event.stopPropagation()">`;
-      patLogs.slice(0,8).forEach(log=>{
-        const sc=log.passed===true?'var(--gm)':log.passed===false?'var(--red)':'var(--amber)';
-        const sl=log.passed===true?'✓':'✕';
-        const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-        const pStd=STD.find(s=>s.pattern_id===pid&&s.level===log.level_tested);
-        h+=`<div class="pat-hist-row">
-          <span style="color:var(--mt)">${dt} · L${log.level_tested}</span>
-          <span style="font-size:11px;color:var(--mt)">${pStd?.test_exercise||'—'}</span>
-          <span style="font-weight:700;color:${sc}">${log.passed===null?'⏳':sl}</span>
-        </div>`;
-      });
-      h+=`</div>`;
-    }
-
-    h+=`</div>`;
+      <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+    </div>`;
   });
   h+=`</div>`;
-
-  // Pattern detail panel
-  if(selPat)h+=rDetail(selPat);
 
   // ── WORKOUT CALENDAR ──
   h+=buildProfileCalendar(sets);
@@ -2597,6 +2566,143 @@ async function judgeTest(assessmentId,athleteId,patId,level,pass){
 }
 
 // ── HISTORY ──
+
+// ── PATTERN PAGE ──
+let patternPageFrom=null; // 'profile' or 'client'
+
+function openPatternPage(pid,patLogs,athleteId,isCoach){
+  const lv=isCoach?(profContext.scores[pid]||0):(AP[pid]||0);
+  const col=LC[lv];
+  patternPageFrom=isCoach?'client':'profile';
+
+  document.getElementById('pp-title').textContent=PF[pid];
+  document.getElementById('pp-level').textContent=`Level ${lv} / 5`;
+  document.getElementById('pp-level').style.background=LC[lv]==='#ccc'?'var(--bg)':'var(--gl)';
+
+  // Pending test for this pattern
+  const pending=profContext.pendingTests?.find(p=>p.pattern_id===pid);
+
+  let h='';
+
+  // ── PENDING BANNER (coach only) ──
+  if(isCoach&&pending){
+    const pStd=STD.find(s=>s.pattern_id===pid&&s.level===pending.level_tested);
+    h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px">⏳ Level ${pending.level_tested} test awaiting review</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${pStd?.test_exercise||'—'}</div>
+      ${pending.notes?`<div style="font-size:12px;color:var(--mt);font-style:italic;margin-bottom:8px">"${pending.notes}"</div>`:''}
+      ${pending.video_url?`<video style="width:100%;border-radius:8px;margin-bottom:10px;max-height:200px;background:#000" src="${pending.video_url}" controls playsinline></video>`:''}
+      <div style="display:flex;gap:8px">
+        <button class="btn-pass" style="flex:1" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},true)">✓ Pass Level ${pending.level_tested}</button>
+        <button class="btn-fail" style="flex:1" onclick="judgeTest('${pending.id}','${athleteId}','${pid}',${pending.level_tested},false)">✕ Fail</button>
+      </div>
+    </div>`;
+  }
+
+  // ── LEVEL LADDER ──
+  h+=`<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px">Level Ladder</div>`;
+
+  for(let lvl=1;lvl<=5;lvl++){
+    const std=STD.find(s=>s.pattern_id===pid&&s.level===lvl);
+    const done=lv>=lvl;
+    const current=lv===lvl;
+    const exercises=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lvl);
+    const mx=exercises.find(e=>e.type==='Main');
+    const bx=exercises.find(e=>e.type==='Bridge');
+    const lx=exercises.find(e=>e.type==='Limiter');
+    const lvlCol=LC[lvl];
+
+    h+=`<div style="background:var(--cd);border:${current?'1.5px solid '+lvlCol:'0.5px solid var(--br)'};border-radius:12px;margin-bottom:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:${current?'var(--gl)':'var(--cd)'}">
+        <div style="width:32px;height:32px;border-radius:50%;background:${done?lvlCol:'var(--br)'};color:${done?'#fff':'var(--mt)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${done&&!current?'✓':lvl}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:${current?lvlCol:'var(--dk)'}">${std?.quality_focus||'Level '+lvl}</div>
+          <div style="font-size:12px;color:var(--mt);margin-top:1px">${std?.test_exercise||'—'} · ${std?.load_standard||'—'}</div>
+        </div>
+        ${current?`<span style="font-size:11px;font-weight:600;color:${lvlCol};background:#fff;padding:3px 8px;border-radius:99px;border:0.5px solid ${lvlCol}">Current</span>`:''}
+        ${!done?`<span style="font-size:11px;color:var(--mt)">Locked</span>`:''}
+      </div>`;
+
+    // Expanded content for current level
+    if(current){
+      h+=`<div style="padding:12px 14px;border-top:0.5px solid var(--br)">`;
+
+      // Pass criteria
+      if(std?.pass_criteria){
+        h+=`<div style="margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:6px">Pass criteria</div>
+          <div style="font-size:13px;color:var(--dk);line-height:1.5">${std.pass_criteria}</div>
+        </div>`;
+      }
+
+      // Exercises
+      if(mx||bx||lx){
+        h+=`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:8px">Training exercises</div>`;
+        [[mx,'MAIN','tm'],[bx,'BRIDGE','tb'],[lx,'LIMITER','tl2']].filter(([e])=>e).forEach(([ex,tag,cls])=>{
+          const intent=ex.intent||'Control';
+          const rep=RR[intent]||RR.Control;
+          h+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--br)">
+            <span class="et ${cls}" style="margin-top:2px;flex-shrink:0">${tag}</span>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600">${ex.name}</div>
+              <div style="font-size:11px;color:var(--gm);font-style:italic;margin-top:1px">"${ex.coaching_cue||'—'}"</div>
+              <div style="font-size:11px;color:var(--mt);margin-top:1px">${rep.lo}–${rep.hi} reps · ${TM[intent]||''}</div>
+            </div>
+          </div>`;
+        });
+      }
+
+      // Next standard
+      const nextStd=STD.find(s=>s.pattern_id===pid&&s.level===lvl+1);
+      if(nextStd){
+        h+=`<div style="background:var(--bg);border-radius:8px;padding:10px 12px;margin-top:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:4px">Next → Level ${lvl+1}</div>
+          <div style="font-size:13px;font-weight:600">${nextStd.test_exercise}</div>
+          <div style="font-size:12px;color:var(--mt);margin-top:2px">${nextStd.load_standard}</div>
+        </div>`;
+      } else {
+        h+=`<div style="background:var(--gm);border-radius:8px;padding:10px 12px;margin-top:12px;color:#fff;font-size:13px;font-weight:600">🏆 Maximum level achieved in this pattern</div>`;
+      }
+
+      // Log test button (athlete only)
+      if(!isCoach&&nextStd){
+        h+=`<button class="btn btn-full btn-dk" style="margin-top:12px" onclick="openTestModal('${pid}');closePatternPage()">+ Log Level ${lvl+1} Test</button>`;
+      }
+
+      h+=`</div>`;
+    }
+
+    h+=`</div>`;
+  }
+
+  // ── TEST HISTORY ──
+  if(patLogs&&patLogs.length){
+    h+=`<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin:16px 0 10px">Test History</div>
+    <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden">`;
+    patLogs.forEach(log=>{
+      const sc=log.passed===true?'var(--gm)':log.passed===false?'var(--red)':'var(--amber)';
+      const sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending';
+      const dt=new Date(log.assessed_at).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      const pStd=STD.find(s=>s.pattern_id===pid&&s.level===log.level_tested);
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--br)">
+        <div>
+          <div style="font-size:13px;font-weight:600">Level ${log.level_tested} — ${pStd?.test_exercise||'—'}</div>
+          <div style="font-size:11px;color:var(--mt);margin-top:2px">${dt}</div>
+          ${log.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-top:2px">"${log.notes}"</div>`:''}
+        </div>
+        <span style="font-size:13px;font-weight:700;color:${sc};flex-shrink:0;margin-left:12px">${sl}</span>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  document.getElementById('pp-body').innerHTML=h;
+  document.getElementById('pattern-page').style.display='block';
+}
+
+function closePatternPage(){
+  document.getElementById('pattern-page').style.display='none';
+}
 
 // ── LEADERBOARD ──
 function rLB(){
