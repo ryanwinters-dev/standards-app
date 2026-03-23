@@ -311,10 +311,10 @@
     /* Client profile page */
     .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;overflow-y:auto}
     .client-page.active{display:block}
-    .client-page-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
-    .back-btn{padding:6px 10px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn);display:flex;align-items:center;gap:5px;transition:all .15s}
+    .client-page-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 12px;height:52px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:10}
+    .back-btn{padding:6px 10px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn);display:flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0}
     .back-btn:hover{background:var(--bg)}
-    .client-page-name{font-size:16px;font-weight:600;flex:1}
+    .client-page-name{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
     .client-page-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
     .client-page-body{padding:16px;max-width:640px;margin:0 auto}
     .cp-section{margin-bottom:20px}
@@ -450,7 +450,7 @@
   <div class="client-page-topbar">
     <button class="back-btn" onclick="closeClientPage()">← Back</button>
     <span class="client-page-name" id="cp-name"></span>
-    <div style="display:flex;gap:6px;margin-left:auto">
+    <div style="display:flex;gap:6px;flex-shrink:0">
       <button style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--md);font-family:var(--fn)" onclick="openCoachTestModal()">+ Test</button>
       <button style="padding:5px 10px;border:none;border-radius:6px;background:var(--gm);cursor:pointer;font-size:12px;font-weight:600;color:#fff;font-family:var(--fn)" onclick="openCoachWorkout()">+ Workout</button>
     </div>
