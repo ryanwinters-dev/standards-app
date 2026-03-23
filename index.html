@@ -1777,7 +1777,7 @@ async function load(){
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30)),
-      sb.from('subscriptions').select('*').eq('athlete_id',CU.id).single().then(r=>r.data||null),
+      sb.from('subscriptions').select('*').eq('athlete_id',CU.id).maybeSingle().then(r=>r.data||null).catch(()=>null),
     ]);
     AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
     USER_SUB=subRes;
