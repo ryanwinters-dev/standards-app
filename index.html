@@ -180,18 +180,17 @@
     .av{width:50px;height:50px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0}
     .pn{font-size:17px;font-weight:600}.ps{font-size:13px;color:var(--mt);margin-top:2px}
     .sc{margin-left:auto;background:var(--gl);color:var(--gd);padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
-    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px}
 
     /* Pattern tile — compact 4-col design */
-    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:9px 8px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative}
+    .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:8px 7px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative;min-width:0;overflow:hidden}
     .pc:hover{border-color:#bbb;transform:translateY(-1px)}.pc.act{border-color:var(--gm);border-width:1.5px}
-    .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
-    .pc-name{font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.04em}
+    .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
+    .pc-name{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .pc-level{font-size:22px;font-weight:700;line-height:1;letter-spacing:-1px}
     .pc-of5{font-size:10px;color:var(--mt);font-weight:400;margin-left:1px}
-    .pc-bar{height:3px;background:var(--br);border-radius:2px;margin-bottom:4px;overflow:hidden}
+    .pc-bar{height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden}
     .pc-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
-    .pc-ex{font-size:10px;color:var(--mt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .pc-test-btn{display:flex;align-items:center;justify-content:center;width:100%;margin-top:6px;padding:4px;background:var(--bg);border:0.5px solid var(--br);border-radius:5px;font-size:10px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);transition:all .15s}
     .pc-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
     .pc-hist-btn{position:absolute;top:7px;right:7px;width:16px;height:16px;border-radius:50%;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:9px;color:var(--mt);display:flex;align-items:center;justify-content:center;transition:all .15s}
@@ -1964,12 +1963,11 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
         <span class="pc-name">${PL[pid]}</span>
         ${patLogs.length?`<button class="pc-hist-btn" onclick="event.stopPropagation();togglePatHist('${pid}')" title="Test history">≡</button>`:''}
       </div>
-      <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:8px">
+      <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:6px">
         <span class="pc-level" style="color:${col}">${lv}</span>
         <span class="pc-of5">/ 5</span>
       </div>
-      <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
-      <div class="pc-ex">${std?std.test_exercise:'Not assessed'}</div>`;
+      <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>`;
 
     // Coach pending test controls
     if(isCoach&&pending){
