@@ -1771,21 +1771,27 @@ async function load(){
     await loadStaticData();
 
     // Load all personal data in one parallel batch
-    const[myAP,aap,logs,sets,checkins,subRes]=await Promise.all([
+    const[myAP,aap,logs,sets,checkins]=await Promise.all([
       q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
       q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30)),
-      sb.from('subscriptions').select('*').eq('athlete_id',CU.id).maybeSingle().then(r=>r.data||null).catch(()=>null),
     ]);
     AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
-    USER_SUB=subRes;
-    USER_TIER=subRes?.tier||'free';
+    USER_SUB=null;USER_TIER='free';
     AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
 
-    // Render athlete views immediately — don't wait for coach data
+    // Render athlete views immediately
     rHome();rWorkout();rProfile();rLB();
+
+    // Load subscription in background — never blocks the app
+    sb.from('subscriptions').select('*').eq('athlete_id',CU.id).maybeSingle()
+      .then(({data})=>{
+        USER_SUB=data||null;
+        USER_TIER=data?.tier||'free';
+        rProfile(); // re-render profile with subscription card
+      }).catch(()=>{});
 
     // Notify athlete if they've just crossed a warm up tier threshold
     try{
