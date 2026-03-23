@@ -309,14 +309,14 @@
     .ccc-pending-dot{font-size:11px;font-weight:600;color:var(--amber);background:#FFF8EC;padding:2px 7px;border-radius:99px;border:0.5px solid var(--amber)}
 
     /* Client profile page */
-    .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;overflow-y:auto}
-    .client-page.active{display:block}
-    .client-page-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 12px;height:52px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:10}
+    .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;flex-direction:column}
+    .client-page.active{display:flex}
+    .client-page-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 12px;height:52px;display:flex;align-items:center;gap:8px;flex-shrink:0;z-index:10}
     .back-btn{padding:6px 10px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn);display:flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0}
     .back-btn:hover{background:var(--bg)}
     .client-page-name{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
     .client-page-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
-    .client-page-body{padding:16px;max-width:640px;margin:0 auto}
+    .client-page-body{padding:16px;max-width:640px;margin:0 auto;width:100%;overflow-y:auto;flex:1}
     .cp-section{margin-bottom:20px}
     .cp-section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
     .cp-pat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
