@@ -1209,7 +1209,7 @@
     <label>Date</label><input type="date" id="tm-date"/>
     <label>Notes for coach (optional)</label>
     <textarea id="tm-notes" placeholder="How did it feel? Any form notes…"></textarea>
-    <button class="btn btn-full btn-gm" id="tm-submit" onclick="submitTest()">Submit for coach review</button>
+    <button class="btn btn-full btn-gm" id="tm-submit" onclick="submitTest()">Submit test</button>
     <div class="msg" id="tm-msg"></div>
   </div>
 </div>
@@ -3255,10 +3255,11 @@ function cD(){selPat=null;_reprof();}
 
 // ── TEST MODAL ──
 function openTestModal(pid){
-  coachLogClientId=null; // clear coach context — this is athlete logging for themselves
+  coachLogClientId=null;
   testModalPat=pid;selectedVideoFile=null;
   const lv=AP[pid]||0;
   document.getElementById('test-modal-title').textContent=`Log Test — ${PF[pid]}`;
+  document.getElementById('tm-submit').textContent='Submit for coach review';
   document.getElementById('tm-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('tm-notes').value='';document.getElementById('tm-msg').textContent='';
   document.getElementById('tm-video-text').textContent='Tap to upload video from camera roll';
@@ -3448,15 +3449,10 @@ let coachWorkoutExtraSets={};
 let coachWorkoutOpenCircuits={};
 
 function openCoachTestForPattern(pid,lvl){
-  // Open coach test modal pre-selected to this pattern and level
   openCoachTestModal();
-  // Pre-select the option after modal renders
   setTimeout(()=>{
     const sel=document.getElementById('tm-level');
-    if(sel){
-      const val=`${pid}|${lvl}`;
-      sel.value=val;
-    }
+    if(sel){sel.value=`${pid}|${lvl}`;}
   },50);
 }
 
@@ -3466,28 +3462,23 @@ function openCoachTestModal(){
   coachLogClientId=a.id;
   coachLogClientName=a.name;
   coachLogClientScores=a.scores||{};
-
-  // Reuse test modal but set client context
   testModalPat=null;selectedVideoFile=null;
   document.getElementById('test-modal-title').textContent=`Log Test — ${a.name}`;
+  document.getElementById('tm-submit').textContent=`✓ Pass & log test`;
   document.getElementById('tm-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('tm-notes').value='';
   document.getElementById('tm-msg').textContent='';
-  document.getElementById('tm-video-text').textContent='Tap to upload video from camera roll';
+  document.getElementById('tm-video-text').textContent='Tap to upload video (optional)';
   document.getElementById('tm-video-preview').style.display='none';
   document.getElementById('tm-progress-wrap').style.display='none';
   document.getElementById('tm-video-input').value='';
-
-  // Build level select from all patterns
   const sel=document.getElementById('tm-level');
   sel.innerHTML='<option value="">Select pattern and level…</option>';
   PATS.forEach(pid=>{
-    const lv=a.scores[pid]||0;
     STD.filter(s=>s.pattern_id===pid).forEach(s=>{
       sel.innerHTML+=`<option value="${pid}|${s.level}">${PF[pid]} — Level ${s.level} (${s.test_exercise})</option>`;
     });
   });
-
   document.getElementById('test-modal').style.display='flex';
 }
 
@@ -3548,7 +3539,7 @@ async function submitTest(){
 
   if(error){me.textContent='Error: '+error.message;me.className='msg err';submitBtn.disabled=false;return;}
 
-  // If coach logging, also update athlete_profiles
+  // If coach logging, also update athlete_profiles immediately
   if(coachLogClientId){
     const current=coachLogClientScores[pid]||0;
     if(lv>current){
@@ -3561,7 +3552,7 @@ async function submitTest(){
     }
     me.textContent=`✓ Level ${lv} logged for ${coachLogClientName}`;me.className='msg ok';
   } else {
-    me.textContent='✓ Submitted for coach review';me.className='msg ok';
+    me.textContent='✓ Submitted — awaiting coach review';me.className='msg ok';
     const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
     LOGS=data||[];
   }
