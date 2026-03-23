@@ -450,9 +450,23 @@
   <div class="client-page-topbar">
     <button class="back-btn" onclick="closeClientPage()">← Back</button>
     <span class="client-page-name" id="cp-name"></span>
-    <span class="client-page-score" id="cp-score"></span>
+    <div style="display:flex;gap:6px;margin-left:auto">
+      <button style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--md);font-family:var(--fn)" onclick="openCoachTestModal()">+ Test</button>
+      <button style="padding:5px 10px;border:none;border-radius:6px;background:var(--gm);cursor:pointer;font-size:12px;font-weight:600;color:#fff;font-family:var(--fn)" onclick="openCoachWorkout()">+ Workout</button>
+    </div>
   </div>
   <div class="client-page-body" id="cp-body"></div>
+</div>
+
+<!-- COACH WORKOUT MODAL -->
+<div id="coach-workout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;overflow-y:auto">
+  <div style="background:var(--bg);min-height:100%;padding:0 0 40px">
+    <div style="background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10">
+      <button style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)" onclick="closeCoachWorkout()">← Back</button>
+      <span id="cwm-title" style="font-size:15px;font-weight:600;flex:1"></span>
+    </div>
+    <div id="cwm-body" style="padding:16px;max-width:640px;margin:0 auto"></div>
+  </div>
 </div>
 
 <!-- CHECK-IN MODAL -->
@@ -2326,6 +2340,7 @@ function cD(){selPat=null;_reprof();}
 
 // ── TEST MODAL ──
 function openTestModal(pid){
+  coachLogClientId=null; // clear coach context — this is athlete logging for themselves
   testModalPat=pid;selectedVideoFile=null;
   const lv=AP[pid]||0;
   document.getElementById('test-modal-title').textContent=`Log Test — ${PF[pid]}`;
@@ -2349,33 +2364,6 @@ function handleVideoSelect(input){
   document.getElementById('tm-video-text').textContent=file.name;
   const preview=document.getElementById('tm-video-preview');
   preview.src=URL.createObjectURL(file);preview.style.display='block';
-}
-async function submitTest(){
-  const pid=testModalPat,lv=parseInt(document.getElementById('tm-level').value);
-  const dt=document.getElementById('tm-date').value,nt=document.getElementById('tm-notes').value.trim();
-  const me=document.getElementById('tm-msg'),submitBtn=document.getElementById('tm-submit');
-  if(!pid||!lv){me.textContent='Please select a level.';me.className='msg err';return}
-  submitBtn.disabled=true;me.textContent='Submitting…';me.className='msg';
-  let videoUrl=null;
-  if(selectedVideoFile){
-    try{
-      const ext=selectedVideoFile.name.split('.').pop(),path=`${CU.id}/${Date.now()}.${ext}`;
-      document.getElementById('tm-progress-wrap').style.display='block';
-      document.getElementById('tm-progress').style.width='30%';
-      const{error:upErr}=await sb.storage.from('test-videos').upload(path,selectedVideoFile,{contentType:selectedVideoFile.type,upsert:false});
-      if(upErr)throw upErr;
-      document.getElementById('tm-progress').style.width='80%';
-      const{data:urlData}=sb.storage.from('test-videos').getPublicUrl(path);
-      videoUrl=urlData?.publicUrl||path;
-      document.getElementById('tm-progress').style.width='100%';
-    }catch(err){me.textContent='Video upload failed: '+err.message;me.className='msg err';submitBtn.disabled=false;return;}
-  }
-  const{error}=await sb.from('assessments').insert({athlete_id:CU.id,pattern_id:pid,level_tested:lv,passed:null,notes:nt||null,video_url:videoUrl,assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()});
-  if(error){me.textContent='Error: '+error.message;me.className='msg err';submitBtn.disabled=false;return}
-  me.textContent='✓ Submitted for coach review';me.className='msg ok';
-  const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
-  LOGS=data||[];
-  setTimeout(()=>{document.getElementById('test-modal').style.display='none';submitBtn.disabled=false;rProfile();},1500);
 }
 
 // ── COACH TAB ──
@@ -2530,10 +2518,275 @@ async function openClientPage(athleteId){
 
 function closeClientPage(){
   document.getElementById('client-page').classList.remove('active');
+  openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
   rCoach();
 }
 
 function toggleClient(id){openClientPage(id);}
+
+// ── COACH LOGGING ──
+// Current client context for coach logging
+let coachLogClientId=null;
+let coachLogClientName='';
+let coachLogClientScores={};
+let coachWorkoutDay=0;
+let coachWorkoutExtraSets={};
+let coachWorkoutOpenCircuits={};
+
+function openCoachTestModal(){
+  const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
+  if(!a)return;
+  coachLogClientId=a.id;
+  coachLogClientName=a.name;
+  coachLogClientScores=a.scores||{};
+
+  // Reuse test modal but set client context
+  testModalPat=null;selectedVideoFile=null;
+  document.getElementById('test-modal-title').textContent=`Log Test — ${a.name}`;
+  document.getElementById('tm-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('tm-notes').value='';
+  document.getElementById('tm-msg').textContent='';
+  document.getElementById('tm-video-text').textContent='Tap to upload video from camera roll';
+  document.getElementById('tm-video-preview').style.display='none';
+  document.getElementById('tm-progress-wrap').style.display='none';
+  document.getElementById('tm-video-input').value='';
+
+  // Build level select from all patterns
+  const sel=document.getElementById('tm-level');
+  sel.innerHTML='<option value="">Select pattern and level…</option>';
+  PATS.forEach(pid=>{
+    const lv=a.scores[pid]||0;
+    STD.filter(s=>s.pattern_id===pid).forEach(s=>{
+      sel.innerHTML+=`<option value="${pid}|${s.level}">${PF[pid]} — Level ${s.level} (${s.test_exercise})</option>`;
+    });
+  });
+
+  document.getElementById('test-modal').style.display='flex';
+}
+
+async function submitTest(){
+  // Determine if coach logging for client or athlete logging for self
+  const forClient=!!coachLogClientId&&document.getElementById('test-modal-title').textContent.includes('—')&&!document.getElementById('test-modal-title').textContent.includes('Log Test —')||
+    (coachLogClientId&&document.getElementById('test-modal-title').textContent!==`Log Test — ${PF[testModalPat]}`);
+
+  const targetId=coachLogClientId||CU.id;
+  let pid=testModalPat;
+  let lv;
+
+  // Coach uses combined pattern|level select
+  if(coachLogClientId){
+    const sel=document.getElementById('tm-level');
+    const val=sel.value;
+    if(!val||!val.includes('|')){
+      const me=document.getElementById('tm-msg');
+      me.textContent='Please select a pattern and level.';me.className='msg err';return;
+    }
+    [pid,lv]=[val.split('|')[0],parseInt(val.split('|')[1])];
+  } else {
+    lv=parseInt(document.getElementById('tm-level').value);
+  }
+
+  const dt=document.getElementById('tm-date').value;
+  const nt=document.getElementById('tm-notes').value.trim();
+  const me=document.getElementById('tm-msg');
+  const submitBtn=document.getElementById('tm-submit');
+  me.textContent='Submitting…';me.className='msg';
+  submitBtn.disabled=true;
+
+  let videoUrl=null;
+  if(selectedVideoFile){
+    try{
+      me.textContent='Uploading video…';
+      document.getElementById('tm-progress-wrap').style.display='block';
+      const ext=selectedVideoFile.name.split('.').pop();
+      const path=`${targetId}/${pid.toLowerCase()}_${Date.now()}.${ext}`;
+      const{error:upErr}=await sb.storage.from('test-videos').upload(path,selectedVideoFile,{contentType:selectedVideoFile.type,upsert:false});
+      if(upErr)throw upErr;
+      const{data:urlData}=sb.storage.from('test-videos').getPublicUrl(path);
+      videoUrl=urlData?.publicUrl||path;
+      document.getElementById('tm-progress').style.width='100%';
+    }catch(err){me.textContent='Video upload failed: '+err.message;me.className='msg err';submitBtn.disabled=false;return;}
+  }
+
+  const{error}=await sb.from('assessments').insert({
+    athlete_id:targetId,
+    coach_id:coachLogClientId?CU.id:null,
+    pattern_id:pid,
+    level_tested:lv,
+    passed:coachLogClientId?true:null, // coach logs are auto-passed
+    notes:nt||null,
+    video_url:videoUrl,
+    assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()
+  });
+
+  if(error){me.textContent='Error: '+error.message;me.className='msg err';submitBtn.disabled=false;return;}
+
+  // If coach logging, also update athlete_profiles
+  if(coachLogClientId){
+    const current=coachLogClientScores[pid]||0;
+    if(lv>current){
+      await sb.from('athlete_profiles').upsert({
+        athlete_id:targetId,pattern_id:pid,current_level:lv,
+        passed_at:new Date().toISOString(),updated_at:new Date().toISOString()
+      },{onConflict:'athlete_id,pattern_id'});
+      const a=ALL_ATHLETES.find(x=>x.id===targetId);
+      if(a)a.scores[pid]=lv;
+    }
+    me.textContent=`✓ Level ${lv} logged for ${coachLogClientName}`;me.className='msg ok';
+  } else {
+    me.textContent='✓ Submitted for coach review';me.className='msg ok';
+    const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
+    LOGS=data||[];
+  }
+
+  setTimeout(()=>{
+    document.getElementById('test-modal').style.display='none';
+    submitBtn.disabled=false;
+    coachLogClientId=null;
+    if(profContext.athleteId&&profContext.isCoach)openClientPage(profContext.athleteId);
+    else rProfile();
+  },1500);
+}
+
+function openCoachWorkout(){
+  const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
+  if(!a)return;
+  coachLogClientId=a.id;
+  coachLogClientName=a.name;
+  coachLogClientScores=a.scores||{};
+  coachWorkoutDay=0;
+  coachWorkoutExtraSets={};
+  coachWorkoutOpenCircuits={};
+  document.getElementById('cwm-title').textContent=`${a.name}'s Workout`;
+  renderCoachWorkout();
+  document.getElementById('coach-workout-modal').style.display='block';
+}
+
+function closeCoachWorkout(){
+  document.getElementById('coach-workout-modal').style.display='none';
+  coachLogClientId=null;
+}
+
+function renderCoachWorkout(){
+  // Temporarily swap AP to client scores so buildDay uses client levels
+  const savedAP={...AP};
+  const savedSETS=[...SETS];
+  Object.keys(AP).forEach(k=>delete AP[k]);
+  Object.assign(AP,coachLogClientScores);
+  // Use empty SETS so no pre-logged state
+  SETS=ALL_CLIENT_SETS[coachLogClientId]||[];
+
+  const wib=weekInBlock();
+  const wl=['','Base','Build','Overreach','Deload'];
+  let h=`<div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px">`;
+  for(let d=0;d<4;d++){
+    h+=`<button style="padding:6px 14px;border:0.5px solid ${coachWorkoutDay===d?'var(--gm)':'var(--br)'};border-radius:8px;background:${coachWorkoutDay===d?'var(--gm)':'var(--cd)'};color:${coachWorkoutDay===d?'#fff':'var(--md)'};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);flex-shrink:0" onclick="setCoachWorkoutDay(${d})">Day ${d+1}</button>`;
+  }
+  h+=`</div>`;
+  h+=`<div style="font-size:12px;color:var(--mt);margin-bottom:14px">Block ${blockNumber()} · Week ${wib} — ${wl[wib]}</div>`;
+
+  const day=buildDay(coachWorkoutDay);
+  day.circuits.forEach((circuit,ci)=>{
+    const ck=`coach-d${coachWorkoutDay}c${ci}`;
+    const isOpen=!!coachWorkoutOpenCircuits[ck];
+    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;margin-bottom:10px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleCoachCircuit('${ck}')">
+        <div style="width:26px;height:26px;border-radius:6px;background:var(--dk);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">${circuit.letter}</div>
+        <span style="font-size:13px;font-weight:600;flex:1">${circuit.name} circuit</span>
+        <span style="font-size:12px;color:var(--mt)">${circuit.circuitSets} sets · ${circuit.exercises.length} ex</span>
+        <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
+      </div>`;
+
+    if(isOpen){
+      h+=`<div style="padding:0 14px 12px">`;
+      circuit.exercises.forEach((item,xi)=>{
+        const ex=item.ex;
+        const intent=ex?.intent||'Control';
+        const rs=repStr(intent,circuit.circuitSets,curWeek);
+        const exKey=ex?.id||`coach-${ck}-${xi}`;
+        const extra=coachWorkoutExtraSets[ck]?.[exKey]||0;
+        const totalSets=rs.sets+extra;
+        h+=`<div style="margin-top:10px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="cx-slot">${circuit.letter}${xi+1}</span>
+            <span style="font-size:13px;font-weight:600">${ex?.name||PF[item.pid]}</span>
+          </div>
+          <table class="set-table"><thead><tr><th>Set</th><th>Reps</th><th>kg</th><th>Target</th></tr></thead><tbody>`;
+        for(let s=1;s<=totalSets;s++){
+          const uid=`coach-${ck}-${exKey}-${s}`;
+          h+=`<tr><td class="set-num-cell">${s}</td>
+            <td><input class="set-inp" type="number" id="r-${uid}" placeholder="—" min="1" max="50"/></td>
+            <td><input class="set-inp" type="number" id="l-${uid}" placeholder="—" min="0" max="500" step="0.5"/></td>
+            <td class="set-target">${rs.lo}–${rs.hi}</td></tr>`;
+        }
+        h+=`</tbody></table>
+          <button class="add-set-btn" onclick="addCoachSet('${ck}','${exKey}')">+ Add set</button>
+        </div>`;
+      });
+      h+=`<button class="log-circuit-btn" style="margin-top:10px" onclick="logCoachCircuit('${ck}',${coachWorkoutDay},${JSON.stringify(circuit.exercises.map(i=>({exId:i.ex?.id,pid:i.pid,intent:i.ex?.intent||'Control'})))})">Log circuit</button>
+        <div class="circuit-log-msg" id="clm-${ck}"></div>
+      </div>`;
+    }
+    h+=`</div>`;
+  });
+
+  document.getElementById('cwm-body').innerHTML=h;
+
+  // Restore
+  Object.keys(AP).forEach(k=>delete AP[k]);
+  Object.assign(AP,savedAP);
+  SETS=savedSETS;
+}
+
+function setCoachWorkoutDay(d){coachWorkoutDay=d;coachWorkoutOpenCircuits={};renderCoachWorkout();}
+function toggleCoachCircuit(ck){coachWorkoutOpenCircuits[ck]=!coachWorkoutOpenCircuits[ck];renderCoachWorkout();}
+function addCoachSet(ck,exKey){
+  if(!coachWorkoutExtraSets[ck])coachWorkoutExtraSets[ck]={};
+  coachWorkoutExtraSets[ck][exKey]=(coachWorkoutExtraSets[ck][exKey]||0)+1;
+  coachWorkoutOpenCircuits[ck]=true;
+  renderCoachWorkout();
+}
+
+async function logCoachCircuit(ck,dayIndex,exercises){
+  const btn=document.querySelector(`#cwm-body #clm-${ck}`)?.previousElementSibling;
+  const msg=document.getElementById(`clm-${ck}`);
+  if(btn)btn.disabled=true;
+  const today=new Date().toISOString().split('T')[0];
+  const inserts=[];
+
+  exercises.forEach((item,xi)=>{
+    const exKey=item.exId||`coach-${ck}-${xi}`;
+    const extra=coachWorkoutExtraSets[ck]?.[exKey]||0;
+    const rs=repStr(item.intent||'Control',3,curWeek);
+    const totalSets=rs.sets+extra;
+    for(let s=1;s<=totalSets;s++){
+      const uid=`coach-${ck}-${exKey}-${s}`;
+      const reps=parseInt(document.getElementById(`r-${uid}`)?.value);
+      const load=parseFloat(document.getElementById(`l-${uid}`)?.value)||null;
+      if(reps&&reps>0){
+        inserts.push({
+          athlete_id:coachLogClientId,
+          exercise_id:item.exId||null,
+          pattern_id:item.pid,
+          set_number:s,
+          reps_achieved:reps,
+          load_kg:load,
+          reps_target_low:rs.lo,
+          reps_target_high:rs.hi,
+          week_number:curWeek,
+          session_date:today,
+          logged_at:new Date().toISOString(),
+        });
+      }
+    }
+  });
+
+  if(!inserts.length){if(msg)msg.textContent='Enter reps first.';return;}
+  const{error}=await sb.from('workout_sets').insert(inserts);
+  if(error){if(msg){msg.textContent='Error: '+error.message;msg.style.color='var(--red)';}if(btn)btn.disabled=false;return;}
+  if(msg){msg.textContent=`✓ ${inserts.length} sets logged for ${coachLogClientName}`;msg.style.color='var(--gm)';}
+  toast(`✓ ${inserts.length} sets logged for ${coachLogClientName}`,'ok');
+}
 
 async function setLevel(athleteId,patId,newLevel){
   if(newLevel<0||newLevel>5)return;
