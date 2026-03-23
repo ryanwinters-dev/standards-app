@@ -43,6 +43,64 @@
     @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes ob-in{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:none}}
+    @keyframes ob-out{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-32px)}}
+
+    /* ── ONBOARDING ── */
+    #onboarding{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);overflow:hidden}
+    #onboarding.active{display:flex;flex-direction:column}
+    .ob-topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;flex-shrink:0}
+    .ob-wordmark{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dk)}
+    .ob-wordmark span{color:var(--gm)}
+    .ob-skip{font-size:13px;color:var(--mt);background:none;border:none;cursor:pointer;font-family:var(--fn);padding:6px 10px;border-radius:6px;transition:color .15s}
+    .ob-skip:hover{color:var(--dk)}
+    .ob-progress{display:flex;gap:6px;align-items:center;padding:0 24px 16px;flex-shrink:0}
+    .ob-dot{height:3px;border-radius:2px;background:var(--br);transition:all .4s ease;flex:1}
+    .ob-dot.done{background:var(--gm)}
+    .ob-dot.active{background:var(--gm)}
+    .ob-slides{flex:1;position:relative;overflow:hidden}
+    .ob-slide{position:absolute;inset:0;padding:0 24px 32px;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;opacity:0;pointer-events:none}
+    .ob-slide.active{opacity:1;pointer-events:all;animation:ob-in .4s ease both}
+    .ob-slide.leaving{animation:ob-out .3s ease both}
+    .ob-footer{padding:20px 24px 36px;flex-shrink:0}
+    .ob-btn{width:100%;padding:16px;font-size:16px;font-weight:600;border:none;border-radius:12px;cursor:pointer;font-family:var(--fn);transition:all .2s;background:var(--dk);color:#fff}
+    .ob-btn:hover{background:#222;transform:translateY(-1px)}
+    .ob-btn.green{background:var(--gm)}
+    .ob-btn.green:hover{background:var(--gd)}
+    .ob-eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gm);margin-bottom:14px}
+    .ob-h1{font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,52px);font-weight:700;line-height:1.05;letter-spacing:-1.5px;color:var(--dk);margin-bottom:16px}
+    .ob-h1 em{color:var(--gm);font-style:normal}
+    .ob-body{font-size:16px;font-weight:300;color:var(--md);line-height:1.65;max-width:480px}
+    .ob-card{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;padding:18px 20px;margin-top:24px}
+    .ob-patterns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:24px}
+    .ob-pattern{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px 8px;text-align:center;transition:all .3s}
+    .ob-pattern.lit{border-color:var(--gm);background:var(--gl)}
+    .ob-pattern-icon{font-size:20px;margin-bottom:6px}
+    .ob-pattern-name{font-size:11px;font-weight:600;color:var(--md)}
+    .ob-levels{display:flex;flex-direction:column;gap:6px;margin-top:24px}
+    .ob-level{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:10px;background:var(--cd);border:0.5px solid var(--br);transition:all .3s}
+    .ob-level.highlighted{border-color:var(--gm);background:var(--gl)}
+    .ob-level-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;line-height:1;width:28px;flex-shrink:0}
+    .ob-level-body{flex:1}
+    .ob-level-name{font-size:13px;font-weight:600;color:var(--dk);margin-bottom:2px}
+    .ob-level-desc{font-size:12px;color:var(--mt);line-height:1.4}
+    .ob-steps{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+    .ob-step{display:flex;align-items:flex-start;gap:16px;padding:14px 16px;background:var(--cd);border:0.5px solid var(--br);border-radius:10px}
+    .ob-step-num{width:32px;height:32px;border-radius:50%;background:var(--dk);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px}
+    .ob-step-body{flex:1}
+    .ob-step-title{font-size:14px;font-weight:600;color:var(--dk);margin-bottom:3px}
+    .ob-step-desc{font-size:13px;color:var(--mt);line-height:1.4}
+    .ob-highlight{display:inline;color:var(--gm);font-weight:600}
+    .ob-final-graphic{width:100%;max-width:320px;margin:32px auto 0;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .ob-final-bar-row{display:flex;align-items:center;gap:10px;width:100%}
+    .ob-final-label{font-size:12px;color:var(--mt);width:60px;text-align:right;flex-shrink:0}
+    .ob-final-bar{height:8px;border-radius:4px;background:var(--br);flex:1;overflow:hidden}
+    .ob-final-bar-fill{height:100%;border-radius:4px;background:var(--gm);width:0;transition:width 1s ease}
+    .ob-score-ring{width:100px;height:100px;margin:0 auto 16px;position:relative}
+    .ob-score-ring svg{transform:rotate(-90deg)}
+    .ob-score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .ob-score-ring-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--dk);line-height:1}
+    .ob-score-ring-label{font-size:10px;color:var(--mt);font-weight:500;margin-top:2px}
     .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
     .ei{font-size:32px;margin-bottom:8px}
 
@@ -992,6 +1050,19 @@
   </div>
 </div>
 
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-topbar">
+    <div class="ob-wordmark">STAND<span>ARDS</span></div>
+    <button class="ob-skip" onclick="skipOnboarding()">Skip</button>
+  </div>
+  <div class="ob-progress" id="ob-progress"></div>
+  <div class="ob-slides" id="ob-slides"></div>
+  <div class="ob-footer">
+    <button class="ob-btn" id="ob-btn" onclick="obNext()">Continue →</button>
+  </div>
+</div>
+
 <!-- ASSESSMENT SLIDESHOW -->
 <div class="assessment-overlay" id="assessment-overlay" style="display:none">
   <div class="assessment-topbar">
@@ -1187,6 +1258,248 @@ const DAY_PLAN=[
 ];
 
 // ── AUTH ──
+// ── ONBOARDING ──
+const OB_KEY='std_onboarded_v1';
+let obStep=0;
+const OB_TOTAL=5;
+
+const OB_SLIDES=[
+  // Slide 0 — Welcome
+  (name)=>`
+    <div style="max-width:500px">
+      <div class="ob-eyebrow">Welcome to STANDARDS</div>
+      <h1 class="ob-h1">Hi ${name}.<br>Let's get you<br><em>started.</em></h1>
+      <p class="ob-body">STANDARDS is a movement methodology built around one simple idea: <span class="ob-highlight">know exactly where you stand, and exactly what to do next.</span></p>
+      <div class="ob-card">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🎯</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:3px">Not another workout app</div>
+            <div style="font-size:13px;color:var(--mt);line-height:1.4">STANDARDS tracks your <em>capability</em>, not your activity. Every session has a purpose. Every test has an outcome.</div>
+          </div>
+        </div>
+      </div>
+    </div>`,
+
+  // Slide 1 — The 8 patterns
+  ()=>`
+    <div style="max-width:560px;width:100%">
+      <div class="ob-eyebrow">The System</div>
+      <h1 class="ob-h1">8 patterns.<br>Every movement<br><em>mapped.</em></h1>
+      <p class="ob-body">Your entire athletic capability is organised into 8 fundamental movement patterns. Master all 8 and you've built a complete foundation.</p>
+      <div class="ob-patterns" id="ob-pat-grid">
+        ${[
+          {icon:'🦵',name:'Squat'},
+          {icon:'🏋',name:'Hinge'},
+          {icon:'💪',name:'H.Push'},
+          {icon:'🤸',name:'V.Push'},
+          {icon:'🦾',name:'H.Pull'},
+          {icon:'🧗',name:'V.Pull'},
+          {icon:'🎽',name:'Carry'},
+          {icon:'⚡',name:'Core'},
+        ].map((p,i)=>`<div class="ob-pattern" id="ob-p${i}" style="animation-delay:${i*60}ms">
+          <div class="ob-pattern-icon">${p.icon}</div>
+          <div class="ob-pattern-name">${p.name}</div>
+        </div>`).join('')}
+      </div>
+    </div>`,
+
+  // Slide 2 — The level ladder
+  ()=>`
+    <div style="max-width:500px;width:100%">
+      <div class="ob-eyebrow">Progression</div>
+      <h1 class="ob-h1">5 levels.<br>No ceiling on<br><em>ambition.</em></h1>
+      <p class="ob-body">Each pattern has 5 progressive levels. You'll be assessed and placed at the right level — then your programme is built around closing the gaps.</p>
+      <div class="ob-levels">
+        ${[
+          {n:'1',name:'Bilateral Control',desc:'Two-limb movement under controlled load',col:'#999'},
+          {n:'2',name:'Bilateral Strength',desc:'Loading the pattern under meaningful resistance',col:'var(--amber)'},
+          {n:'3',name:'Unilateral Control',desc:'Single-limb work — the real test of quality',col:'var(--gm)',hl:true},
+          {n:'4',name:'Unilateral Strength',desc:'Heavy single-limb loading. Few people reach this',col:'var(--gd)'},
+          {n:'5',name:'Athletic Expression',desc:'Elite force production, velocity and precision',col:'var(--dk)'},
+        ].map(l=>`<div class="ob-level${l.hl?' highlighted':''}">
+          <div class="ob-level-num" style="color:${l.col}">${l.n}</div>
+          <div class="ob-level-body">
+            <div class="ob-level-name">${l.name}</div>
+            <div class="ob-level-desc">${l.desc}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`,
+
+  // Slide 3 — What to expect
+  ()=>`
+    <div style="max-width:500px;width:100%">
+      <div class="ob-eyebrow">What Happens Next</div>
+      <h1 class="ob-h1">Your first<br><em>10 minutes.</em></h1>
+      <p class="ob-body">Here's exactly what happens from here. No surprises.</p>
+      <div class="ob-steps">
+        <div class="ob-step">
+          <div class="ob-step-num" style="background:var(--gm)">1</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Film your assessment</div>
+            <div class="ob-step-desc">Record yourself performing each of the 8 patterns. A few reps each. Takes about 10 minutes. You can use your phone.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-step-num">2</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Submit for review</div>
+            <div class="ob-step-desc">Upload your videos directly in the app. Your coach will review and assign your levels — typically within 48 hours.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-step-num">3</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Your programme unlocks</div>
+            <div class="ob-step-desc">The moment your levels are set, your personalised 4-day programme is built automatically. You're ready to train.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-step-num" style="background:var(--dk)">4</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Test, advance, repeat</div>
+            <div class="ob-step-desc">When you're ready, submit a test video for any pattern. Pass the standard, advance the level, programme updates. Forever.</div>
+          </div>
+        </div>
+      </div>
+    </div>`,
+
+  // Slide 4 — Ready
+  (name)=>`
+    <div style="max-width:500px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center">
+      <div class="ob-score-ring">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--br)" stroke-width="6"/>
+          <circle id="ob-ring-fill" cx="50" cy="50" r="42" fill="none" stroke="var(--gm)" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="264" stroke-dashoffset="264" style="transition:stroke-dashoffset 1.2s ease .3s"/>
+        </svg>
+        <div class="ob-score-ring-text">
+          <div class="ob-score-ring-num">0</div>
+          <div class="ob-score-ring-label">/ 40</div>
+        </div>
+      </div>
+      <div class="ob-eyebrow" style="text-align:center">You're in</div>
+      <h1 class="ob-h1" style="text-align:center;font-size:clamp(28px,7vw,48px)">Time to find out<br>your <em>level.</em></h1>
+      <p class="ob-body" style="text-align:center;max-width:360px">That score reaches 40 one standard at a time. Start your assessment today and you'll have your first levels within 48 hours.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:360px;margin-top:24px">
+        ${[
+          {label:'Squat',w:'0%'},
+          {label:'Hinge',w:'0%'},
+          {label:'H.Push',w:'0%'},
+          {label:'V.Pull',w:'0%'},
+        ].map(r=>`<div class="ob-final-bar-row">
+          <div class="ob-final-label">${r.label}</div>
+          <div class="ob-final-bar"><div class="ob-final-bar-fill" data-target="0"></div></div>
+          <div style="font-size:11px;color:var(--mt);width:20px">L0</div>
+        </div>`).join('')}
+      </div>
+      <p style="font-size:12px;color:var(--mt);margin-top:20px">Complete your assessment → bars fill in → programme unlocks</p>
+    </div>`,
+];
+
+function initOnboarding(userName){
+  obStep=0;
+  // Render progress dots
+  const prog=document.getElementById('ob-progress');
+  prog.innerHTML=Array.from({length:OB_TOTAL},(_,i)=>
+    `<div class="ob-dot${i===0?' active':''}" id="ob-d${i}"></div>`
+  ).join('');
+  // Render first slide
+  renderObSlide(0,userName);
+  document.getElementById('onboarding').classList.add('active');
+  document.getElementById('ob-btn').textContent='Continue →';
+}
+
+function renderObSlide(step,name){
+  const slides=document.getElementById('ob-slides');
+  // Remove any leaving slides
+  slides.querySelectorAll('.ob-slide.leaving').forEach(el=>el.remove());
+  // Mark current active as leaving
+  const current=slides.querySelector('.ob-slide.active');
+  if(current){current.classList.remove('active');current.classList.add('leaving');setTimeout(()=>current.remove(),350);}
+  // Build new slide
+  const div=document.createElement('div');
+  div.className='ob-slide active';
+  const firstName=(name||'').split(' ')[0]||'there';
+  div.innerHTML=OB_SLIDES[step](firstName);
+  slides.appendChild(div);
+  // Update progress dots
+  for(let i=0;i<OB_TOTAL;i++){
+    const d=document.getElementById(`ob-d${i}`);
+    if(!d)continue;
+    d.classList.toggle('done',i<step);
+    d.classList.toggle('active',i===step);
+  }
+  // Update button
+  const btn=document.getElementById('ob-btn');
+  if(step===OB_TOTAL-1){
+    btn.textContent='Start my assessment →';
+    btn.classList.add('green');
+    // Animate ring on final slide
+    setTimeout(()=>{
+      const ring=document.getElementById('ob-ring-fill');
+      if(ring)ring.style.strokeDashoffset='264'; // stays at 0 — empty, representing current state
+    },400);
+  } else {
+    btn.textContent='Continue →';
+    btn.classList.remove('green');
+  }
+  // Animate pattern tiles on slide 1
+  if(step===1){
+    setTimeout(()=>{
+      for(let i=0;i<8;i++){
+        setTimeout(()=>{
+          const el=document.getElementById(`ob-p${i}`);
+          if(el)el.classList.add('lit');
+        },i*80);
+      }
+    },300);
+  }
+  // Animate level ladder highlight pulse on slide 2
+  if(step===2){
+    setTimeout(()=>{
+      const highlighted=document.querySelector('.ob-level.highlighted');
+      if(highlighted){
+        highlighted.style.transform='scale(1.02)';
+        setTimeout(()=>{highlighted.style.transform='';},400);
+      }
+    },500);
+  }
+  // Store name for re-use
+  window._obName=name;
+}
+
+function obNext(){
+  if(obStep<OB_TOTAL-1){
+    obStep++;
+    renderObSlide(obStep,window._obName);
+  } else {
+    finishOnboarding(true);
+  }
+}
+
+function skipOnboarding(){
+  finishOnboarding(false);
+}
+
+function finishOnboarding(startAssessment){
+  localStorage.setItem(OB_KEY,'1');
+  document.getElementById('onboarding').classList.remove('active');
+  if(startAssessment){
+    // Small delay so the transition feels intentional
+    setTimeout(()=>openAssessment(),200);
+  }
+}
+
+function checkOnboarding(user){
+  if(localStorage.getItem(OB_KEY))return; // already seen
+  const name=user.user_metadata?.full_name||user.email||'';
+  // Only show for athletes, not coaches
+  if(user.app_metadata?.role==='coach')return;
+  initOnboarding(name);
+}
+
 // ── LANDING PAGE ──
 function openAuthModal(tab){
   document.getElementById('auth-modal').classList.add('open');
@@ -1266,7 +1579,11 @@ function showApp(user){
   });
 }
 sb.auth.onAuthStateChange(async(ev,sess)=>{
-  if(ev==='SIGNED_IN'&&sess?.user){showApp(sess.user);await load();}
+  if(ev==='SIGNED_IN'&&sess?.user){
+    showApp(sess.user);
+    await load();
+    checkOnboarding(sess.user);
+  }
   else if(ev==='SIGNED_OUT'){CU=null;document.getElementById('app').style.display='none';document.getElementById('landing').style.display='block';}
 });
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){showApp(session.user);await load();}else{document.getElementById('landing').style.display='block';}})();
