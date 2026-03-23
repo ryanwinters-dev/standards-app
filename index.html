@@ -2485,8 +2485,7 @@ async function openClientPage(athleteId){
   const a=ALL_ATHLETES.find(x=>x.id===athleteId);
   if(!a)return;
   const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-  document.getElementById('cp-name').textContent=a.name;
-  document.getElementById('cp-score').textContent=`${total} / 40`;
+  document.getElementById('cp-name').textContent=`${a.name} · ${total}/40`;
   document.getElementById('cp-body').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
   document.getElementById('client-page').classList.add('active');
 
@@ -2827,21 +2826,25 @@ async function judgeTest(assessmentId,athleteId,patId,level,pass){
 // ── PATTERN PAGE ──
 let patternPageFrom=null;
 
+// Which level card is open on the pattern page (null = current level auto-opens)
+let patternPageOpenLevel=null;
+let patternPagePid=null;
+
 function openPatternPage(pid,athleteId,isCoach){
   const logs=patternPageLogs[pid]||[];
-  // Get level from profContext scores (works for both athlete and coach)
   const lv=profContext.scores?profContext.scores[pid]||0:AP[pid]||0;
-  const col=LC[lv];
   patternPageFrom=isCoach?'client':'profile';
+  patternPagePid=pid;
+  // Default: open current level card
+  if(patternPageOpenLevel===null||patternPagePid!==pid)patternPageOpenLevel=lv||1;
 
   document.getElementById('pp-title').textContent=PF[pid];
   document.getElementById('pp-level').textContent=`Level ${lv} / 5`;
 
   const pending=profContext.pendingTests?.find(p=>p.pattern_id===pid);
-
   let h='';
 
-  // ── PENDING BANNER (coach only) ──
+  // ── PENDING BANNER (coach) ──
   if(isCoach&&pending){
     const pStd=STD.find(s=>s.pattern_id===pid&&s.level===pending.level_tested);
     h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:12px;padding:14px;margin-bottom:16px">
@@ -2856,76 +2859,153 @@ function openPatternPage(pid,athleteId,isCoach){
     </div>`;
   }
 
-  // ── LEVEL LADDER ──
+  // ── LEVEL CARDS ──
   h+=`<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px">Level Ladder</div>`;
 
   for(let lvl=1;lvl<=5;lvl++){
     const std=STD.find(s=>s.pattern_id===pid&&s.level===lvl);
     const done=lv>=lvl;
     const current=lv===lvl;
-    const exercises=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lvl);
-    const mx=exercises.find(e=>e.type==='Main');
-    const bx=exercises.find(e=>e.type==='Bridge');
-    const lx=exercises.find(e=>e.type==='Limiter');
+    const isOpen=patternPageOpenLevel===lvl;
     const lvlCol=LC[lvl];
     const nextStd=STD.find(s=>s.pattern_id===pid&&s.level===lvl+1);
+    const mx=EX.find(e=>e.pattern_id===pid&&e.level_focus===lvl&&e.type==='Main');
 
     h+=`<div style="background:var(--cd);border:${current?'1.5px solid '+lvlCol:'0.5px solid var(--br)'};border-radius:12px;margin-bottom:8px;overflow:hidden">
-      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:${current?'var(--gl)':'var(--cd)'}">
+      <!-- Card header — always visible, tappable -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:${current&&!isOpen?'var(--gl)':isOpen?'var(--gl)':'var(--cd)'}" onclick="setPatternLevel(${lvl},'${pid}','${athleteId||''}',${isCoach})">
         <div style="width:32px;height:32px;border-radius:50%;background:${done?lvlCol:'var(--br)'};color:${done?'#fff':'var(--mt)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${done&&!current?'✓':lvl}</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;color:${current?lvlCol:'var(--dk)'}">${std?.test_exercise||'Level '+lvl}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:${done?lvlCol:'var(--md)'}${!done?';opacity:.6':''}">${std?.test_exercise||'Level '+lvl}</div>
           <div style="font-size:11px;color:var(--mt);margin-top:1px">${std?.quality_focus||''} ${std?.load_standard?'· '+std.load_standard:''}</div>
         </div>
-        ${current?`<span style="font-size:11px;font-weight:600;color:${lvlCol};background:#fff;padding:3px 8px;border-radius:99px;border:0.5px solid ${lvlCol}">Current</span>`:''}
-        ${!done&&!current?`<span style="font-size:11px;color:var(--mt)">Locked</span>`:''}
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          ${current?`<span style="font-size:10px;font-weight:600;color:${lvlCol};background:#fff;padding:2px 7px;border-radius:99px;border:0.5px solid ${lvlCol}">Current</span>`:''}
+          <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
+        </div>
       </div>`;
 
-    if(current){
-      h+=`<div style="padding:12px 14px;border-top:0.5px solid var(--br)">`;
+    // ── EXPANDED CARD CONTENT ──
+    if(isOpen){
+      h+=`<div style="border-top:0.5px solid var(--br);padding:14px">`;
 
-      if(std?.pass_criteria){
-        h+=`<div style="margin-bottom:12px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:5px">Pass criteria</div>
-          <div style="font-size:13px;color:var(--dk);line-height:1.5">${std.pass_criteria}</div>
-        </div>`;
-      }
-
-      if(mx||bx||lx){
-        h+=`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:8px">Training exercises</div>`;
-        [[mx,'MAIN','tm'],[bx,'BRIDGE','tb'],[lx,'LIMITER','tl2']].filter(([e])=>e).forEach(([ex,tag,cls])=>{
-          const intent=ex.intent||'Control';
-          const rep=RR[intent]||RR.Control;
-          h+=`<div style="padding:9px 0;border-bottom:0.5px solid var(--br)">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
-              <span class="et ${cls}">${tag}</span>
-              <span style="font-size:13px;font-weight:600">${ex.name}</span>
-            </div>
-            <div style="font-size:11px;color:var(--mt);padding-left:2px">${rep.lo}–${rep.hi} reps · ${TM[intent]||''}</div>
-            <div style="font-size:11px;color:var(--gm);font-style:italic;padding-left:2px;margin-top:1px">"${ex.coaching_cue||'—'}"</div>
-          </div>`;
-        });
-      }
-
-      if(nextStd){
-        h+=`<div style="background:var(--bg);border-radius:8px;padding:10px 12px;margin-top:12px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:4px">Next → Level ${lvl+1}</div>
-          <div style="font-size:13px;font-weight:600">${nextStd.test_exercise}</div>
-          <div style="font-size:12px;color:var(--mt);margin-top:1px">${nextStd.load_standard} · ${nextStd.quality_focus||''}</div>
+      // Demo video or placeholder
+      if(std?.demo_url){
+        const embedUrl=std.demo_url.replace('watch?v=','embed/').replace('youtu.be/','www.youtube.com/embed/');
+        h+=`<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;margin-bottom:14px;background:#000">
+          <iframe src="${embedUrl}?rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:10px" allow="autoplay;encrypted-media" allowfullscreen></iframe>
         </div>`;
       } else {
-        h+=`<div style="background:var(--gm);border-radius:8px;padding:10px 12px;margin-top:12px;color:#fff;font-size:13px;font-weight:600">🏆 Maximum level achieved</div>`;
+        h+=`<div style="background:var(--dk);border-radius:10px;padding:24px;text-align:center;margin-bottom:14px">
+          <div style="font-size:24px;margin-bottom:6px">🎬</div>
+          <div style="font-size:13px;color:#666;font-weight:500">Demo video coming soon</div>
+          <div style="font-size:11px;color:#444;margin-top:4px">Ryan will add a coaching video here</div>
+        </div>`;
       }
 
-      // Log test button — athletes only, when there's a next level
-      if(!isCoach&&nextStd){
-        h+=`<button class="btn btn-full btn-dk" style="margin-top:12px" onclick="openTestModal('${pid}');closePatternPage()">+ Log Level ${lvl+1} Test</button>`;
+      // Description
+      if(std?.description){
+        h+=`<div style="font-size:14px;color:var(--dk);line-height:1.6;margin-bottom:14px">${std.description}</div>`;
+      } else {
+        // Generate a description from available data
+        h+=`<div style="font-size:13px;color:var(--md);line-height:1.6;margin-bottom:14px">
+          ${std?.quality_focus?`Level ${lvl} develops <strong>${std.quality_focus.toLowerCase()}</strong> — `:``}the foundation required before progressing to ${nextStd?`Level ${lvl+1} (${nextStd.test_exercise})`:'the highest level of athletic expression'}.
+        </div>`;
       }
 
-      h+=`</div>`;
+      // Test standard — the most important card
+      h+=`<div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:8px">Test Standard</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <div style="text-align:center">
+            <div style="font-size:18px;font-weight:700;color:${lvlCol}">${std?.reps||'—'}</div>
+            <div style="font-size:10px;color:var(--mt);margin-top:2px">Reps</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px;font-weight:700;color:${lvlCol}">${std?.load_standard||'—'}</div>
+            <div style="font-size:10px;color:var(--mt);margin-top:2px">Load</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px;font-weight:700;color:${lvlCol}">${std?.tempo||'—'}</div>
+            <div style="font-size:10px;color:var(--mt);margin-top:2px">Tempo</div>
+          </div>
+        </div>
+        ${std?.rom_standard?`<div style="font-size:12px;color:var(--mt);border-top:0.5px solid var(--br);padding-top:8px">📐 ${std.rom_standard}</div>`:''}
+      </div>`;
+
+      // Main exercise only (removed bridge/limiter — they're in the programme)
+      if(mx){
+        h+=`<div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:8px">Test Exercise</div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span class="et tm" style="flex-shrink:0;margin-top:2px">MAIN</span>
+            <div>
+              <div style="font-size:14px;font-weight:700">${mx.name}</div>
+              ${mx.coaching_cue?`<div style="font-size:12px;color:var(--gm);font-style:italic;margin-top:3px">"${mx.coaching_cue}"</div>`:''}
+            </div>
+          </div>
+        </div>`;
+      }
+
+      // Pass criteria
+      if(std?.pass_criteria){
+        h+=`<div style="margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:8px">Pass Criteria</div>`;
+        std.pass_criteria.split('.').filter(s=>s.trim().length>3).forEach(criterion=>{
+          h+=`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px">
+            <div style="width:18px;height:18px;border-radius:50%;background:var(--gl);color:var(--gd);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">✓</div>
+            <div style="font-size:13px;color:var(--dk);line-height:1.4">${criterion.trim()}</div>
+          </div>`;
+        });
+        h+=`</div>`;
+      }
+
+      // Common fails
+      if(std?.common_fails){
+        h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--amber);margin-bottom:8px">Common Fails</div>`;
+        std.common_fails.split('.').filter(s=>s.trim().length>3).forEach(fail=>{
+          h+=`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px">
+            <div style="width:18px;height:18px;border-radius:50%;background:#FFF8EC;color:var(--amber);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">✕</div>
+            <div style="font-size:13px;color:var(--dk);line-height:1.4">${fail.trim()}</div>
+          </div>`;
+        });
+        h+=`</div>`;
+      }
+
+      // Regression (what to do if you can't pass)
+      if(std?.regression){
+        h+=`<div style="background:var(--bg);border-radius:10px;padding:10px 14px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:5px">If You Can't Pass</div>
+          <div style="font-size:13px;color:var(--dk)">${std.regression}</div>
+        </div>`;
+      }
+
+      // Next level preview
+      if(nextStd){
+        h+=`<div style="background:var(--dk);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#555;margin-bottom:6px">Next → Level ${lvl+1}</div>
+          <div style="font-size:14px;font-weight:700;color:#fff">${nextStd.test_exercise}</div>
+          <div style="font-size:12px;color:#888;margin-top:3px">${nextStd.load_standard} · ${nextStd.quality_focus||''}</div>
+          ${nextStd.next_level_target?`<div style="font-size:12px;color:#666;margin-top:6px;font-style:italic">"${nextStd.next_level_target}"</div>`:''}
+        </div>`;
+      } else {
+        h+=`<div style="background:var(--gm);border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center">
+          <div style="font-size:20px;margin-bottom:4px">🏆</div>
+          <div style="font-size:14px;font-weight:700;color:#fff">Maximum level achieved</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px">Elite athletic expression in ${PF[pid]}</div>
+        </div>`;
+      }
+
+      // Log test button (athlete only, if this is the current level and there's a next)
+      if(!isCoach&&current&&nextStd){
+        h+=`<button class="btn btn-full btn-dk" onclick="openTestModal('${pid}');closePatternPage()">+ Log Level ${lvl+1} Test</button>`;
+      }
+
+      h+=`</div>`; // end expanded content
     }
 
-    h+=`</div>`;
+    h+=`</div>`; // end card
   }
 
   // ── TEST HISTORY ──
@@ -2952,11 +3032,18 @@ function openPatternPage(pid,athleteId,isCoach){
   document.getElementById('pp-body').innerHTML=h;
   document.getElementById('pattern-page').style.display='block';
   document.getElementById('pp-body').scrollTop=0;
-  window.scrollTo(0,0);
+}
+
+function setPatternLevel(lvl,pid,athleteId,isCoach){
+  // Toggle — if already open, close it
+  patternPageOpenLevel=patternPageOpenLevel===lvl?null:lvl;
+  openPatternPage(pid,athleteId,isCoach);
 }
 
 function closePatternPage(){
   document.getElementById('pattern-page').style.display='none';
+  patternPageOpenLevel=null;
+  patternPagePid=null;
 }
 
 // ── LEADERBOARD ──
