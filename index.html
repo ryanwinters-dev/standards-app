@@ -1221,7 +1221,12 @@ const sb=createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjemZhbXJqZHdiZWVqb3hoeG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODAzNjEsImV4cCI6MjA4OTM1NjM2MX0.trUIKdNicHPRDmleAYoF3nAg8unqQrnQCjKTPB63bI0'
 );
 
+const SUPA_URL='https://pczfamrjdwbeejoxhxnq.supabase.co';
+const PRICE_COACHED='price_1TE8VjJjyXKoXrJjlelN6Sb0';
+const PRICE_COACH='price_1TE8WTJjyXKoXrJjj4yQxtn8';
 let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[],CHECKINS=[];
+let USER_TIER='free'; // 'free' | 'coached' | 'coach'
+let USER_SUB=null;    // full subscription row
 let ALL_ATHLETES=[],ALL_PENDING=[],ALL_CHECKINS={},ALL_CLIENT_SETS={};
 let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
 let profCalDate=new Date();
@@ -1500,6 +1505,122 @@ function checkOnboarding(user){
   initOnboarding(name);
 }
 
+// ── STRIPE / SUBSCRIPTION ──
+
+function buildSubscriptionCard(){
+  const tierLabel={free:'Free',coached:'Coached Athlete',coach:'Coach Licence'}[USER_TIER]||'Free';
+  const tierCol={free:'var(--mt)',coached:'var(--gm)',coach:'var(--dk)'}[USER_TIER];
+  const periodEnd=USER_SUB?.current_period_end
+    ?new Date(USER_SUB.current_period_end).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+    :null;
+
+  if(USER_TIER==='free'){
+    return`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:13px;font-weight:600">Free plan</div>
+          <div style="font-size:12px;color:var(--mt);margin-top:2px">Upgrade to unlock coached features</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="startCheckout('coached')" style="padding:10px;background:var(--gm);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">
+          Coached — £15/mo
+        </button>
+        <button onclick="startCheckout('coach')" style="padding:10px;background:var(--dk);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">
+          Coach — £49/mo
+        </button>
+      </div>
+    </div>`;
+  }
+
+  return`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:13px;font-weight:600">${tierLabel}</div>
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--gm)"></div>
+          <div style="font-size:12px;color:var(--gm);font-weight:500">Active</div>
+        </div>
+        ${periodEnd?`<div style="font-size:12px;color:var(--mt);margin-top:3px">Renews ${periodEnd}</div>`:''}
+      </div>
+      <button onclick="openBillingPortal()" style="padding:7px 14px;border:0.5px solid var(--br);border-radius:8px;background:transparent;font-size:12px;font-weight:500;color:var(--md);cursor:pointer;font-family:var(--fn)">
+        Manage
+      </button>
+    </div>
+  </div>`;
+}
+
+async function startCheckout(tier){
+  const priceId=tier==='coached'?PRICE_COACHED:PRICE_COACH;
+  if(priceId.startsWith('REPLACE_')){
+    toast('Stripe price IDs not configured yet','err');
+    return;
+  }
+  toast('Opening checkout…','ok');
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    const resp=await fetch(`${SUPA_URL}/functions/v1/create-checkout`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${session.access_token}`,
+      },
+      body:JSON.stringify({
+        price_id:priceId,
+        success_url:`${window.location.origin}?checkout=success`,
+        cancel_url:`${window.location.origin}?checkout=cancelled`,
+      }),
+    });
+    const result=await resp.json();
+    if(result.error)throw new Error(result.error);
+    window.location.href=result.url;
+  }catch(err){
+    toast('Checkout failed: '+err.message,'err');
+  }
+}
+
+async function openBillingPortal(){
+  toast('Opening billing portal…','ok');
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    const resp=await fetch(`${SUPA_URL}/functions/v1/customer-portal`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${session.access_token}`,
+      },
+      body:JSON.stringify({return_url:window.location.origin}),
+    });
+    const result=await resp.json();
+    if(result.error)throw new Error(result.error);
+    window.location.href=result.url;
+  }catch(err){
+    toast('Portal failed: '+err.message,'err');
+  }
+}
+
+// Handle redirect back from Stripe
+(()=>{
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('checkout')==='success'){
+    // Clear params from URL
+    window.history.replaceState({},'',window.location.pathname);
+    // Show success after app loads
+    setTimeout(()=>{
+      toast('🎉 Subscription activated! Welcome to STANDARDS.','ok');
+      // Reload subscription data
+      sb.from('subscriptions').select('*').eq('athlete_id',CU?.id).single()
+        .then(({data})=>{
+          if(data){USER_SUB=data;USER_TIER=data.tier;rProfile();}
+        });
+    },2000);
+  }
+  if(params.get('checkout')==='cancelled'){
+    window.history.replaceState({},'',window.location.pathname);
+    setTimeout(()=>toast('Checkout cancelled','err'),1000);
+  }
+})();
+
 // ── LANDING PAGE ──
 function openAuthModal(tab){
   document.getElementById('auth-modal').classList.add('open');
@@ -1650,14 +1771,17 @@ async function load(){
     await loadStaticData();
 
     // Load all personal data in one parallel batch
-    const[myAP,aap,logs,sets,checkins]=await Promise.all([
+    const[myAP,aap,logs,sets,checkins,subRes]=await Promise.all([
       q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
       q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30)),
+      sb.from('subscriptions').select('*').eq('athlete_id',CU.id).single().then(r=>r.data||null),
     ]);
     AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
+    USER_SUB=subRes;
+    USER_TIER=subRes?.tier||'free';
     AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
 
     // Render athlete views immediately — don't wait for coach data
@@ -2925,8 +3049,14 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
 
   // ── RENDER ──
   if(!isCoach){
+    const tierBadge={
+      free:'',
+      coached:`<span style="font-size:11px;font-weight:600;color:var(--gd);background:var(--gl);padding:2px 8px;border-radius:99px;margin-left:6px">Coached</span>`,
+      coach:`<span style="font-size:11px;font-weight:600;color:#fff;background:var(--dk);padding:2px 8px;border-radius:99px;margin-left:6px">Coach</span>`,
+    }[USER_TIER]||'';
     document.getElementById('v-profile').innerHTML=
-      `<div class="ph"><div class="av">${gi(CU.user_metadata?.full_name||CU.email)}</div><div><div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`
+      `<div class="ph"><div class="av">${gi(CU.user_metadata?.full_name||CU.email)}</div><div style="flex:1"><div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}${tierBadge}</div><div class="ps">${IS_COACH?'Coach':'Athlete'} · STANDARDS</div></div><div class="sc">${tot} / 40</div></div>`
+      +buildSubscriptionCard()
       +h;
   } else {
     document.getElementById('cp-body').innerHTML=h;
