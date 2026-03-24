@@ -4,17 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>STANDARDS</title>
-  <meta name="description" content="Know your movement level across 8 fundamental patterns. 5 progressive levels. Train with purpose."/>
-  <meta property="og:title" content="STANDARDS — Movement Assessment"/>
-  <meta property="og:description" content="Know your movement level across 8 fundamental patterns. 5 progressive levels."/>
-  <meta property="og:type" content="website"/>
-  <meta name="twitter:card" content="summary"/>
-  <meta name="twitter:title" content="STANDARDS — Movement Assessment"/>
-  <meta name="twitter:description" content="Know your movement level across 8 fundamental patterns. 5 progressive levels."/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{--gd:#0F6E56;--gm:#1D9E75;--gl:#E1F5EE;--dk:#0D0D0D;--md:#444;--mt:#888;--br:#E0E0DC;--bg:#F8F8F6;--cd:#FFF;--fn:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--red:#c0392b;--amber:#E8830A}
@@ -145,7 +135,7 @@
     .session-preview{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:14px}
     .session-preview-hdr{background:var(--dk);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
     .session-preview-title{font-size:13px;font-weight:600;color:#fff}
-    .session-preview-sub{font-size:11px;color:var(--mt)}
+    .session-preview-sub{font-size:11px;color:#777}
     .session-circuit-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid var(--br)}
     .session-circuit-row:last-child{border-bottom:none}
     .session-circuit-letter{width:22px;height:22px;border-radius:5px;background:var(--dk);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -186,7 +176,7 @@
     .day-sub-tab.act{background:var(--dk);color:#fff;border-color:var(--dk)}
     .day-wrap{margin-bottom:16px}
     .day-hdr{background:var(--dk);border-radius:10px 10px 0 0;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
-    .day-title{font-size:13px;font-weight:600;color:#fff}.day-vol{font-size:11px;color:var(--mt)}
+    .day-title{font-size:13px;font-weight:600;color:#fff}.day-vol{font-size:11px;color:#777}
     .circuit-wrap{border:0.5px solid var(--br);border-top:none;background:var(--cd)}
     .circuit-wrap:last-child{border-radius:0 0 10px 10px;overflow:hidden}
     .circuit-wrap.logged{border-color:var(--gm)}
@@ -252,7 +242,7 @@
 
     /* Pattern tile — compact 4-col design */
     .pc{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:8px 7px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative;min-width:0;overflow:hidden}
-    .pc:hover{border-color:var(--br);transform:translateY(-1px)}.pc.act{border-color:var(--gm);border-width:1.5px}
+    .pc:hover{border-color:#bbb;transform:translateY(-1px)}.pc.act{border-color:var(--gm);border-width:1.5px}
     .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
     .pc-name{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .pc-level{font-size:22px;font-weight:700;line-height:1;letter-spacing:-1px}
@@ -362,7 +352,7 @@
     .assessment-demo{background:var(--dk);border-radius:12px;overflow:hidden;margin-bottom:20px}
     .assessment-demo-placeholder{padding:32px 20px;text-align:center}
     .assessment-demo-icon{font-size:32px;margin-bottom:8px}
-    .assessment-demo-text{font-size:13px;color:var(--mt);margin-bottom:4px}
+    .assessment-demo-text{font-size:13px;color:#666;margin-bottom:4px}
     .assessment-demo-sub{font-size:12px;color:#444}
     .assessment-video-embed{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
     .assessment-video-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
@@ -385,7 +375,7 @@
     .assessment-status.empty{background:var(--bg);color:var(--mt);border:0.5px solid var(--br)}
     .assessment-nav{display:flex;gap:10px;margin-top:8px;padding-bottom:20px}
     .assessment-skip{padding:11px 16px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:14px;color:var(--mt);font-family:var(--fn);transition:all .15s}
-    .assessment-skip:hover{border-color:var(--br);color:var(--dk)}
+    .assessment-skip:hover{border-color:#bbb;color:var(--dk)}
 
     /* Summary slide */
     .assess-summary-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:0.5px solid var(--br)}
@@ -400,7 +390,7 @@
     .start-assess-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:6px}
     .start-assess-sub{font-size:13px;color:#888;margin-bottom:16px;line-height:1.5}
     .start-assess-patterns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
-    .start-assess-pat{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:#1a1a1a;color:var(--mt)}
+    .start-assess-pat{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:#1a1a1a;color:#666}
     .start-assess-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--gm);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn)}
 
 
@@ -480,10 +470,12 @@
     .lbi{flex:1}.lbn{font-size:13px;font-weight:600}.lbns{font-size:12px;color:var(--mt)}
     .lbs{text-align:right}.lbsn{font-size:20px;font-weight:700;color:var(--gm);line-height:1}.lbsd{font-size:11px;color:var(--mt)}
     .lbmb{display:flex;gap:2px;margin-top:4px}.lbmbs{width:8px;height:8px;border-radius:2px}
-    @media(max-width:420px){.pg{grid-template-columns:1fr}.cap-grid{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
+    @media(max-width:420px){.pg{grid-transform:1fr}.cap-grid{grid-template-columns:1fr}.auth-card{padding:28px 18px}}
   </style>
 </head>
 <body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
 /* ── LANDING PAGE ── */
@@ -519,7 +511,7 @@
 .lp-stat{padding:32px 24px;background:var(--dk);text-align:center}
 .lp-stat-n{font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:#fff;line-height:1;letter-spacing:-1px}
 .lp-stat-n span{color:var(--gm)}
-.lp-stat-l{font-size:13px;font-weight:400;color:var(--mt);margin-top:8px;letter-spacing:.02em}
+.lp-stat-l{font-size:13px;font-weight:400;color:#666;margin-top:8px;letter-spacing:.02em}
 
 /* Section base */
 .lp-section{padding:96px 24px;max-width:1000px;margin:0 auto}
@@ -593,7 +585,7 @@
 .lp-pricing-inner{max-width:900px;margin:0 auto;padding:96px 24px}
 .lp-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
 .lp-price-card{background:var(--cd);border:0.5px solid var(--br);border-radius:16px;padding:32px 28px;position:relative;transition:transform .2s,border-color .2s}
-.lp-price-card:hover{transform:translateY(-2px);border-color:var(--br)}
+.lp-price-card:hover{transform:translateY(-2px);border-color:#ccc}
 .lp-price-card.featured{border:1.5px solid var(--gm);background:var(--dk)}
 .lp-price-card.featured .lp-price-tier{color:#888}
 .lp-price-card.featured .lp-price-amount{color:#fff}
@@ -623,7 +615,7 @@
 .lp-cta{background:var(--dk);padding:96px 24px;text-align:center}
 .lp-cta-h{font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,56px);font-weight:700;color:#fff;letter-spacing:-1px;margin-bottom:16px;line-height:1.1}
 .lp-cta-h em{color:var(--gm);font-style:normal}
-.lp-cta-sub{font-size:17px;font-weight:300;color:var(--mt);margin-bottom:40px}
+.lp-cta-sub{font-size:17px;font-weight:300;color:#666;margin-bottom:40px}
 
 /* Footer */
 .lp-footer{background:var(--dk);border-top:0.5px solid #1a1a1a;padding:40px 24px}
@@ -2018,7 +2010,7 @@ function showApp(user){
   document.getElementById('v-home')?.classList.add('active');
   ['home','workout','profile','leaderboard'].forEach(t=>{
     const el=document.getElementById('v-'+t);
-    if(el)el.innerHTML=`<div role="status" aria-label="Loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px">
+    if(el)el.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px">
       <div style="width:24px;height:24px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div>
       <div style="font-size:13px;color:var(--mt)">Loading your profile…</div>
     </div>`;
@@ -2610,7 +2602,7 @@ function renderAssessSlide(){
       ${hasVideo?`<span class="assessment-status done">✓ Video added</span>`:`<span class="assessment-status empty">No video yet</span>`}
     </div>
     <div class="assessment-upload${hasVideo?' has-video':''}" onclick="document.getElementById('assess-video-${pid}').click()">
-      <input type="file" id="assess-video-${pid}" accept="video/*" onchange="handleAssessVideo('${pid}',this)" aria-label="Upload assessment video"/>
+      <input type="file" id="assess-video-${pid}" accept="video/*" onchange="handleAssessVideo('${pid}',this)"/>
       <div class="assessment-upload-icon">${hasVideo?'✓':'🎥'}</div>
       <div class="assessment-upload-text">${hasVideo?'Video ready — tap to replace':'Record or upload your attempt'}</div>
       <div class="assessment-upload-sub">${hasVideo?'':'Film yourself performing the movement'}</div>
@@ -3876,7 +3868,7 @@ async function openClientPage(athleteId){
   if(!a)return;
   const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
   document.getElementById('cp-name').textContent=`${a.name} · ${total}/40`;
-  document.getElementById('cp-body').innerHTML=`<div role="status" aria-label="Loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
+  document.getElementById('cp-body').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
   document.getElementById('client-page').classList.add('active');
 
   const[pendingRes,allTestsRes,checkinsRes,setsRes]=await Promise.all([
@@ -4506,17 +4498,6 @@ function showTab(t,btn){
   if(btn)btn.classList.add('active');
 }
 function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
-
-document.addEventListener('keydown',function(e){
-  if(e.key!=='Escape')return;
-  if(document.getElementById('assessment-overlay')?.style.display!=='none')return closeAssessment();
-  if(document.getElementById('ci-modal')?.style.display!=='none')return closeCIModal();
-  if(document.getElementById('demo-modal')?.style.display!=='none')return closeDemoModal();
-  if(document.getElementById('test-modal')?.style.display!=='none')return closeTestModal();
-  if(document.getElementById('client-page')?.classList.contains('active'))return closeClientPage();
-  if(document.getElementById('pattern-page')?.classList.contains('active'))return closePatternPage();
-  if(document.getElementById('settings-page')?.classList.contains('active'))return closeSettings();
-});
 </script>
 <!-- TOAST -->
 <div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dk);color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;font-weight:500;z-index:300;transition:transform .25s ease,opacity .25s ease;opacity:0;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
