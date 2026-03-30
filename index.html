@@ -41,7 +41,7 @@
     input:focus,select:focus,textarea:focus{border-color:var(--gm);background:var(--bg3)}
     textarea{resize:vertical;min-height:72px}
     .btn{padding:11px 16px;border:none;border-radius:var(--r);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;transition:all .2s}
-    .btn-full{width:100%}.btn-dk{background:var(--dk);color:var(--bg)}.btn-gm{background:var(--gm);color:var(--bg)}.btn-amber{background:var(--amber);color:var(--bg)}
+    .btn-full{width:100%}.btn-dk{background:var(--gm);color:var(--bg)}.btn-gm{background:var(--gm);color:var(--bg)}.btn-amber{background:var(--amber);color:var(--bg)}
     .btn:hover{opacity:.8}.btn:disabled{opacity:.3;cursor:not-allowed}
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:var(--red)}.msg.ok{color:var(--pass)}
@@ -151,18 +151,18 @@
     .spider-legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 
     /* Next session preview */
-    .session-preview{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:14px}
-    .session-preview-hdr{background:var(--dk);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-    .session-preview-title{font-size:13px;font-weight:600;color:#fff}
-    .session-preview-sub{font-size:11px;color:#777}
+    .session-preview{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden;margin-bottom:14px}
+    .session-preview-hdr{background:var(--bg3);border-bottom:1px solid var(--br);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+    .session-preview-title{font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)}
+    .session-preview-sub{font-size:10px;font-family:var(--mono);color:var(--mt)}
     .session-circuit-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid var(--br)}
     .session-circuit-row:last-child{border-bottom:none}
-    .session-circuit-letter{width:22px;height:22px;border-radius:5px;background:var(--dk);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .session-circuit-letter{width:22px;height:22px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:10px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .session-circuit-info{flex:1}
-    .session-circuit-name{font-size:13px;font-weight:500}
-    .session-circuit-exs{font-size:11px;color:var(--mt);margin-top:1px}
-    .session-circuit-sets{font-size:12px;font-weight:600;color:var(--gm)}
-    .start-workout-btn{display:block;width:calc(100% - 32px);margin:12px 16px;padding:11px;background:var(--gm);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn);text-align:center;transition:opacity .15s}
+    .session-circuit-name{font-size:13px;font-weight:600;color:var(--md)}
+    .session-circuit-exs{font-size:11px;color:var(--mt);margin-top:1px;font-family:var(--mono)}
+    .session-circuit-sets{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--gm)}
+    .start-workout-btn{display:block;width:calc(100% - 32px);margin:12px 16px;padding:11px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;text-align:center;transition:opacity .15s}
     .start-workout-btn:hover{opacity:.88}
 
     /* ── CHECK-IN MODAL ── */
@@ -201,8 +201,8 @@
     .circuit-wrap.logged{border-color:var(--gm)}
     .circuit-hdr{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);cursor:pointer;user-select:none}
     .circuit-hdr:hover{background:#f0f0ee}.circuit-hdr.logged{background:var(--gl)}
-    .circuit-letter{width:24px;height:24px;border-radius:6px;background:var(--dk);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .circuit-letter.logged{background:var(--gm)}
+    .circuit-letter{width:24px;height:24px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .circuit-letter.logged{background:var(--pass);color:var(--bg);border-color:var(--pass)}
     .circuit-label{font-size:12px;font-weight:600;color:var(--md);flex:1}
     .circuit-sets{font-size:12px;color:var(--mt)}.circuit-arrow{font-size:11px;color:var(--mt)}
     .circuit-body{display:none}.circuit-body.open{display:block}
@@ -212,7 +212,7 @@
     .cx-name{font-size:14px;font-weight:600;flex:1}
     .cx-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
     .cx-demo-btn{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-    .cx-demo-btn:hover{background:var(--gl);border-color:var(--gm)}
+    .cx-demo-btn:hover{background:rgba(0,229,255,0.1);border-color:var(--gm)}
     .cx-meta{font-size:12px;color:var(--mt);margin-bottom:6px}
     .cx-cue{font-size:11px;color:var(--gm);font-style:italic;margin-bottom:8px}
     .load-hint{font-size:11px;color:var(--mt);margin-bottom:6px}
@@ -225,11 +225,11 @@
     .set-target{font-size:11px;color:var(--mt);padding:4px 6px;white-space:nowrap}
     .add-set-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;border:0.5px dashed var(--br);background:transparent;cursor:pointer;font-size:12px;color:var(--mt);font-family:var(--fn);transition:all .15s;margin-top:4px}
     .add-set-btn:hover{border-color:var(--gm);color:var(--gm)}
-    .log-circuit-btn{display:block;width:100%;margin:12px 0 4px;padding:10px;background:var(--dk);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
+    .log-circuit-btn{display:block;width:100%;margin:12px 0 4px;padding:10px;background:transparent;color:var(--gm);border:1px solid var(--gm);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s}
     .log-circuit-btn:hover{opacity:.85}.log-circuit-btn.logged{background:var(--gm)}
     .log-circuit-btn:disabled{opacity:.5;cursor:not-allowed}
     .circuit-log-msg{font-size:12px;text-align:center;color:var(--gm);padding:4px 0;min-height:20px}
-    .tm{background:var(--gl);color:var(--gd)}.tb{background:#EEEDFE;color:#534AB7}.tl2{background:#FAEEDA;color:#854F0B}
+    .tm{background:rgba(0,229,255,0.12);color:var(--gm);border:1px solid rgba(0,229,255,0.3)}.tb{background:rgba(150,120,255,0.12);color:#9678FF;border:1px solid rgba(150,120,255,0.3)}.tl2{background:rgba(255,179,64,0.12);color:#FFB340;border:1px solid rgba(255,179,64,0.3)}
 
     /* ── DEMO MODAL ── */
     .demo-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -345,10 +345,10 @@
     .settings-inline-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mt);margin-bottom:6px}
     .settings-inline-input{width:100%;padding:10px 12px;border:0.5px solid var(--br);border-radius:8px;font-size:14px;font-family:var(--fn);background:var(--bg);color:var(--dk);outline:none}
     .settings-inline-input:focus{border-color:var(--gm)}
-    .settings-save-btn{width:100%;padding:12px;margin-top:10px;background:var(--dk);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:background .15s}
-    .settings-save-btn:hover{background:#222}
-    .settings-save-btn.green{background:var(--gm)}
-    .settings-save-btn.green:hover{background:var(--gd)}
+    .settings-save-btn{width:100%;padding:12px;margin-top:10px;background:var(--bg3);color:var(--md);border:1px solid var(--brm);border-radius:var(--r);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;transition:all .2s}
+    .settings-save-btn:hover{border-color:var(--gm);color:var(--gm)}
+    .settings-save-btn.green{background:var(--gm);color:var(--bg);border-color:var(--gm)}
+    .settings-save-btn.green:hover{opacity:.85}
     .settings-danger-btn{width:100%;padding:13px;background:transparent;color:var(--red);border:0.5px solid #f0c0c0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s;text-align:left;padding-left:16px}
     .settings-danger-btn:hover{background:#fef2f2}
     .settings-msg{font-size:13px;margin-top:8px;padding:8px 12px;border-radius:8px;display:none}
@@ -368,7 +368,7 @@
     .assessment-pattern-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:6px}
     .assessment-pattern-name{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
     .assessment-pattern-sub{font-size:14px;color:var(--mt);margin-bottom:20px}
-    .assessment-demo{background:var(--dk);border-radius:12px;overflow:hidden;margin-bottom:20px}
+    .assessment-demo{background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden;margin-bottom:20px}
     .assessment-demo-placeholder{padding:32px 20px;text-align:center}
     .assessment-demo-icon{font-size:32px;margin-bottom:8px}
     .assessment-demo-text{font-size:13px;color:#666;margin-bottom:4px}
@@ -403,14 +403,14 @@
     .assess-summary-sub{font-size:12px;color:var(--mt);margin-top:1px}
 
     /* ── START ASSESSMENT CARD ── */
-    .start-assess-card{background:var(--dk);border-radius:14px;overflow:hidden;margin-bottom:14px;cursor:pointer;transition:opacity .15s}
+    .start-assess-card{background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);overflow:hidden;margin-bottom:14px;cursor:pointer;transition:all .2s}
     .start-assess-card:hover{opacity:.92}
     .start-assess-body{padding:20px}
     .start-assess-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:6px}
     .start-assess-sub{font-size:13px;color:#888;margin-bottom:16px;line-height:1.5}
     .start-assess-patterns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
     .start-assess-pat{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:#1a1a1a;color:#666}
-    .start-assess-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--gm);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fn)}
+    .start-assess-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 
 
     .coach-client-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
@@ -430,8 +430,8 @@
     .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;flex-direction:column}
     .client-page.active{display:flex}
     .client-page-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 12px;height:52px;display:flex;align-items:center;gap:8px;flex-shrink:0;z-index:10}
-    .back-btn{padding:6px 10px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn);display:flex;align-items:center;gap:5px;transition:all .15s;flex-shrink:0}
-    .back-btn:hover{background:var(--bg)}
+    .back-btn{padding:6px 10px;border:1px solid var(--brm);border-radius:var(--r);background:transparent;cursor:pointer;font-size:11px;font-weight:700;color:var(--mt);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:5px;transition:all .2s;flex-shrink:0}
+    .back-btn:hover{border-color:var(--gm);color:var(--gm)}
     .client-page-name{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
     .client-page-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
     .client-page-body{padding:16px;max-width:640px;margin:0 auto;width:100%;overflow-y:auto;flex:1}
@@ -463,8 +463,8 @@
     .pending-notes{font-size:12px;color:var(--mt);font-style:italic;margin-bottom:8px}
     .pending-video{width:100%;border-radius:6px;margin-bottom:8px;max-height:200px;background:#000}
     .pending-actions{display:flex;gap:6px}
-    .btn-pass{background:var(--gm);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
-    .btn-fail{background:var(--red);color:#fff;padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:var(--fn)}
+    .btn-pass{background:var(--pass);color:var(--bg);padding:5px 12px;font-size:11px;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
+    .btn-fail{background:transparent;color:var(--red);padding:5px 12px;font-size:11px;font-weight:700;border:1px solid var(--red);border-radius:var(--r);cursor:pointer;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
     .btn-pass:hover,.btn-fail:hover{opacity:.85}
     .workout-hist-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:13px}
     .workout-hist-row:last-child{border-bottom:none}
@@ -1150,7 +1150,7 @@
   <div style="background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10">
     <button id="pp-back" style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)" onclick="closePatternPage()">← Back</button>
     <span id="pp-title" style="font-size:16px;font-weight:700;flex:1"></span>
-    <span id="pp-level" style="font-size:13px;font-weight:600;background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px"></span>
+    <span id="pp-level" style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;background:rgba(0,229,255,0.1);color:var(--gm);padding:4px 10px;border:1px solid rgba(0,229,255,0.3)"></span>
   </div>
   <div id="pp-body" style="padding:16px;max-width:640px;margin:0 auto"></div>
 </div>
@@ -1597,7 +1597,7 @@ function buildSubscriptionCard(){
         <button onclick="startCheckout('coached')" style="padding:10px;background:var(--gm);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">
           Coached — £15/mo
         </button>
-        <button onclick="startCheckout('coach')" style="padding:10px;background:var(--dk);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">
+        <button onclick="startCheckout('coach')" style="padding:10px;background:var(--bg3);color:var(--mt);border:1px solid var(--brm);border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer">
           Coach — £49/mo
         </button>
       </div>
@@ -2204,7 +2204,7 @@ function buildStarterWorkout(){
   L0_CIRCUITS.forEach(circuit=>{
     h+=`<div style="border-top:0.5px solid var(--br)">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg)">
-        <div style="width:22px;height:22px;border-radius:5px;background:var(--dk);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${circuit.letter}</div>
+        <div style="width:22px;height:22px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:10px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">${circuit.letter}</div>
         <span style="font-size:12px;font-weight:600;color:var(--md)">${circuit.name} circuit</span>
         <span style="font-size:11px;color:var(--mt);margin-left:auto">Bodyweight / Cable</span>
       </div>`;
@@ -2280,7 +2280,7 @@ function rHome(){
   if(isNew||awaitingReview){
     h+=`
     <!-- Welcome card -->
-    <div style="background:var(--dk);border-radius:16px;padding:20px;margin-bottom:14px">
+    <div style="background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:20px;margin-bottom:14px">
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:12px">Welcome to STANDARDS</div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
         <div style="display:flex;align-items:flex-start;gap:12px">
@@ -2912,7 +2912,7 @@ function buildWarmUp(dayIndex){
 
   let h=`<div style="border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:8px">
     <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--cd);border-bottom:${isOpen?'0.5px solid var(--br)':'none'}" onclick="toggleCircuit('${wuKey}')">
-      <div style="width:28px;height:28px;border-radius:6px;background:var(--dk);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">WU</div>
+      <div style="width:28px;height:28px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:10px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">WU</div>
       <div style="flex:1">
         <div style="font-size:13px;font-weight:600">Warm Up Protocol</div>
         <div style="font-size:11px;color:var(--mt);margin-top:1px">4 phases · ~10 mins</div>
@@ -2991,7 +2991,7 @@ function buildAccessories(dayIndex){
           <div class="cx-top">
             <span class="cx-slot">${String.fromCharCode(65+xi)}</span>
             <span class="cx-name">${ex.name}</span>
-            <span class="cx-badge" style="background:#f0f0ee;color:#777;border:0.5px solid var(--br)">${ex.equipment}</span>
+            <span class="cx-badge" style="background:rgba(255,255,255,0.06);color:var(--mt);border:1px solid var(--br)">${ex.equipment}</span>
           </div>
           <div class="cx-meta">20X0 · Rest 45s · Accessory work</div>
           ${setRows}
@@ -3395,7 +3395,7 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     const tierBadge={
       free:'',
       coached:`<span style="font-size:11px;font-weight:600;color:var(--gd);background:var(--gl);padding:2px 8px;border-radius:99px;margin-left:6px">Coached</span>`,
-      coach:`<span style="font-size:11px;font-weight:600;color:#fff;background:var(--dk);padding:2px 8px;border-radius:99px;margin-left:6px">Coach</span>`,
+      coach:`<span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--bg);background:var(--gm);padding:2px 8px;border-radius:2px;margin-left:6px">COACH</span>`,
     }[USER_TIER]||'';
     const avatarHtml=USER_AVATAR_URL
       ?`<img src="${USER_AVATAR_URL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
@@ -4095,7 +4095,7 @@ function renderCoachWorkout(){
     const isOpen=!!coachWorkoutOpenCircuits[ck];
     h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;margin-bottom:10px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleCoachCircuit('${ck}')">
-        <div style="width:26px;height:26px;border-radius:6px;background:var(--dk);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">${circuit.letter}</div>
+        <div style="width:26px;height:26px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center">${circuit.letter}</div>
         <span style="font-size:13px;font-weight:600;flex:1">${circuit.name} circuit</span>
         <span style="font-size:12px;color:var(--mt)">${circuit.circuitSets} sets · ${circuit.exercises.length} ex</span>
         <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
@@ -4301,7 +4301,7 @@ function openPatternPage(pid,athleteId,isCoach){
           <iframe src="${embedUrl}?rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:10px" allow="autoplay;encrypted-media" allowfullscreen></iframe>
         </div>`;
       } else {
-        h+=`<div style="background:var(--dk);border-radius:10px;padding:24px;text-align:center;margin-bottom:14px">
+        h+=`<div style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl);padding:24px;text-align:center;margin-bottom:14px">
           <div style="font-size:24px;margin-bottom:6px">🎬</div>
           <div style="font-size:13px;color:#666;font-weight:500">Demo video coming soon</div>
           <div style="font-size:11px;color:#444;margin-top:4px">Ryan will add a coaching video here</div>
@@ -4388,7 +4388,7 @@ function openPatternPage(pid,athleteId,isCoach){
 
       // Next level preview
       if(nextStd){
-        h+=`<div style="background:var(--dk);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+        h+=`<div style="background:var(--bg3);border:1px solid var(--brm);border-radius:var(--rl);padding:12px 14px;margin-bottom:12px">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#555;margin-bottom:6px">Next → Level ${lvl+1}</div>
           <div style="font-size:14px;font-weight:700;color:#fff">${nextStd.test_exercise}</div>
           <div style="font-size:12px;color:#888;margin-top:3px">${nextStd.load_standard} · ${nextStd.quality_focus||''}</div>
@@ -4404,7 +4404,7 @@ function openPatternPage(pid,athleteId,isCoach){
 
       // Log test button — athlete logs own; coach logs for client
       if(!isCoach&&current&&nextStd){
-        h+=`<button class="btn btn-full btn-dk" onclick="openTestModal('${pid}');closePatternPage()">+ Log Level ${lvl+1} Test</button>`;
+        h+=`<button class="btn btn-full btn-dk" onclick="openTestModal('${pid}');closePatternPage()">Log Level ${lvl+1} Test</button>`;
       }
       if(isCoach&&nextStd){
         h+=`<button class="btn btn-full" style="margin-top:8px;background:var(--gm);color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)" onclick="openCoachTestForPattern('${pid}',${lvl+1})">+ Log Level ${lvl+1} Test for ${profContext.athleteId?'Client':'Athlete'}</button>`;
@@ -4520,6 +4520,6 @@ function showTab(t,btn){
 function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 </script>
 <!-- TOAST -->
-<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dk);color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;font-weight:500;z-index:300;transition:transform .25s ease,opacity .25s ease;opacity:0;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--brm);color:var(--dk);padding:10px 18px;border-radius:var(--r);font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;z-index:300;transition:transform .25s ease,opacity .25s ease;opacity:0;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
 </body>
 </html>
