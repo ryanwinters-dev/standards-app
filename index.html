@@ -1948,6 +1948,8 @@ let wbDay=0;
 let wbPickerCallback=null;
 let wbPendingChanges={}; // track tempo/reps overrides
 let wbCircuitPatterns={}; // {day_ci: [pid1, pid2?, pid3?]}
+let wbCircuitNames={}; // {day_ci: 'custom name'}
+let wbDayTitles={}; // {day_index: 'custom title'}
 
 function toggleCircuitPattern(circuitKey,pid){
   if(!wbCircuitPatterns[circuitKey])wbCircuitPatterns[circuitKey]=[];
@@ -1968,6 +1970,8 @@ async function openWorkoutBuilder(){
   wbDay=0;
   wbPendingChanges={};
   wbCircuitPatterns={};
+  wbCircuitNames={};
+  wbDayTitles={};
 
   const[overridesRes,notesRes]=await Promise.all([
     sb.from('athlete_exercise_overrides').select('*').eq('athlete_id',wbAthleteId),
@@ -2013,6 +2017,17 @@ function renderWorkoutBuilder(){
   }
   h+=`</div>`;
 
+  // Day title edit
+  const defaultDayTitle=`Day ${wbDay+1}`;
+  const dayTitle=wbDayTitles[wbDay]||defaultDayTitle;
+  h+=`<div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
+    <div class="wb-field-label" style="white-space:nowrap;margin:0">Session title</div>
+    <input class="wb-field-input" id="wb-day-title" type="text" value="${dayTitle}"
+      placeholder="${defaultDayTitle}"
+      onchange="wbDayTitles[${wbDay}]=this.value"
+      style="flex:1">
+  </div>`;
+
   // General coach note
   h+=`<div style="margin-bottom:14px">
     <div class="wb-field-label" style="margin-bottom:6px">General programme note (visible on all days)</div>
@@ -2025,15 +2040,20 @@ function renderWorkoutBuilder(){
 
   // Circuits
   day.circuits.forEach((circuit,ci)=>{
-    // Circuit pattern overrides — stored as wbCircuitPatterns[day_ci] = [pid1, pid2?, pid3?]
     const circuitKey=`${wbDay}_${ci}`;
     const currentPatterns=wbCircuitPatterns[circuitKey]||circuit.exercises.map(e=>e.pid);
+    const defaultCircuitName=circuit.name;
+    const circuitName=wbCircuitNames[circuitKey]||defaultCircuitName;
 
     h+=`<div class="wb-circuit">
       <div class="wb-circuit-hdr">
         <div class="wb-circuit-letter">${circuit.letter}</div>
-        <div class="wb-circuit-name">${circuit.name} circuit</div>
-        <span style="font-size:11px;color:var(--mt);font-family:var(--mono)">${circuit.circuitSets} sets</span>
+        <input type="text" value="${circuitName}" placeholder="${defaultCircuitName}"
+          style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--br);padding:2px 6px;font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--dk);outline:none"
+          onchange="wbCircuitNames['${circuitKey}']=this.value"
+          onfocus="this.style.borderColor='var(--gm)'"
+          onblur="this.style.borderColor='var(--br)'">
+        <span style="font-size:11px;color:var(--mt);font-family:var(--mono);flex-shrink:0">${circuit.circuitSets} sets</span>
       </div>
       <div style="padding:10px 14px;border-bottom:1px solid var(--br)">
         <div class="wb-field-label" style="margin-bottom:6px">Circuit focus (select 1–3 patterns)</div>
@@ -2053,21 +2073,20 @@ function renderWorkoutBuilder(){
       const ex=item.ex;
       const overrideKey=`${item.pid}_${item.type}`;
       const overrideExId=wbAthleteOverrides[overrideKey];
-      // Fix: use overridden exercise name, not original
-      const displayEx=overrideExId?EX.find(e=>e.id===overrideExId):ex;
+      // Use == not === to handle int/string mismatch
+      const displayEx=overrideExId!=null?EX.find(e=>e.id==overrideExId):ex;
       const exName=displayEx?.name||ex?.name||PF[item.pid];
-      const isOverridden=!!overrideExId;
+      const isOverridden=overrideExId!=null&&displayEx!=null;
       const changeKey=`${wbDay}_${ci}_${xi}`;
       const changes=wbPendingChanges[changeKey]||{};
 
-      // Fix: show actual rep range not intent string
       const intent=displayEx?.intent||ex?.intent||'Control';
       const repRange=RR[intent]||RR.Control;
       const repPlaceholder=`${repRange.lo}–${repRange.hi}`;
 
       h+=`<div class="wb-ex-row">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <div style="font-size:13px;font-weight:600;color:${isOverridden?'var(--gm)':'var(--dk)'};display:flex;align-items:center;gap:8px">
+          <div style="font-size:13px;font-weight:600;color:${isOverridden?'var(--gm)':'var(--dk)'};display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${exName}
             ${isOverridden?`<span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;color:var(--gm);border:1px solid rgba(0,229,255,0.4);padding:2px 6px;border-radius:2px">CUSTOM</span>`:''}
           </div>
@@ -2102,11 +2121,12 @@ function renderWorkoutBuilder(){
 }
 
 function setWbDay(d){
-  // Save current notes before switching
   const genNote=document.getElementById('wb-note-general')?.value||'';
   const dayNote=document.getElementById('wb-note-day')?.value||'';
+  const dayTitle=document.getElementById('wb-day-title')?.value||'';
   wbSessionNotes['general']=genNote;
   wbSessionNotes[wbDay]=dayNote;
+  if(dayTitle)wbDayTitles[wbDay]=dayTitle;
   wbDay=d;
   renderWorkoutBuilder();
 }
@@ -2170,8 +2190,10 @@ async function saveAllOverrides(){
   // Capture current note values from DOM before saving
   const genNote=document.getElementById('wb-note-general')?.value||'';
   const dayNote=document.getElementById('wb-note-day')?.value||'';
+  const dayTitle=document.getElementById('wb-day-title')?.value||'';
   wbSessionNotes['general']=genNote;
   wbSessionNotes[wbDay]=dayNote;
+  if(dayTitle)wbDayTitles[wbDay]=dayTitle;
 
   try{
     // Upsert exercise overrides
