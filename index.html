@@ -392,10 +392,11 @@
     .msg-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--mt)}
 
     /* ── WORKOUT BUILDER ── */
-    .wb-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:170;flex-direction:column}
+    .wb-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:170;flex-direction:column;overflow:hidden}
     .wb-overlay.active{display:flex}
     .wb-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-    .wb-body{flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%}
+    .wb-body{flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none}
+    .wb-body::-webkit-scrollbar{display:none}
     .wb-day-tabs{display:flex;gap:2px;margin-bottom:16px}
     .wb-day-tab{flex:1;padding:8px 4px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--br);background:var(--bg2);color:var(--mt);cursor:pointer;text-align:center;transition:all .2s;border-radius:var(--r)}
     .wb-day-tab.act{background:var(--gm);color:var(--bg);border-color:var(--gm)}
@@ -1946,7 +1947,19 @@ let wbSessionNotes={}; // {day_index: note, null: general}
 let wbDay=0;
 let wbPickerCallback=null;
 let wbPendingChanges={}; // track tempo/reps overrides
+let wbCircuitPatterns={}; // {day_ci: [pid1, pid2?, pid3?]}
 
+function toggleCircuitPattern(circuitKey,pid){
+  if(!wbCircuitPatterns[circuitKey])wbCircuitPatterns[circuitKey]=[];
+  const arr=wbCircuitPatterns[circuitKey];
+  const idx=arr.indexOf(pid);
+  if(idx>-1){if(arr.length>1)arr.splice(idx,1);}
+  else{
+    if(arr.length>=3){toast('Max 3 patterns per circuit','err');return;}
+    arr.push(pid);
+  }
+  renderWorkoutBuilder();
+}
 async function openWorkoutBuilder(){
   const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
   if(!a){toast('No athlete selected','err');return;}
@@ -1954,8 +1967,8 @@ async function openWorkoutBuilder(){
   wbAthleteScores=a.scores||{};
   wbDay=0;
   wbPendingChanges={};
+  wbCircuitPatterns={};
 
-  // Load existing overrides and notes
   const[overridesRes,notesRes]=await Promise.all([
     sb.from('athlete_exercise_overrides').select('*').eq('athlete_id',wbAthleteId),
     sb.from('athlete_session_notes').select('*').eq('athlete_id',wbAthleteId),
@@ -1979,16 +1992,20 @@ function closeWorkoutBuilder(){
 }
 
 function renderWorkoutBuilder(){
-  // Temporarily swap AP to athlete scores
+  // Temporarily swap AP to athlete scores so buildDay uses athlete levels
   const savedAP={...AP};
+  const savedOV={...window.MY_OVERRIDES};
   Object.keys(AP).forEach(k=>delete AP[k]);
   Object.assign(AP,wbAthleteScores);
+  // Apply athlete's saved overrides for the build
+  window.MY_OVERRIDES={...wbAthleteOverrides};
 
   const day=buildDay(wbDay);
 
-  // Restore
+  // Restore globals
   Object.keys(AP).forEach(k=>delete AP[k]);
   Object.assign(AP,savedAP);
+  window.MY_OVERRIDES=savedOV;
 
   let h=`<div class="wb-day-tabs">`;
   for(let d=0;d<4;d++){
@@ -1997,43 +2014,62 @@ function renderWorkoutBuilder(){
   h+=`</div>`;
 
   // General coach note
-  const generalNote=wbSessionNotes['general']||'';
   h+=`<div style="margin-bottom:14px">
     <div class="wb-field-label" style="margin-bottom:6px">General programme note (visible on all days)</div>
-    <textarea class="wb-note-area" id="wb-note-general" placeholder="e.g. Focus on eccentric control this block…">${generalNote}</textarea>
-  </div>`;
-
-  // Day note
-  const dayNote=wbSessionNotes[wbDay]||'';
-  h+=`<div style="margin-bottom:14px">
+    <textarea class="wb-note-area" id="wb-note-general" placeholder="e.g. Focus on eccentric control this block…">${wbSessionNotes['general']||''}</textarea>
+  </div>
+  <div style="margin-bottom:16px">
     <div class="wb-field-label" style="margin-bottom:6px">Day ${wbDay+1} note</div>
-    <textarea class="wb-note-area" id="wb-note-day" placeholder="e.g. Reduce load on squats today — focus on depth…">${dayNote}</textarea>
+    <textarea class="wb-note-area" id="wb-note-day" placeholder="e.g. Reduce load on squats today — focus on depth…">${wbSessionNotes[wbDay]||''}</textarea>
   </div>`;
 
   // Circuits
   day.circuits.forEach((circuit,ci)=>{
+    // Circuit pattern overrides — stored as wbCircuitPatterns[day_ci] = [pid1, pid2?, pid3?]
+    const circuitKey=`${wbDay}_${ci}`;
+    const currentPatterns=wbCircuitPatterns[circuitKey]||circuit.exercises.map(e=>e.pid);
+
     h+=`<div class="wb-circuit">
       <div class="wb-circuit-hdr">
         <div class="wb-circuit-letter">${circuit.letter}</div>
         <div class="wb-circuit-name">${circuit.name} circuit</div>
         <span style="font-size:11px;color:var(--mt);font-family:var(--mono)">${circuit.circuitSets} sets</span>
+      </div>
+      <div style="padding:10px 14px;border-bottom:1px solid var(--br)">
+        <div class="wb-field-label" style="margin-bottom:6px">Circuit focus (select 1–3 patterns)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${PATS.map(pid=>{
+            const sel=currentPatterns.includes(pid);
+            return`<button onclick="toggleCircuitPattern('${circuitKey}','${pid}')"
+              style="padding:4px 10px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border-radius:var(--r);cursor:pointer;transition:all .2s;
+              background:${sel?'var(--gm)':'var(--bg3)'};color:${sel?'var(--bg)':'var(--mt)'};border:1px solid ${sel?'var(--gm)':'var(--br)'}">
+              ${PL[pid]}
+            </button>`;
+          }).join('')}
+        </div>
       </div>`;
 
     circuit.exercises.forEach((item,xi)=>{
       const ex=item.ex;
       const overrideKey=`${item.pid}_${item.type}`;
       const overrideExId=wbAthleteOverrides[overrideKey];
+      // Fix: use overridden exercise name, not original
       const displayEx=overrideExId?EX.find(e=>e.id===overrideExId):ex;
       const exName=displayEx?.name||ex?.name||PF[item.pid];
       const isOverridden=!!overrideExId;
       const changeKey=`${wbDay}_${ci}_${xi}`;
       const changes=wbPendingChanges[changeKey]||{};
 
+      // Fix: show actual rep range not intent string
+      const intent=displayEx?.intent||ex?.intent||'Control';
+      const repRange=RR[intent]||RR.Control;
+      const repPlaceholder=`${repRange.lo}–${repRange.hi}`;
+
       h+=`<div class="wb-ex-row">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <div class="wb-ex-name${isOverridden?' ':''}" style="${isOverridden?'color:var(--gm)':''}">
+          <div style="font-size:13px;font-weight:600;color:${isOverridden?'var(--gm)':'var(--dk)'};display:flex;align-items:center;gap:8px">
             ${exName}
-            ${isOverridden?`<span style="font-size:10px;color:var(--gm);font-family:var(--mono);margin-left:6px">CUSTOM</span>`:''}
+            ${isOverridden?`<span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;color:var(--gm);border:1px solid rgba(0,229,255,0.4);padding:2px 6px;border-radius:2px">CUSTOM</span>`:''}
           </div>
           <button class="wb-swap-btn" onclick="openExPicker('${item.pid}','${item.type}','${changeKey}')">Swap</button>
         </div>
@@ -2044,15 +2080,15 @@ function renderWorkoutBuilder(){
           </div>
           <div class="wb-field">
             <div class="wb-field-label">Reps</div>
-            <input class="wb-field-input" type="text" id="wb-reps-${changeKey}" value="${changes.reps||''}" placeholder="${ex?.intent||'—'}" onchange="pendingChange('${changeKey}','reps',this.value)">
+            <input class="wb-field-input" type="text" id="wb-reps-${changeKey}" value="${changes.reps||repPlaceholder}" placeholder="${repPlaceholder}" onchange="pendingChange('${changeKey}','reps',this.value)">
           </div>
           <div class="wb-field">
             <div class="wb-field-label">Tempo</div>
-            <input class="wb-field-input" type="text" id="wb-tempo-${changeKey}" value="${changes.tempo||displayEx?.tempo||''}" placeholder="30X1" onchange="pendingChange('${changeKey}','tempo',this.value)">
+            <input class="wb-field-input" type="text" id="wb-tempo-${changeKey}" value="${changes.tempo||displayEx?.tempo||TM[intent]||'30X1'}" placeholder="30X1" onchange="pendingChange('${changeKey}','tempo',this.value)">
           </div>
         </div>
-        <div class="wb-field">
-          <div class="wb-field-label">Coaching note for this exercise</div>
+        <div class="wb-field" style="margin-top:4px">
+          <div class="wb-field-label">Coaching note</div>
           <input class="wb-field-input" type="text" id="wb-exnote-${changeKey}" value="${changes.note||''}" placeholder="e.g. Pause at the bottom for 2 seconds" style="width:100%" onchange="pendingChange('${changeKey}','note',this.value)">
         </div>
       </div>`;
@@ -2060,7 +2096,8 @@ function renderWorkoutBuilder(){
     h+=`</div>`;
   });
 
-  h+=`<button class="wb-save-btn" onclick="saveAllOverrides()">Save Programme Changes</button>`;
+  h+=`<button class="wb-save-btn" onclick="saveAllOverrides()">Save Programme Changes</button>
+  <div style="height:24px"></div>`;
   document.getElementById('wb-body').innerHTML=h;
 }
 
@@ -2131,7 +2168,7 @@ function closeExPicker(e){
 
 async function saveAllOverrides(){
   toast('Saving…','ok');
-  // Save current notes
+  // Capture current note values from DOM before saving
   const genNote=document.getElementById('wb-note-general')?.value||'';
   const dayNote=document.getElementById('wb-note-day')?.value||'';
   wbSessionNotes['general']=genNote;
@@ -2140,56 +2177,82 @@ async function saveAllOverrides(){
   try{
     // Upsert exercise overrides
     const overrideRows=Object.entries(wbAthleteOverrides).map(([key,exId])=>{
-      const[pid,type]=key.split('_');
+      const parts=key.split('_');
+      const type=parts.pop();
+      const pid=parts.join('_');
       return{athlete_id:wbAthleteId,pattern_id:pid,override_type:type,exercise_id:exId,created_by:CU.id};
     });
     if(overrideRows.length){
-      await sb.from('athlete_exercise_overrides')
+      const{error}=await sb.from('athlete_exercise_overrides')
         .upsert(overrideRows,{onConflict:'athlete_id,pattern_id,override_type'});
+      if(error)throw error;
     }
 
-    // Upsert session notes
+    // Upsert session notes — handle null day_index carefully
     const noteRows=Object.entries(wbSessionNotes)
-      .filter(([,note])=>note.trim())
+      .filter(([,note])=>note&&note.trim())
       .map(([dayIdx,note])=>({
         athlete_id:wbAthleteId,
         day_index:dayIdx==='general'?null:parseInt(dayIdx),
-        note,
+        note:note.trim(),
         created_by:CU.id,
         updated_at:new Date().toISOString(),
       }));
-    if(noteRows.length){
-      for(const row of noteRows){
+    for(const row of noteRows){
+      // Use upsert but handle null day_index — need delete+insert for null
+      if(row.day_index===null){
+        await sb.from('athlete_session_notes')
+          .delete().eq('athlete_id',wbAthleteId).is('day_index',null);
+        await sb.from('athlete_session_notes').insert(row);
+      } else {
         await sb.from('athlete_session_notes')
           .upsert(row,{onConflict:'athlete_id,day_index'});
       }
     }
 
     toast('✓ Programme saved','ok');
-    // Also reload ALL_ATHLETES so changes reflect
+
+    // If the athlete is the logged-in user (self-coaching scenario),
+    // update MY_OVERRIDES and MY_NOTES globals immediately so rWorkout reflects changes
+    if(wbAthleteId===CU?.id){
+      window.MY_OVERRIDES={...wbAthleteOverrides};
+      window.MY_NOTES={};
+      Object.entries(wbSessionNotes).forEach(([k,v])=>{if(v)window.MY_NOTES[k]=v;});
+      rWorkout();
+    }
+
+    // Update ALL_ATHLETES cache
     const a=ALL_ATHLETES.find(x=>x.id===wbAthleteId);
-    if(a)a.overrides=wbAthleteOverrides;
+    if(a)a.overrides={...wbAthleteOverrides};
+
   }catch(err){
     toast('Save failed: '+err.message,'err');
+    console.error('saveAllOverrides error:',err);
   }
 }
 
 // Hook into rWorkout to apply overrides + show coach notes
 async function loadAthleteOverrides(){
   if(!CU)return;
-  const[overridesRes,notesRes]=await Promise.all([
-    sb.from('athlete_exercise_overrides').select('*').eq('athlete_id',CU.id),
-    sb.from('athlete_session_notes').select('*').eq('athlete_id',CU.id),
-  ]);
-  // Store globally for rWorkout to use
-  window.MY_OVERRIDES={};
-  (overridesRes.data||[]).forEach(o=>{
-    window.MY_OVERRIDES[`${o.pattern_id}_${o.override_type}`]=o.exercise_id;
-  });
-  window.MY_NOTES={};
-  (notesRes.data||[]).forEach(n=>{
-    window.MY_NOTES[n.day_index===null?'general':n.day_index]=n.note;
-  });
+  try{
+    const[overridesRes,notesRes]=await Promise.all([
+      sb.from('athlete_exercise_overrides').select('*').eq('athlete_id',CU.id),
+      sb.from('athlete_session_notes').select('*').eq('athlete_id',CU.id),
+    ]);
+    window.MY_OVERRIDES={};
+    (overridesRes.data||[]).forEach(o=>{
+      window.MY_OVERRIDES[`${o.pattern_id}_${o.override_type}`]=o.exercise_id;
+    });
+    window.MY_NOTES={};
+    (notesRes.data||[]).forEach(n=>{
+      const key=n.day_index===null?'general':n.day_index;
+      window.MY_NOTES[key]=n.note;
+    });
+  }catch(e){
+    console.warn('loadAthleteOverrides:',e.message);
+    window.MY_OVERRIDES={};
+    window.MY_NOTES={};
+  }
 }
 
 // ── STRIPE / SUBSCRIPTION ──
@@ -3014,6 +3077,49 @@ function rHome(){
   h+=`</div>`;
 
   document.getElementById('v-home').innerHTML=h;
+}
+
+function buildTrainingSnapshotForAthlete(scores,logs,sets,checkins){
+  const now=new Date();
+  const weekAgo=new Date(now-7*24*60*60*1000);
+  const twoWeeksAgo=new Date(now-14*24*60*60*1000);
+
+  const allDates=new Set((sets||[]).map(s=>s.session_date||s.logged_at?.split('T')[0]).filter(Boolean));
+  const totalSessions=allDates.size;
+  const thisWeekSessions=[...allDates].filter(d=>new Date(d)>=weekAgo).length;
+  const setsThisWeek=(sets||[]).filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
+  const setsLastWeek=(sets||[]).filter(s=>{const d=new Date(s.logged_at||s.session_date);return d>=twoWeeksAgo&&d<weekAgo;}).length;
+  const volTrend=setsLastWeek>0?Math.round(((setsThisWeek-setsLastWeek)/setsLastWeek)*100):null;
+  const volStr=volTrend===null?'—':volTrend>0?`+${volTrend}%`:volTrend===0?'—':`${volTrend}%`;
+
+  const levels=PATS.map(p=>({p,lv:scores[p]||0}));
+  const assessed=levels.filter(x=>x.lv>0);
+  const strongest=assessed.length?assessed.reduce((a,b)=>b.lv>a.lv?b:a,assessed[0]):null;
+  const weakest=assessed.length?assessed.reduce((a,b)=>b.lv<a.lv?b:a,assessed[0]):null;
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const testsPassed=(logs||[]).filter(l=>l.passed===true&&new Date(l.assessed_at)>=monthStart).length;
+  const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
+
+  const tile=(label,val,sub,cls='')=>
+    `<div class="snapshot-tile${cls?' '+cls:''}">
+      <div class="snapshot-tile-label">${label}</div>
+      <div class="snapshot-tile-val">${val}</div>
+      <div class="snapshot-tile-sub">${sub}</div>
+    </div>`;
+
+  return`<div class="sl">Training Snapshot</div>
+  <div class="snapshot-grid">
+    ${tile('Sessions',''+totalSessions,`${thisWeekSessions} this week`,'accent')}
+    ${tile('Score',''+tot,'/ 40 standards',tot>=20?'pass':tot>=10?'accent':'')}
+    ${tile('Volume',volStr,'vs last week',setsThisWeek>setsLastWeek?'pass':'')}
+    ${tile('Tests',''+testsPassed,'passed this month',testsPassed>0?'pass':'')}
+  </div>
+  <div class="snapshot-grid" style="margin-top:2px">
+    ${tile('Strongest',strongest?PL[strongest.p]:'—',strongest?`Level ${strongest.lv}`:'No data','accent')}
+    ${tile('Weakest',weakest?PL[weakest.p]:'—',weakest?`Level ${weakest.lv}`:'No data','')}
+    ${tile('Check-ins',''+(checkins?.length||0),'total logged','')}
+    ${tile('Assessed',''+assessed.length,'of 8 patterns',assessed.length===8?'pass':assessed.length>0?'accent':'')}
+  </div>`;
 }
 
 function buildTrainingSnapshot(){
@@ -4078,6 +4184,11 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
 
   // ── WORKOUT CALENDAR ──
   h+=buildProfileCalendar(sets);
+
+  // ── TRAINING SNAPSHOT (coach view uses athlete's sets/logs/AP) ──
+  if(isCoach){
+    h+=buildTrainingSnapshotForAthlete(scores,logs,sets,checkins);
+  }
 
   // ── CHECK-IN TILES ──
   if(checkins&&checkins.length){
