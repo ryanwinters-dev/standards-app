@@ -199,8 +199,8 @@
     .circuit-wrap{border:1px solid var(--br);border-top:none;background:var(--bg2)}
     .circuit-wrap:last-child{border-radius:0 0 10px 10px;overflow:hidden}
     .circuit-wrap.logged{border-color:var(--gm)}
-    .circuit-hdr{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);cursor:pointer;user-select:none}
-    .circuit-hdr:hover{background:#f0f0ee}.circuit-hdr.logged{background:var(--gl)}
+    .circuit-hdr{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);border-bottom:0.5px solid var(--br);cursor:pointer;user-select:none}
+    .circuit-hdr:hover{background:var(--bg3)}.circuit-hdr.logged{background:rgba(0,255,148,.06)}
     .circuit-letter{width:24px;height:24px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .circuit-letter.logged{background:var(--pass);color:var(--bg);border-color:var(--pass)}
     .circuit-label{font-size:12px;font-weight:600;color:var(--md);flex:1}
@@ -2187,7 +2187,8 @@ function closeExPicker(e){
 
 async function saveAllOverrides(){
   toast('Saving…','ok');
-  // Capture current note values from DOM before saving
+
+  // Capture DOM values
   const genNote=document.getElementById('wb-note-general')?.value||'';
   const dayNote=document.getElementById('wb-note-day')?.value||'';
   const dayTitle=document.getElementById('wb-day-title')?.value||'';
@@ -2196,7 +2197,10 @@ async function saveAllOverrides(){
   if(dayTitle)wbDayTitles[wbDay]=dayTitle;
 
   try{
-    // Upsert exercise overrides
+    // ── 1. Save exercise overrides ──
+    // Delete all existing then re-insert clean
+    await sb.from('athlete_exercise_overrides').delete().eq('athlete_id',wbAthleteId);
+
     const overrideRows=Object.entries(wbAthleteOverrides).map(([key,exId])=>{
       const parts=key.split('_');
       const type=parts.pop();
@@ -2204,47 +2208,70 @@ async function saveAllOverrides(){
       return{athlete_id:wbAthleteId,pattern_id:pid,override_type:type,exercise_id:parseInt(exId),created_by:CU.id};
     });
     if(overrideRows.length){
-      const{error}=await sb.from('athlete_exercise_overrides')
-        .upsert(overrideRows,{onConflict:'athlete_id,pattern_id,override_type'});
-      if(error)throw error;
+      const{error}=await sb.from('athlete_exercise_overrides').insert(overrideRows);
+      if(error)throw new Error('Overrides: '+error.message);
     }
 
-    // Upsert session notes — handle null day_index carefully
-    const noteRows=Object.entries(wbSessionNotes)
-      .filter(([,note])=>note&&note.trim())
-      .map(([dayIdx,note])=>({
+    // ── 2. Save session notes ──
+    // Delete all existing notes for this athlete then re-insert
+    await sb.from('athlete_session_notes').delete().eq('athlete_id',wbAthleteId);
+
+    const noteRows=[];
+    // Regular notes (general + per-day)
+    Object.entries(wbSessionNotes).forEach(([dayIdx,note])=>{
+      if(!note?.trim())return;
+      noteRows.push({
         athlete_id:wbAthleteId,
         day_index:dayIdx==='general'?null:parseInt(dayIdx),
         note:note.trim(),
         created_by:CU.id,
         updated_at:new Date().toISOString(),
-      }));
-    for(const row of noteRows){
-      // Use upsert but handle null day_index — need delete+insert for null
-      if(row.day_index===null){
-        await sb.from('athlete_session_notes')
-          .delete().eq('athlete_id',wbAthleteId).is('day_index',null);
-        await sb.from('athlete_session_notes').insert(row);
-      } else {
-        await sb.from('athlete_session_notes')
-          .upsert(row,{onConflict:'athlete_id,day_index'});
-      }
+      });
+    });
+    // Day titles stored as notes with day_index 10+day (e.g. day 0 title = index 10)
+    Object.entries(wbDayTitles).forEach(([dayIdx,title])=>{
+      if(!title?.trim())return;
+      noteRows.push({
+        athlete_id:wbAthleteId,
+        day_index:100+parseInt(dayIdx), // 100-103 reserved for day titles
+        note:'__title__:'+title.trim(),
+        created_by:CU.id,
+        updated_at:new Date().toISOString(),
+      });
+    });
+    // Circuit names stored as notes with day_index 200+
+    Object.entries(wbCircuitNames).forEach(([circuitKey,name])=>{
+      if(!name?.trim())return;
+      noteRows.push({
+        athlete_id:wbAthleteId,
+        day_index:200+parseInt(circuitKey.replace('_','')), // encode day_ci
+        note:'__circuit__:'+circuitKey+':'+name.trim(),
+        created_by:CU.id,
+        updated_at:new Date().toISOString(),
+      });
+    });
+
+    if(noteRows.length){
+      const{error}=await sb.from('athlete_session_notes').insert(noteRows);
+      if(error)throw new Error('Notes: '+error.message);
     }
 
     toast('✓ Programme saved','ok');
 
-    // If the athlete is the logged-in user (self-coaching scenario),
-    // update MY_OVERRIDES and MY_NOTES globals immediately so rWorkout reflects changes
-    if(wbAthleteId===CU?.id){
-      window.MY_OVERRIDES={...wbAthleteOverrides};
-      window.MY_NOTES={};
-      Object.entries(wbSessionNotes).forEach(([k,v])=>{if(v)window.MY_NOTES[k]=v;});
-      rWorkout();
-    }
+    // Update athlete's live globals so workout tab reflects changes immediately
+    window.MY_OVERRIDES={...wbAthleteOverrides};
+    window.MY_NOTES={};
+    Object.entries(wbSessionNotes).forEach(([k,v])=>{if(v)window.MY_NOTES[k]=v;});
 
     // Update ALL_ATHLETES cache
     const a=ALL_ATHLETES.find(x=>x.id===wbAthleteId);
-    if(a)a.overrides={...wbAthleteOverrides};
+    if(a){
+      a.overrides={...wbAthleteOverrides};
+      a.notes={...wbSessionNotes};
+    }
+
+    // If coach is editing their own programme, re-render workout tab
+    if(wbAthleteId===CU?.id)rWorkout();
 
   }catch(err){
     toast('Save failed: '+err.message,'err');
@@ -2265,9 +2292,18 @@ async function loadAthleteOverrides(){
       window.MY_OVERRIDES[`${o.pattern_id}_${o.override_type}`]=parseInt(o.exercise_id);
     });
     window.MY_NOTES={};
+    window.MY_DAY_TITLES={};
+    window.MY_CIRCUIT_NAMES={};
     (notesRes.data||[]).forEach(n=>{
-      const key=n.day_index===null?'general':n.day_index;
-      window.MY_NOTES[key]=n.note;
+      if(n.note?.startsWith('__title__:')){
+        window.MY_DAY_TITLES[n.day_index-100]=n.note.replace('__title__:','');
+      } else if(n.note?.startsWith('__circuit__:')){
+        const parts=n.note.replace('__circuit__:','').split(':');
+        window.MY_CIRCUIT_NAMES[parts[0]]=parts.slice(1).join(':');
+      } else {
+        const key=n.day_index===null?'general':n.day_index;
+        window.MY_NOTES[key]=n.note;
+      }
     });
   }catch(e){
     console.warn('loadAthleteOverrides:',e.message);
