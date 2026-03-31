@@ -1975,7 +1975,7 @@ async function openWorkoutBuilder(){
   ]);
   wbAthleteOverrides={};
   (overridesRes.data||[]).forEach(o=>{
-    wbAthleteOverrides[`${o.pattern_id}_${o.override_type}`]=o.exercise_id;
+    wbAthleteOverrides[`${o.pattern_id}_${o.override_type}`]=parseInt(o.exercise_id);
   });
   wbSessionNotes={};
   (notesRes.data||[]).forEach(n=>{
@@ -2155,8 +2155,7 @@ function filterExPicker(query){
 }
 
 function selectExercise(exId){
-  // Save override
-  wbAthleteOverrides[`${wbPickerPid}_${wbPickerType}`]=exId;
+  wbAthleteOverrides[`${wbPickerPid}_${wbPickerType}`]=parseInt(exId);
   closeExPicker();
   renderWorkoutBuilder();
 }
@@ -2180,7 +2179,7 @@ async function saveAllOverrides(){
       const parts=key.split('_');
       const type=parts.pop();
       const pid=parts.join('_');
-      return{athlete_id:wbAthleteId,pattern_id:pid,override_type:type,exercise_id:exId,created_by:CU.id};
+      return{athlete_id:wbAthleteId,pattern_id:pid,override_type:type,exercise_id:parseInt(exId),created_by:CU.id};
     });
     if(overrideRows.length){
       const{error}=await sb.from('athlete_exercise_overrides')
@@ -2241,7 +2240,7 @@ async function loadAthleteOverrides(){
     ]);
     window.MY_OVERRIDES={};
     (overridesRes.data||[]).forEach(o=>{
-      window.MY_OVERRIDES[`${o.pattern_id}_${o.override_type}`]=o.exercise_id;
+      window.MY_OVERRIDES[`${o.pattern_id}_${o.override_type}`]=parseInt(o.exercise_id);
     });
     window.MY_NOTES={};
     (notesRes.data||[]).forEach(n=>{
