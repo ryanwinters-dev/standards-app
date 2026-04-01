@@ -13,6 +13,13 @@
   <!-- App icon for home screen -->
   <link rel="apple-touch-icon" href="/icon-192.png"/>
   <link rel="icon" type="image/png" href="/icon-192.png"/>
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('/sw.js').catch(()=>{});
+      });
+    }
+  </script>
   <title>[RADAR]</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
