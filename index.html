@@ -3020,8 +3020,7 @@ async function load(){
       ]);
       const am={};
       allProfiles.forEach(p=>{
-        if(p.role==='coach')return;
-        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{},is_public:p.is_public!==false};
+        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{},is_public:p.is_public!==false,isCoach:p.role==='coach'};
       });
       allAP.forEach(r=>{if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;});
       ALL_ATHLETES=Object.values(am);
@@ -5458,10 +5457,10 @@ function rLB(){
     if(!am[id])am[id]={id,name:nameLookup[id]||'Athlete',scores:{},isPublic:r.is_public!==false};
     am[id].scores[r.pattern_id]=r.current_level;
   });
-  if(!am[CU.id])am[CU.id]={id:CU.id,name:nameLookup[CU.id]||'Me',scores:{},isPublic:USER_IS_PUBLIC};
-  else am[CU.id].isPublic=USER_IS_PUBLIC;
+  if(!am[CU.id])am[CU.id]={id:CU.id,name:nameLookup[CU.id]||'Me',scores:{},isPublic:USER_IS_PUBLIC,isCoach:IS_COACH};
+  else{am[CU.id].isPublic=USER_IS_PUBLIC;am[CU.id].isCoach=IS_COACH;}
   ALL_ATHLETES.forEach(a=>{
-    if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{},isPublic:a.is_public!==false};
+    if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{},isPublic:a.is_public!==false,isCoach:a.isCoach||false};
   });
 
   let aths=Object.values(am).map((a,i)=>({
@@ -5490,6 +5489,7 @@ function rLB(){
         mb+=`</div>`;
       }
       const lockIcon=!canTap?`<span style="font-size:12px;color:var(--mt);margin-left:6px">🔒</span>`:'';
+      const coachBadge=a.isCoach?`<span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;color:var(--bg);background:var(--gm);padding:2px 6px;border-radius:2px;margin-left:6px">COACH</span>`:'';
       h+=`<div class="lbr${me?' me':''}${canTap?' lbr-tap':''}" ${canTap&&!me?`onclick="openPubProfile('${a.id}')"`:''}
         style="${canTap&&!me?'cursor:pointer;':''}"
         onmouseenter="${canTap&&!me?`this.style.borderColor='var(--brm)'`:''}"
@@ -5498,7 +5498,7 @@ function rLB(){
         <div class="lbrk ${rc}">${i+1}</div>
         <div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div>
         <div class="lbi">
-          <div class="lbn">${a.name}${me?` <span style="font-size:10px;color:var(--gm);font-family:var(--mono)">(you)</span>`:''}${lockIcon}</div>
+          <div class="lbn">${a.name}${me?` <span style="font-size:10px;color:var(--gm);font-family:var(--mono)">(you)</span>`:''}${coachBadge}${lockIcon}</div>
           <div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>
           ${mb}
         </div>
