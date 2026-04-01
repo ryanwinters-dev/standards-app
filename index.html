@@ -2992,8 +2992,8 @@ async function load(){
 
     // Load subscription + privacy setting in background
     Promise.all([
-      sb.from('subscriptions').select('*').eq('athlete_id',CU.id).maybeSingle().catch(()=>({data:null})),
-      sb.from('profiles').select('is_public').eq('id',CU.id).maybeSingle().catch(()=>({data:null})),
+      sb.from('subscriptions').select('*').eq('athlete_id',CU.id).maybeSingle().then(r=>r).catch(()=>({data:null})),
+      sb.from('profiles').select('is_public').eq('id',CU.id).maybeSingle().then(r=>r).catch(()=>({data:null})),
     ]).then(([subRes,profRes])=>{
       USER_SUB=subRes.data||null;
       USER_TIER=subRes.data?.tier||'free';
