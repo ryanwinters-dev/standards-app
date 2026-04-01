@@ -1983,7 +1983,9 @@ async function openWorkoutBuilder(){
   });
   wbSessionNotes={};
   (notesRes.data||[]).forEach(n=>{
-    wbSessionNotes[n.day_index===null?'general':n.day_index]=n.note;
+    if(n.note?.startsWith('__title__')||n.note?.startsWith('__circuit__'))return;
+    const key=n.day_index===-1?'general':n.day_index;
+    wbSessionNotes[key]=n.note;
   });
 
   document.getElementById('wb-title').textContent=`${a.name} — Programme`;
@@ -2198,8 +2200,9 @@ async function saveAllOverrides(){
 
   try{
     // ── 1. Save exercise overrides ──
-    // Delete all existing then re-insert clean
-    await sb.from('athlete_exercise_overrides').delete().eq('athlete_id',wbAthleteId);
+    const{error:delOvErr}=await sb.from('athlete_exercise_overrides')
+      .delete().eq('athlete_id',wbAthleteId);
+    if(delOvErr)throw new Error('Delete overrides: '+delOvErr.message);
 
     const overrideRows=Object.entries(wbAthleteOverrides).map(([key,exId])=>{
       const parts=key.split('_');
@@ -2209,42 +2212,45 @@ async function saveAllOverrides(){
     });
     if(overrideRows.length){
       const{error}=await sb.from('athlete_exercise_overrides').insert(overrideRows);
-      if(error)throw new Error('Overrides: '+error.message);
+      if(error)throw new Error('Overrides insert: '+error.message);
     }
 
-    // ── 2. Save session notes ──
-    // Delete all existing notes for this athlete then re-insert
-    await sb.from('athlete_session_notes').delete().eq('athlete_id',wbAthleteId);
+    // ── 2. Save session notes — delete ALL then insert fresh ──
+    const{error:delNoteErr}=await sb.from('athlete_session_notes')
+      .delete().eq('athlete_id',wbAthleteId);
+    if(delNoteErr)throw new Error('Delete notes: '+delNoteErr.message);
 
     const noteRows=[];
-    // Regular notes (general + per-day)
+
+    // Regular notes (general = day_index null workaround: use -1)
     Object.entries(wbSessionNotes).forEach(([dayIdx,note])=>{
       if(!note?.trim())return;
       noteRows.push({
         athlete_id:wbAthleteId,
-        day_index:dayIdx==='general'?null:parseInt(dayIdx),
+        day_index:dayIdx==='general'?-1:parseInt(dayIdx),
         note:note.trim(),
         created_by:CU.id,
         updated_at:new Date().toISOString(),
       });
     });
-    // Day titles stored as notes with day_index 10+day (e.g. day 0 title = index 10)
+    // Day titles: stored at day_index 100-103
     Object.entries(wbDayTitles).forEach(([dayIdx,title])=>{
       if(!title?.trim())return;
       noteRows.push({
         athlete_id:wbAthleteId,
-        day_index:100+parseInt(dayIdx), // 100-103 reserved for day titles
+        day_index:100+parseInt(dayIdx),
         note:'__title__:'+title.trim(),
         created_by:CU.id,
         updated_at:new Date().toISOString(),
       });
     });
-    // Circuit names stored as notes with day_index 200+
+    // Circuit names: stored at day_index 200+
     Object.entries(wbCircuitNames).forEach(([circuitKey,name])=>{
       if(!name?.trim())return;
+      const encoded=circuitKey.replace('_','');
       noteRows.push({
         athlete_id:wbAthleteId,
-        day_index:200+parseInt(circuitKey.replace('_','')), // encode day_ci
+        day_index:200+parseInt(encoded),
         note:'__circuit__:'+circuitKey+':'+name.trim(),
         created_by:CU.id,
         updated_at:new Date().toISOString(),
@@ -2253,24 +2259,18 @@ async function saveAllOverrides(){
 
     if(noteRows.length){
       const{error}=await sb.from('athlete_session_notes').insert(noteRows);
-      if(error)throw new Error('Notes: '+error.message);
+      if(error)throw new Error('Notes insert: '+error.message);
     }
 
     toast('✓ Programme saved','ok');
 
-    // Update athlete's live globals so workout tab reflects changes immediately
+    // Update live globals
     window.MY_OVERRIDES={...wbAthleteOverrides};
     window.MY_NOTES={};
     Object.entries(wbSessionNotes).forEach(([k,v])=>{if(v)window.MY_NOTES[k]=v;});
 
-    // Update ALL_ATHLETES cache
     const a=ALL_ATHLETES.find(x=>x.id===wbAthleteId);
-    if(a){
-      a.overrides={...wbAthleteOverrides};
-      a.notes={...wbSessionNotes};
-    }
-
-    // If coach is editing their own programme, re-render workout tab
+    if(a){a.overrides={...wbAthleteOverrides};a.notes={...wbSessionNotes};}
     if(wbAthleteId===CU?.id)rWorkout();
 
   }catch(err){
@@ -2301,7 +2301,8 @@ async function loadAthleteOverrides(){
         const parts=n.note.replace('__circuit__:','').split(':');
         window.MY_CIRCUIT_NAMES[parts[0]]=parts.slice(1).join(':');
       } else {
-        const key=n.day_index===null?'general':n.day_index;
+        // -1 = general note, 0-3 = day notes
+        const key=n.day_index===-1?'general':n.day_index;
         window.MY_NOTES[key]=n.note;
       }
     });
