@@ -1237,6 +1237,15 @@
   </div>
 </div>
 
+<!-- PUBLIC PROFILE OVERLAY -->
+<div id="pub-profile" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:165;flex-direction:column">
+  <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <button class="back-btn" onclick="closePubProfile()">← Back</button>
+    <span id="pub-profile-title" style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1"></span>
+  </div>
+  <div id="pub-profile-body" style="flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none"></div>
+</div>
+
 <!-- ASSESSMENT SLIDESHOW -->
 <div class="assessment-overlay" id="assessment-overlay" style="display:none">
   <div class="assessment-topbar">
@@ -1403,6 +1412,7 @@ let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[],CHECKINS=[]
 let USER_TIER='free'; // 'free' | 'coached' | 'coach'
 let USER_SUB=null;    // full subscription row
 let USER_AVATAR_URL=null; // cached avatar URL
+let USER_IS_PUBLIC=true; // default public
 let ALL_ATHLETES=[],ALL_PENDING=[],ALL_CHECKINS={},ALL_CLIENT_SETS={};
 let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
 let profCalDate=new Date();
@@ -2538,6 +2548,14 @@ function renderSettings(){
     <div class="settings-section-label">Preferences</div>
     <div class="settings-group">
       <div class="settings-row" style="cursor:default">
+        <div class="settings-row-icon" style="background:rgba(0,229,255,0.1)">👁</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Public profile</div>
+          <div class="settings-row-sub">${USER_IS_PUBLIC?'Your profile is visible on the leaderboard':'Profile hidden — score visible but not tappable'}</div>
+        </div>
+        <button class="settings-toggle${USER_IS_PUBLIC?' on':''}" onclick="togglePublicProfile()" id="toggle-public"></button>
+      </div>
+      <div class="settings-row" style="cursor:default">
         <div class="settings-row-icon" style="background:#f0f0ec">⚖️</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Weight units</div>
@@ -2746,6 +2764,108 @@ async function signUp(){
   if(error)sm(error.message,'err');
   else sm('Account created! You can sign in now.','ok');
 }
+// ── PUBLIC PROFILES ──
+
+async function togglePublicProfile(){
+  USER_IS_PUBLIC=!USER_IS_PUBLIC;
+  const btn=document.getElementById('toggle-public');
+  if(btn)btn.classList.toggle('on',USER_IS_PUBLIC);
+  const{error}=await sb.from('profiles')
+    .upsert({id:CU.id,is_public:USER_IS_PUBLIC},{onConflict:'id'});
+  if(error){
+    USER_IS_PUBLIC=!USER_IS_PUBLIC;
+    toast('Failed to update privacy','err');
+    if(btn)btn.classList.toggle('on',USER_IS_PUBLIC);
+    return;
+  }
+  toast(USER_IS_PUBLIC?'Profile set to public':'Profile set to private','ok');
+  renderSettings();
+  rLB();
+}
+
+async function openPubProfile(athleteId){
+  const overlay=document.getElementById('pub-profile');
+  const body=document.getElementById('pub-profile-body');
+  const titleEl=document.getElementById('pub-profile-title');
+  overlay.style.display='flex';
+  body.innerHTML=`<div class="empty"><div style="font-size:24px;margin-bottom:8px">⟳</div>Loading…</div>`;
+
+  try{
+    const[apRes,logsRes,setsRes,checkinsRes,profRes]=await Promise.all([
+      sb.from('athlete_profiles').select('pattern_id,current_level').eq('athlete_id',athleteId),
+      sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
+      sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}),
+      sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
+      sb.from('profiles').select('full_name,email,is_public').eq('id',athleteId).maybeSingle(),
+    ]);
+
+    if(profRes.data?.is_public===false){
+      body.innerHTML=`<div class="empty"><div class="ei">🔒</div>This profile is private.</div>`;
+      return;
+    }
+
+    const name=profRes.data?.full_name||profRes.data?.email?.split('@')[0]||'Athlete';
+    titleEl.textContent=name;
+
+    const scores={};
+    (apRes.data||[]).forEach(r=>{scores[r.pattern_id]=r.current_level;});
+    const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
+
+    const savedAP={...AP};
+    Object.keys(AP).forEach(k=>delete AP[k]);
+    Object.assign(AP,scores);
+    const spider=drawSpider();
+    Object.keys(AP).forEach(k=>delete AP[k]);
+    Object.assign(AP,savedAP);
+
+    const ci=Math.abs(athleteId.charCodeAt(0))%AVC.length;
+    const c=AVC[ci];
+
+    let h=`
+    <div class="ph" style="margin-bottom:14px">
+      <div class="av" style="background:${c.bg};color:${c.fg}">${gi(name)}</div>
+      <div style="flex:1">
+        <div class="pn">${name}</div>
+        <div class="ps">Athlete · [RADAR]</div>
+      </div>
+      <div class="sc">${tot} / 40</div>
+    </div>
+    <div class="spider-card" style="margin-bottom:14px">
+      <div class="spider-card-top">
+        <span class="spider-card-title">Movement Profile</span>
+        <span class="spider-score">${tot} / 40</span>
+      </div>
+      ${spider}
+    </div>
+    <div class="pg" style="margin-bottom:14px">
+      ${PATS.map(pid=>{
+        const lv=scores[pid]||0;
+        const col=LC[lv]||'rgba(255,255,255,0.2)';
+        return`<div class="pc">
+          <div class="pc-top"><span class="pc-name">${PL[pid]}</span></div>
+          <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:6px">
+            <span class="pc-level" style="color:${col}">${lv}</span>
+            <span class="pc-of5">/ 5</span>
+          </div>
+          <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+    h+=buildTrainingSnapshotForAthlete(scores,logsRes.data||[],setsRes.data||[],checkinsRes.data||[]);
+    h+=buildProfileCalendar(setsRes.data||[]);
+    if(checkinsRes.data?.length)h+=buildCheckinTiles(checkinsRes.data,false,athleteId);
+
+    body.innerHTML=h;
+  }catch(err){
+    body.innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}</div>`;
+  }
+}
+
+function closePubProfile(){
+  document.getElementById('pub-profile').style.display='none';
+}
+
 async function signOut(){
   await sb.auth.signOut();
   CU=null;IS_COACH=false;
@@ -2845,14 +2965,19 @@ async function load(){
     await loadStaticData();
 
     // Load all personal data in one parallel batch
-    const[myAP,aap,logs,sets,checkins]=await Promise.all([
+    const[myAP,aap,logs,sets,checkins,pubProfiles]=await Promise.all([
       q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
       q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).limit(30)),
+      q(sb.from('profiles').select('id,full_name,is_public')),
     ]);
     AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
+    // Attach is_public to AAP rows for leaderboard use
+    const pubMap={};
+    (pubProfiles||[]).forEach(p=>{pubMap[p.id]=p.is_public!==false;});
+    AAP=AAP.map(r=>({...r,is_public:pubMap[r.athlete_id]!==false}));
     USER_SUB=null;USER_TIER='free';
     AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
 
@@ -2865,13 +2990,17 @@ async function load(){
     // Init messaging (non-blocking)
     initMessaging().catch(e=>console.warn('Messaging init:',e.message));
 
-    // Load subscription in background — never blocks the app
-    sb.from('subscriptions').select('*').eq('athlete_id',CU.id).maybeSingle()
-      .then(({data})=>{
-        USER_SUB=data||null;
-        USER_TIER=data?.tier||'free';
-        rProfile(); // re-render profile with subscription card
-      }).catch(()=>{});
+    // Load subscription + privacy setting in background
+    Promise.all([
+      sb.from('subscriptions').select('*').eq('athlete_id',CU.id).maybeSingle().catch(()=>({data:null})),
+      sb.from('profiles').select('is_public').eq('id',CU.id).maybeSingle().catch(()=>({data:null})),
+    ]).then(([subRes,profRes])=>{
+      USER_SUB=subRes.data||null;
+      USER_TIER=subRes.data?.tier||'free';
+      // Default true if no row exists yet
+      USER_IS_PUBLIC=profRes.data?.is_public!==false;
+      rProfile();
+    });
 
     // Notify athlete if they've just crossed a warm up tier threshold
     try{
@@ -2884,7 +3013,7 @@ async function load(){
     if(IS_COACH){
       // Coach data loads after athlete views are already rendered
       const[allProfiles,allAP,pending,allSets]=await Promise.all([
-        q(sb.from('profiles').select('id,full_name,email,role').neq('id',CU.id)),
+        q(sb.from('profiles').select('id,full_name,email,role,is_public').neq('id',CU.id)),
         q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
         q(sb.from('assessments').select('*').is('passed',null).order('assessed_at',{ascending:false})),
         q(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').order('logged_at',{ascending:false}).limit(300)),
@@ -2892,7 +3021,7 @@ async function load(){
       const am={};
       allProfiles.forEach(p=>{
         if(p.role==='coach')return;
-        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{}};
+        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{},is_public:p.is_public!==false};
       });
       allAP.forEach(r=>{if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;});
       ALL_ATHLETES=Object.values(am);
@@ -4650,7 +4779,7 @@ async function inviteAthlete(){
   if(error&&error.message.includes('not authorized')){
     // Fallback: create profile record and show manual invite instructions
     const{error:profileErr}=await sb.from('profiles').upsert({
-      email,full_name:name,role:'athlete'
+      email,full_name:name,role:'athlete',is_public:true
     },{onConflict:'email',ignoreDuplicates:false});
 
     if(profileErr&&!profileErr.message.includes('duplicate')){
@@ -4667,7 +4796,7 @@ async function inviteAthlete(){
 
   // Success — also ensure profile row exists
   await sb.from('profiles').upsert({
-    id:data.user?.id,email,full_name:name,role:'athlete'
+    id:data.user?.id,email,full_name:name,role:'athlete',is_public:true
   },{onConflict:'id',ignoreDuplicates:false});
 
   msg.textContent=`✓ Invitation sent to ${email}. They'll receive an email to set their password.`;
@@ -5319,7 +5448,6 @@ function closePatternPage(){
 
 // ── LEADERBOARD ──
 function rLB(){
-  // Build name lookup from ALL_ATHLETES (coaches have this) + current user
   const nameLookup={};
   ALL_ATHLETES.forEach(a=>{nameLookup[a.id]=a.name;});
   nameLookup[CU.id]=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
@@ -5327,23 +5455,61 @@ function rLB(){
   const am={};
   AAP.forEach(r=>{
     const id=r.athlete_id;
-    if(!am[id])am[id]={id,name:nameLookup[id]||'Athlete',scores:{}};
+    if(!am[id])am[id]={id,name:nameLookup[id]||'Athlete',scores:{},isPublic:r.is_public!==false};
     am[id].scores[r.pattern_id]=r.current_level;
   });
-  // Always include current user even with no scores
-  if(!am[CU.id])am[CU.id]={id:CU.id,name:nameLookup[CU.id]||'Me',scores:{}};
-  // Coaches: include all athletes even with 0 scores
-  ALL_ATHLETES.forEach(a=>{if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{}};});
+  if(!am[CU.id])am[CU.id]={id:CU.id,name:nameLookup[CU.id]||'Me',scores:{},isPublic:USER_IS_PUBLIC};
+  else am[CU.id].isPublic=USER_IS_PUBLIC;
+  ALL_ATHLETES.forEach(a=>{
+    if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{},isPublic:a.is_public!==false};
+  });
 
-  let aths=Object.values(am).map((a,i)=>({...a,ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),ms:lbF==='all'?40:5,ci:i%AVC.length})).sort((a,b)=>b.ds-a.ds);
+  let aths=Object.values(am).map((a,i)=>({
+    ...a,
+    ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),
+    ms:lbF==='all'?40:5,
+    ci:i%AVC.length
+  })).sort((a,b)=>b.ds-a.ds);
+
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
-  if(!aths.length)h+=`<div class="empty"><div class="ei">🏆</div>No athletes yet.</div>`;
-  else aths.forEach((a,i)=>{
-    const rc=i===0?'r1':i===1?'r2':i===2?'r3':'',me=a.id===CU.id,c=AVC[a.ci],init=gi(a.name);
-    let mb='';if(lbF==='all'){mb=`<div class="lbmb">`;PATS.forEach(p=>{mb+=`<div class="lbmbs" style="background:${LC[a.scores[p]||0]}"></div>`});mb+=`</div>`}
-    h+=`<div class="lbr${me?' me':''}"><div class="lbrk ${rc}">${i+1}</div><div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div><div class="lbi"><div class="lbn">${a.name}${me?' <span style="font-size:11px;color:var(--gm)">(you)</span>':''}</div><div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>${mb}</div><div class="lbs"><div class="lbsn">${a.ds}</div><div class="lbsd">/ ${a.ms}</div></div></div>`;
-  });
+
+  if(!aths.length){
+    h+=`<div class="empty"><div class="ei">🏆</div>No athletes yet.</div>`;
+  } else {
+    aths.forEach((a,i)=>{
+      const rc=i===0?'r1':i===1?'r2':i===2?'r3':'';
+      const me=a.id===CU.id;
+      const c=AVC[a.ci];
+      const init=gi(a.name);
+      const canTap=a.isPublic||me||IS_COACH;
+      let mb='';
+      if(lbF==='all'){
+        mb=`<div class="lbmb">`;
+        PATS.forEach(p=>{mb+=`<div class="lbmbs" style="background:${LC[a.scores[p]||0]}"></div>`});
+        mb+=`</div>`;
+      }
+      const lockIcon=!canTap?`<span style="font-size:12px;color:var(--mt);margin-left:6px">🔒</span>`:'';
+      h+=`<div class="lbr${me?' me':''}${canTap?' lbr-tap':''}" ${canTap&&!me?`onclick="openPubProfile('${a.id}')"`:''}
+        style="${canTap&&!me?'cursor:pointer;':''}"
+        onmouseenter="${canTap&&!me?`this.style.borderColor='var(--brm)'`:''}"
+        onmouseleave="${canTap&&!me?`this.style.borderColor='rgba(255,255,255,0.06)'`:''}"
+      >
+        <div class="lbrk ${rc}">${i+1}</div>
+        <div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div>
+        <div class="lbi">
+          <div class="lbn">${a.name}${me?` <span style="font-size:10px;color:var(--gm);font-family:var(--mono)">(you)</span>`:''}${lockIcon}</div>
+          <div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>
+          ${mb}
+        </div>
+        <div class="lbs">
+          <div class="lbsn">${a.ds}</div>
+          <div class="lbsd">/ ${a.ms}</div>
+        </div>
+        ${canTap&&!me?`<span style="font-size:16px;color:var(--br);padding-left:4px">›</span>`:''}
+      </div>`;
+    });
+  }
   document.getElementById('v-leaderboard').innerHTML=h;
 }
 function sLBF(f){lbF=f;rLB()}
