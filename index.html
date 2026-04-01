@@ -403,7 +403,7 @@
     .msg-bubble-time{font-size:10px;color:var(--mt);font-family:var(--mono);margin-top:2px}
     .msg-bubble-sender{font-size:10px;color:var(--mt);font-family:var(--mono);margin-bottom:3px}
     .msg-input-wrap{padding:10px 16px 10px;border-top:1px solid var(--br);display:flex;gap:8px;flex-shrink:0;background:var(--bg2)}
-    .msg-input{flex:1;padding:10px 16px;background:var(--bg3);border:1px solid var(--br);border-radius:22px;font-size:15px;font-family:var(--fn);color:var(--dk);outline:none;resize:none;max-height:100px;line-height:1.4;transition:border-color .2s}
+    .msg-input{flex:1;padding:10px 16px;background:var(--bg3);border:1px solid var(--br);border-radius:22px;font-size:15px;font-family:var(--fn);color:var(--dk);outline:none;resize:none;height:40px;max-height:100px;line-height:1.4;overflow-y:hidden;transition:border-color .2s}
     .msg-input:focus{border-color:var(--gm)}
     .msg-send-btn{width:40px;height:40px;border-radius:50%;background:var(--gm);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--bg);flex-shrink:0;align-self:flex-end;transition:opacity .2s}
     .msg-send-btn:hover{opacity:.85}
@@ -1834,7 +1834,7 @@ async function rMessages(){
         <div class="msg-input-wrap">
           <textarea class="msg-input" id="msg-input" placeholder="Message…" rows="1"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
-            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+            oninput="this.style.height='40px';this.style.height=Math.min(this.scrollHeight,100)+'px';this.style.overflowY=this.scrollHeight>100?'auto':'hidden'"></textarea>
           <button class="msg-send-btn" onclick="sendMessage()">↑</button>
         </div>
       </div>
@@ -1990,7 +1990,8 @@ async function sendMessage(){
   const body=input?.value.trim();
   if(!body||!activeConvId)return;
   input.value='';
-  input.style.height='auto';
+  input.style.height='40px';
+  input.style.overflowY='hidden';
   const{error}=await sb.from('chat_messages').insert({
     conversation_id:activeConvId,sender_id:CU.id,body,
   });
