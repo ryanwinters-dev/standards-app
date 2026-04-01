@@ -554,12 +554,16 @@
     /* Client profile page */
     .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;flex-direction:column}
     .client-page.active{display:flex}
-    .client-page-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 12px;height:52px;display:flex;align-items:center;gap:8px;flex-shrink:0;z-index:10}
-    .back-btn{padding:6px 10px;border:1px solid var(--brm);border-radius:var(--r);background:transparent;cursor:pointer;font-size:11px;font-weight:700;color:var(--mt);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:5px;transition:all .2s;flex-shrink:0}
-    .back-btn:hover{border-color:var(--gm);color:var(--gm)}
-    .client-page-name{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-    .client-page-score{background:var(--gl);color:var(--gd);padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
-    .client-page-body{padding:16px;max-width:640px;margin:0 auto;width:100%;overflow-y:auto;flex:1}
+    .client-page-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:10px;flex-shrink:0;z-index:10}
+    .client-page-name{font-size:14px;font-weight:700;font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+    .client-page-score{background:rgba(0,229,255,0.1);color:var(--gm);padding:3px 10px;border:1px solid rgba(0,229,255,0.3);font-size:11px;font-weight:700;font-family:var(--mono)}
+    .client-page-body{padding:16px;padding-bottom:80px;max-width:640px;margin:0 auto;width:100%;overflow-y:auto;flex:1;scrollbar-width:none}
+    .client-page-body::-webkit-scrollbar{display:none}
+    .client-action-tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:16px}
+    .client-action-tile{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s;text-align:center}
+    .client-action-tile:hover{border-color:var(--gm);background:rgba(0,229,255,0.04)}
+    .client-action-tile:active{background:rgba(0,229,255,0.08)}
+    .client-action-tile-label{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt)}
     .cp-section{margin-bottom:20px}
     .cp-section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
     .cp-pat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -1336,11 +1340,7 @@
   <div class="client-page-topbar">
     <button class="back-btn" onclick="closeClientPage()">← Back</button>
     <span class="client-page-name" id="cp-name"></span>
-    <div style="display:flex;gap:6px;flex-shrink:0">
-      <button style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--md);font-family:var(--fn)" onclick="openWorkoutBuilder()">+ Programme</button>
-      <button style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--md);font-family:var(--fn)" onclick="openCoachTestModal()">+ Test</button>
-      <button style="padding:5px 10px;border:none;border-radius:6px;background:var(--gm);cursor:pointer;font-size:12px;font-weight:600;color:#fff;font-family:var(--fn)" onclick="openCoachWorkout()">+ Workout</button>
-    </div>
+    <span class="client-page-score" id="cp-score"></span>
   </div>
   <div class="client-page-body" id="cp-body"></div>
 </div>
@@ -5060,7 +5060,9 @@ async function openClientPage(athleteId){
   const a=ALL_ATHLETES.find(x=>x.id===athleteId);
   if(!a)return;
   const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-  document.getElementById('cp-name').textContent=`${a.name} · ${total}/40`;
+  document.getElementById('cp-name').textContent=a.name;
+  const scoreEl=document.getElementById('cp-score');
+  if(scoreEl)scoreEl.textContent=`${total}/40`;
   document.getElementById('cp-body').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
   document.getElementById('client-page').classList.add('active');
 
@@ -5075,17 +5077,31 @@ async function openClientPage(athleteId){
   const clientCheckins=checkinsRes.data||[];
   const clientSets=setsRes.data||[];
 
-  // Reset state for new client view
   openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
+
+  // Action tiles
+  const actionTiles=`<div class="client-action-tiles">
+    <div class="client-action-tile" onclick="openWorkoutBuilder()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="client-action-tile-label">Programme</span>
+    </div>
+    <div class="client-action-tile" onclick="openCoachTestModal()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span class="client-action-tile-label">Log Test</span>
+    </div>
+    <div class="client-action-tile" onclick="openCoachWorkout()" style="border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.04)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M1 8h5M18 8h5M1 16h5M18 16h5"/></svg>
+      <span class="client-action-tile-label" style="color:var(--gm)">Log Workout</span>
+    </div>
+  </div>`;
 
   // Pending banner
   let banner='';
   if(clientPending.length>0){
-    banner=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting your review</div>`;
+    banner=`<div style="background:rgba(255,179,64,0.08);border:1px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber);font-family:var(--mono)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting review</div>`;
   }
-  document.getElementById('cp-body').innerHTML=banner;
+  document.getElementById('cp-body').innerHTML=actionTiles+banner;
 
-  // Use universal rProfile in coach mode — pass checkins directly
   rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
 }
 
