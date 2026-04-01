@@ -63,13 +63,13 @@
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:var(--red)}.msg.ok{color:var(--pass)}
     #app{display:none}
-    .topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;justify-content:space-between;position:sticky;top:0;z-index:100}
     .tl{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}.tl .bracket{color:var(--gm)}
     .topbar-r{display:flex;align-items:center;gap:8px}
     .coach-badge{font-size:10px;font-weight:700;padding:3px 8px;border:1px solid var(--brm);background:transparent;color:var(--gm);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
     .tu{font-size:12px;color:var(--mt);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
     .btn-so{padding:5px 12px;font-size:11px;border:1px solid var(--brm);background:transparent;border-radius:var(--r);cursor:pointer;color:var(--mt);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;transition:color .2s,border-color .2s}.btn-so:hover{color:var(--dk);border-color:var(--gm)}
-    .nav-tabs{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--bg2);border-top:1px solid var(--br);padding:0;padding-bottom:env(safe-area-inset-bottom)}
+    .nav-tabs{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--bg2);border-top:1px solid var(--br);padding:0;padding-bottom:max(env(safe-area-inset-bottom), 8px)}
     .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 6px;font-size:9px;font-weight:700;border:none;background:transparent;cursor:pointer;color:var(--mt);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;transition:color .2s;position:relative;min-width:0}
     .nav-tab .nav-icon{font-size:20px;line-height:1;display:block}
     .nav-tab .nav-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center}
@@ -341,7 +341,7 @@
     /* ── SETTINGS PAGE ── */
     #settings-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:160;flex-direction:column}
     #settings-page.active{display:flex}
-    .settings-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .settings-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;gap:12px;padding-bottom:8px;flex-shrink:0}
     .settings-body{flex:1;overflow-y:auto;padding:0 0 48px}
     .settings-section{padding:0 16px;margin-top:28px}
     .settings-section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:8px;padding:0 4px}
@@ -404,7 +404,7 @@
     /* Thread view — slides over list */
     .msg-thread-view{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;z-index:10}
     .msg-thread-view.open{transform:translateX(0)}
-    .msg-thread-hdr{padding:0 16px;height:52px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:12px;background:var(--bg2);flex-shrink:0}
+    .msg-thread-hdr{padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));border-bottom:1px solid var(--br);display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;background:var(--bg2);flex-shrink:0}
     .msg-thread-back{background:none;border:none;color:var(--gm);font-size:14px;font-weight:700;font-family:var(--mono);cursor:pointer;padding:4px 0;flex-shrink:0}
     .msg-thread-info{flex:1;min-width:0}
     .msg-thread-name{font-size:14px;font-weight:700;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -438,7 +438,7 @@
     /* ── WORKOUT BUILDER ── */
     .wb-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:170;flex-direction:column;overflow:hidden}
     .wb-overlay.active{display:flex}
-    .wb-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .wb-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;gap:12px;padding-bottom:8px;flex-shrink:0}
     .wb-body{flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none}
     .wb-body::-webkit-scrollbar{display:none}
     .wb-day-tabs{display:flex;gap:2px;margin-bottom:16px}
@@ -484,7 +484,7 @@
     .snapshot-tile.pass .snapshot-tile-val{color:var(--pass)}
 
     .assessment-overlay{position:fixed;inset:0;background:var(--bg);z-index:180;display:flex;flex-direction:column;overflow:hidden}
-    .assessment-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .assessment-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0}
     .assessment-back{padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)}
     .assessment-close{padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)}
     .assessment-progress-wrap{flex:1;height:4px;background:var(--br);border-radius:2px;overflow:hidden}
@@ -1302,7 +1302,7 @@
 
 <!-- PUBLIC PROFILE OVERLAY -->
 <div id="pub-profile" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:165;flex-direction:column">
-  <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+  <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0">
     <button class="back-btn" onclick="closePubProfile()">← Back</button>
     <span id="pub-profile-title" style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1"></span>
   </div>
@@ -1323,7 +1323,7 @@
 
 <!-- PATTERN DETAIL PAGE -->
 <div id="pattern-page" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:160;overflow-y:auto">
-  <div style="background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10">
+  <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;position:sticky;top:0;z-index:10">
     <button id="pp-back" style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)" onclick="closePatternPage()">← Back</button>
     <span id="pp-title" style="font-size:16px;font-weight:700;flex:1"></span>
     <span id="pp-level" style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;background:rgba(0,229,255,0.1);color:var(--gm);padding:4px 10px;border:1px solid rgba(0,229,255,0.3)"></span>
@@ -1348,7 +1348,7 @@
 <!-- COACH WORKOUT MODAL -->
 <div id="coach-workout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;overflow-y:auto">
   <div style="background:var(--bg);min-height:100%;padding:0 0 40px">
-    <div style="background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10">
+    <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;position:sticky;top:0;z-index:10">
       <button style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)" onclick="closeCoachWorkout()">← Back</button>
       <span id="cwm-title" style="font-size:15px;font-weight:600;flex:1"></span>
     </div>
