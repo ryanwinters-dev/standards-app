@@ -161,39 +161,39 @@
     .ei{font-size:32px;margin-bottom:8px}
 
     /* ── HOME SCREEN — fixed single screen ── */
-    .home-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden;background:var(--bg);padding:0}
-    .home-checkin-strip{padding:10px 16px 6px;flex-shrink:0}
-    .home-checkin-greeting{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--md);letter-spacing:.02em;margin-bottom:10px}
+    .home-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden;background:var(--bg)}
+    /* Check-in strip */
+    .home-checkin-strip{padding:8px 16px 6px;flex-shrink:0}
+    .home-checkin-greeting{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--mt);letter-spacing:.04em;margin-bottom:8px}
     .home-checkin-bar{display:flex;gap:3px;width:100%}
-    .home-ci-seg{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
-    .home-ci-track{width:100%;height:4px;border-radius:2px;background:var(--br);transition:all .3s}
+    .home-ci-seg{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+    .home-ci-track{width:100%;height:3px;border-radius:1.5px;background:var(--br);transition:background .3s}
     .home-ci-track.done{background:var(--pass)}
-    .home-ci-track.today{background:var(--gm);opacity:.6}
-    .home-ci-label{font-size:8px;font-family:var(--mono);color:var(--mt);letter-spacing:.06em}
-    /* Radar wrap — square, takes remaining space above card */
+    .home-ci-track.today{background:var(--gm)}
+    .home-ci-label{font-size:8px;font-family:var(--mono);color:var(--mt);letter-spacing:.04em}
+    /* Radar — fills remaining space */
     .home-radar-wrap{flex:1;position:relative;min-height:0;overflow:hidden}
     .home-radar-slides{display:flex;width:200%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1)}
-    .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .home-radar-inner{position:relative;width:min(100%,100vw - 32px);aspect-ratio:1;max-height:100%}
+    .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px}
+    .home-radar-inner{position:relative;width:min(calc(100% - 16px), calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom) - 180px));aspect-ratio:1;max-height:100%}
     .home-radar-inner svg{width:100%;height:100%}
-
-    .home-slide-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
-    .home-slide-dot{width:6px;height:6px;border-radius:50%;background:var(--br);transition:all .2s}
-    .home-slide-dot.active{background:var(--gm);width:18px;border-radius:3px}
+    .home-slide-dots{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+    .home-slide-dot{width:5px;height:5px;border-radius:50%;background:var(--br);transition:all .2s}
+    .home-slide-dot.active{background:var(--gm);width:16px;border-radius:2.5px}
     /* Benchmark slide */
-    .home-bench-slide{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
-    .home-bench-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mt);margin-bottom:16px;align-self:flex-start}
-    .home-bench-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1}
-    /* Floating card */
-    .home-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:20px 20px 0 0;padding:16px 16px calc(8px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -4px 24px rgba(0,0,0,.4)}
-    .home-snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:12px}
-    .home-snap-tile{text-align:center;padding:4px 0}
-    .home-snap-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
-    .home-snap-label{font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-top:3px}
-    .home-insight-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:10px 12px}
-    .home-insight-label{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px}
-    .home-insight-val{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .home-insight-sub{font-size:10px;color:var(--mt);font-family:var(--mono);margin-top:1px}
+    .home-bench-slide{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:16px 20px}
+    .home-bench-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:12px}
+    .home-bench-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;gap:10px}
+    /* Bottom card — no scroll, fixed height */
+    .home-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:16px 16px 0 0;padding:14px 16px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -8px 32px rgba(0,0,0,.5)}
+    .home-snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:10px}
+    .home-snap-tile{text-align:center;padding:2px 0}
+    .home-snap-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1}
+    .home-snap-label{font-size:8px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px}
+    .home-insight-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:8px 10px;cursor:default}
+    .home-insight-label{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:3px}
+    .home-insight-val{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .home-insight-sub{font-size:9px;color:var(--mt);font-family:var(--mono);margin-top:1px}
 
     .checkin-strip{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:12px 14px;margin-bottom:14px;cursor:pointer;transition:border-color .2s}
     .checkin-strip:hover{border-color:var(--gm)}
@@ -2985,7 +2985,99 @@ function getBenchmarkDay5(){
   return BENCHMARK_DAY5[ATHLETE_BENCHMARK.benchmark_id]||null;
 }
 
-// ── Leaderboard integration ──
+function getBmCircuitTarget(bm,circuitIndex){
+  // Returns a target string for each circuit type based on current PB
+  if(!bm)return'';
+  const pb=window.ACTIVE_BENCHMARK?.pbSeconds;
+  const targets={
+    'run_5k':['6×400m — aim for consistent splits','3×1200m — aim for even effort','20min — keep heart rate conversational','4×100m — focus on form, not time'],
+    'row_2k':['8×250m — target your 500m split','4×500m — hold target 2km pace','20min — 2 splits above race pace','Technique focus — not for time'],
+    'ski_500':['5×200m — max effort each rep','3×500m — aim for target time','15min — easy consistent pace','Technique focus — not for time'],
+    'bike_20k':['8×1min — max watts each rep','3×8min — hold threshold watts','25min — 60-65% effort','5min — cadence 100+ RPM'],
+  };
+  const t=targets[bm.id];
+  return t?t[circuitIndex]||'':'';
+}
+
+function logBmCircuit(ck){
+  const today=new Date().toISOString().split('T')[0];
+  localStorage.setItem(`bm_done_${CU.id}_${ck}_${today}`,'1');
+  rWorkout();
+}
+
+let bmPhotoFile=null;
+function handleBmPhoto(input){
+  bmPhotoFile=input.files[0]||null;
+  const preview=document.getElementById('bm-photo-preview');
+  if(preview&&bmPhotoFile){
+    preview.textContent='✓ '+bmPhotoFile.name;
+    preview.style.color='var(--pass)';
+  }
+}
+
+async function submitBmInline(){
+  const mm=document.getElementById('bm-mm-inline')?.value;
+  const ss=document.getElementById('bm-ss-inline')?.value;
+  const msg=document.getElementById('bm-inline-msg');
+  if(!mm&&!ss){if(msg)msg.textContent='Enter your time';return;}
+  const seconds=parseTimeInput(mm,ss);
+  if(seconds<=0){if(msg)msg.textContent='Invalid time';return;}
+  if(msg)msg.textContent='Saving…';
+
+  try{
+    // Upload photo if provided
+    let photoUrl=null;
+    if(bmPhotoFile){
+      const ext=bmPhotoFile.name.split('.').pop();
+      const path=`benchmark-results/${CU.id}/${Date.now()}.${ext}`;
+      const{error:upErr}=await sb.storage.from('test-videos').upload(path,bmPhotoFile,{contentType:bmPhotoFile.type,upsert:false});
+      if(!upErr){
+        const{data:urlData}=sb.storage.from('test-videos').getPublicUrl(path);
+        photoUrl=urlData?.publicUrl||null;
+      }
+    }
+
+    await sb.from('benchmark_results').insert({
+      athlete_id:CU.id,
+      benchmark_id:ATHLETE_BENCHMARK.benchmark_id,
+      score_seconds:seconds,
+      notes:photoUrl?`photo:${photoUrl}`:null,
+    });
+
+    const bm=BENCHMARKS.find(b=>b.id===ATHLETE_BENCHMARK.benchmark_id);
+    const existingPb=window.ACTIVE_BENCHMARK?.pbSeconds;
+    const newPb=existingPb?Math.min(seconds,existingPb):seconds;
+    const newLevel=getBenchmarkLevel(bm,newPb);
+    const oldLevel=window.ACTIVE_BENCHMARK?.level||0;
+
+    await sb.from('athlete_benchmarks')
+      .update({current_level:newLevel})
+      .eq('athlete_id',CU.id)
+      .eq('benchmark_id',ATHLETE_BENCHMARK.benchmark_id);
+
+    bmPhotoFile=null;
+    await loadBenchmarks();
+    rHome();
+
+    if(newLevel>oldLevel){
+      toast(`Level ${newLevel} ${bm?.name} — Earned.`,'ok');
+    } else if(existingPb&&seconds<existingPb){
+      toast(`New PB — ${fmtSeconds(seconds)}!`,'ok');
+    } else {
+      toast(`Result saved — ${fmtSeconds(seconds)}`,'ok');
+    }
+
+    // Reset form
+    const mEl=document.getElementById('bm-mm-inline');
+    const sEl=document.getElementById('bm-ss-inline');
+    if(mEl)mEl.value='';
+    if(sEl)sEl.value='';
+    if(msg)msg.textContent='✓ Saved';
+
+  }catch(e){
+    if(msg)msg.textContent='Failed: '+e.message;
+  }
+}
 let lbBmFilter=null; // null = movement standards, benchmark_id = benchmark tab
 
 function renderBenchmarkLeaderboard(){
@@ -5099,33 +5191,77 @@ function rWorkout(){
 
   // Day 5 — benchmark training session
   if(curDay===4&&bmDay5){
+    const bm=window.ACTIVE_BENCHMARK?.bm;
     h+=`<div style="background:rgba(0,255,148,0.06);border:1px solid rgba(0,255,148,0.2);border-radius:var(--rl);padding:12px 14px;margin-bottom:14px">
       <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pass);margin-bottom:4px">Benchmark Day</div>
       <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--dk)">${bmDay5.name}</div>
+      ${window.ACTIVE_BENCHMARK?.pb?`<div style="font-size:11px;color:var(--mt);margin-top:4px;font-family:var(--mono)">Current PB: <span style="color:var(--gm)">${window.ACTIVE_BENCHMARK.pb}</span></div>`:''}
     </div>`;
     bmDay5.circuits.forEach((circuit,ci)=>{
       const ck=`d4c${ci}`;
       const isOpen=!!openCircuits[ck];
-      h+=`<div class="day-wrap"><div class="circuit-wrap">
-        <div class="circuit-hdr" onclick="toggleCircuit('${ck}')">
-          <div class="circuit-letter">${circuit.letter}</div>
+      const today=new Date().toISOString().split('T')[0];
+      const isLogged=!!localStorage.getItem(`bm_done_${CU.id}_${ck}_${today}`);
+      const targetInfo=bm?getBmCircuitTarget(bm,ci):'';
+      h+=`<div class="day-wrap"><div class="circuit-wrap${isLogged?' logged':''}">
+        <div class="circuit-hdr${isLogged?' logged':''}" onclick="toggleCircuit('${ck}')">
+          <div class="circuit-letter${isLogged?' logged':''}">${isLogged?'✓':circuit.letter}</div>
           <span class="circuit-label">${circuit.name}</span>
-          <span class="circuit-sets">${circuit.circuitSets} × ${circuit.exercises.length}</span>
+          <span class="circuit-sets">${circuit.circuitSets>1?circuit.circuitSets+' sets':''}</span>
           <span class="circuit-arrow" id="arr-cb-${ck}">${isOpen?'▲':'▼'}</span>
         </div>
         <div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">
+          ${targetInfo?`<div style="padding:8px 14px;background:rgba(0,255,148,0.04);border-bottom:1px solid var(--br);font-size:11px;color:var(--pass);font-family:var(--mono)">🎯 ${targetInfo}</div>`:''}
           ${circuit.exercises.map((ex,xi)=>`
-          <div style="padding:12px 14px;border-top:0.5px solid var(--br)">
+          <div style="padding:12px 14px;border-top:1px solid var(--br)">
             <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
-              <span style="font-size:10px;font-weight:700;color:var(--mt);flex-shrink:0">${circuit.letter}${xi+1}</span>
-              <span style="font-size:13px;font-weight:600;flex:1">${ex.name}</span>
+              <span style="font-size:10px;font-weight:700;color:var(--mt);flex-shrink:0;font-family:var(--mono)">${circuit.letter}${xi+1}</span>
+              <span style="font-size:13px;font-weight:600;flex:1;color:var(--dk)">${ex.name}</span>
             </div>
-            <div style="font-size:11px;color:var(--mt);padding-left:18px">${ex.meta}</div>
+            <div style="font-size:11px;color:var(--mt);padding-left:18px;line-height:1.5">${ex.meta}</div>
           </div>`).join('')}
+          <div style="padding:10px 14px">
+            <button class="log-circuit-btn${isLogged?' logged':''}"
+              onclick="logBmCircuit('${ck}')"
+              ${isLogged?'disabled':''}>
+              ${isLogged?'✓ Done':'Mark as done'}
+            </button>
+          </div>
         </div>
       </div></div>`;
     });
-    h+=`<button class="start-workout-btn" style="background:var(--pass);color:var(--bg)" onclick="openBenchmarkLog()">Log Benchmark Result →</button>`;
+    h+=`<div style="background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:16px;margin-top:4px">
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:10px">Log Result</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1">
+          <div style="font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:5px">Min</div>
+          <input type="number" id="bm-mm-inline" min="0" max="999" placeholder="00" inputmode="numeric"
+            style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);text-align:center;outline:none;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--gm)'" onblur="this.style.borderColor='var(--br)'">
+        </div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:12px;font-size:22px;font-weight:700;font-family:var(--mono);color:var(--mt)">:</div>
+        <div style="flex:1">
+          <div style="font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:5px">Sec</div>
+          <input type="number" id="bm-ss-inline" min="0" max="59" placeholder="00" inputmode="numeric"
+            style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);text-align:center;outline:none;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--gm)'" onblur="this.style.borderColor='var(--br)'">
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:6px">Photo evidence</div>
+        <input type="file" id="bm-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleBmPhoto(this)">
+        <div onclick="document.getElementById('bm-photo-input').click()"
+          style="border:1px dashed var(--brm);border-radius:var(--r);padding:14px 16px;text-align:center;cursor:pointer;transition:border-color .2s"
+          onmouseenter="this.style.borderColor='var(--gm)'" onmouseleave="this.style.borderColor='var(--brm)'">
+          <div id="bm-photo-preview" style="font-size:11px;color:var(--mt);font-family:var(--mono)">📷 Tap to upload screenshot or photo</div>
+        </div>
+      </div>
+      <button onclick="submitBmInline()"
+        style="width:100%;padding:12px;background:var(--pass);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .2s">
+        Save result
+      </button>
+      <div id="bm-inline-msg" style="text-align:center;font-size:11px;font-family:var(--mono);margin-top:8px;min-height:14px;color:var(--mt)"></div>
+    </div>`;
     document.getElementById('v-workout').innerHTML=h;
     return;
   }
