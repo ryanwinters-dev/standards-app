@@ -65,18 +65,32 @@
     #app{display:none}
     .topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;justify-content:space-between;position:sticky;top:0;z-index:100}
     .tl{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}.tl .bracket{color:var(--gm)}
-    .topbar-r{display:flex;align-items:center;gap:8px}
-    .coach-badge{font-size:10px;font-weight:700;padding:3px 8px;border:1px solid var(--brm);background:transparent;color:var(--gm);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
-    .tu{font-size:12px;color:var(--mt);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
-    .btn-so{padding:5px 12px;font-size:11px;border:1px solid var(--brm);background:transparent;border-radius:var(--r);cursor:pointer;color:var(--mt);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;transition:color .2s,border-color .2s}.btn-so:hover{color:var(--dk);border-color:var(--gm)}
+    .topbar-r{display:flex;align-items:center;gap:12px}
+    .topbar-chat{width:34px;height:34px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;color:var(--mt);transition:color .2s}
+    .topbar-chat:hover{color:var(--gm)}
+    .topbar-chat-badge{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--gm);display:none;border:2px solid var(--bg2)}
+    .topbar-chat-badge.show{display:block}
+    .topbar-av{width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,0.1);border:1.5px solid rgba(0,229,255,0.3);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color .2s;flex-shrink:0}
+    .topbar-av:hover{border-color:var(--gm)}
+    .topbar-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
     .nav-tabs{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--bg2);border-top:1px solid var(--br);padding:0;padding-bottom:max(env(safe-area-inset-bottom), 8px)}
     .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 6px;font-size:9px;font-weight:700;border:none;background:transparent;cursor:pointer;color:var(--mt);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;transition:color .2s;position:relative;min-width:0}
     .nav-tab .nav-icon{font-size:20px;line-height:1;display:block}
     .nav-tab .nav-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center}
     .nav-tab.active{color:var(--gm)}
     .nav-tab.active .nav-icon{filter:drop-shadow(0 0 4px rgba(0,229,255,0.4))}
-    .nav-badge{position:absolute;top:6px;right:calc(50% - 14px);width:8px;height:8px;border-radius:50%;background:var(--gm);display:none}
-    .nav-badge.show{display:block}
+    .log-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:250;display:none;align-items:flex-end;justify-content:center}
+    .log-sheet-overlay.open{display:flex}
+    .log-sheet{background:var(--bg2);border-radius:20px 20px 0 0;width:100%;max-width:640px;padding:20px 20px calc(20px + env(safe-area-inset-bottom));animation:slideUp .25s ease}
+    .log-sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 20px}
+    .log-sheet-title{font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:16px;text-align:center}
+    .log-sheet-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .log-sheet-tile{background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl);padding:20px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;cursor:pointer;transition:all .2s}
+    .log-sheet-tile:hover{border-color:var(--gm);background:rgba(0,229,255,0.04)}
+    .log-sheet-tile:active{background:rgba(0,229,255,0.08)}
+    .log-sheet-tile-icon{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center}
+    .log-sheet-tile-title{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--dk)}
+    .log-sheet-tile-sub{font-size:12px;color:var(--mt);line-height:1.4}
     .main{padding:20px 16px 80px;max-width:640px;margin:0 auto;background:var(--bg)}
     .view{display:none}.view.active{display:block}
     .sl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gm);margin:18px 0 10px;font-family:var(--mono)}
@@ -1219,9 +1233,13 @@
   <div class="topbar">
     <div class="tl"><span class="bracket">[</span>RADAR<span class="bracket">]</span></div>
     <div class="topbar-r">
-      <span id="coach-badge" class="coach-badge" style="display:none">Coach</span>
-      <span class="tu" id="tu"></span>
-      <button class="btn-so" onclick="signOut()">Sign out</button>
+      <!-- Chat bubble -->
+      <button class="topbar-chat" onclick="openMessagesOverlay()" aria-label="Messages">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <span class="topbar-chat-badge" id="msg-badge"></span>
+      </button>
+      <!-- Avatar → settings -->
+      <div class="topbar-av" id="topbar-av" onclick="openSettings()"></div>
     </div>
   </div>
   <div class="nav-tabs" id="nav-tabs">
@@ -1231,24 +1249,29 @@
     </button>
     <button class="nav-tab" onclick="showTab('workout',this)">
       <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M1 8h5M18 8h5M1 16h5M18 16h5"/></svg></span>
-      <span class="nav-label">Workout</span>
+      <span class="nav-label">Train</span>
     </button>
-    <button class="nav-tab" onclick="showTab('profile',this)">
-      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-      <span class="nav-label">Profile</span>
+    <button class="nav-tab nav-tab-plus" onclick="openLogSheet()">
+      <span class="nav-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="14" fill="#00E5FF"/>
+          <line x1="14" y1="8" x2="14" y2="20" stroke="#080808" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="8" y1="14" x2="20" y2="14" stroke="#080808" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="nav-label" style="color:var(--gm)">Log</span>
     </button>
     <button class="nav-tab" onclick="showTab('leaderboard',this)">
       <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></span>
       <span class="nav-label">Ranks</span>
     </button>
-    <button class="nav-tab" onclick="showTab('messages',this)" id="messages-tab">
-      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
-      <span class="nav-label">Messages</span>
-      <span class="nav-badge" id="msg-badge"></span>
+    <button class="nav-tab" onclick="showTab('profile',this)">
+      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      <span class="nav-label">Profile</span>
     </button>
-    <button class="nav-tab" id="coach-tab" style="display:none" onclick="showTab('coach',this)">
+    <button class="nav-tab" id="coach-tab" style="display:none" onclick="openCoachDashboard()">
       <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span>
-      <span class="nav-label">Coach</span>
+      <span class="nav-label">Clients</span>
     </button>
   </div>
   <div class="main">
@@ -1256,7 +1279,7 @@
     <div id="v-workout" class="view"></div>
     <div id="v-profile" class="view"></div>
     <div id="v-leaderboard" class="view"></div>
-    <div id="v-messages" class="view"></div>
+    <div id="v-messages" class="view" style="display:none"></div>
     <div id="v-coach" class="view"></div>
   </div>
 </div>
@@ -1311,6 +1334,30 @@
     <span id="pub-profile-title" style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1"></span>
   </div>
   <div id="pub-profile-body" style="flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none"></div>
+</div>
+
+<!-- LOG SHEET -->
+<div class="log-sheet-overlay" id="log-sheet-overlay" onclick="closeLogSheet(event)">
+  <div class="log-sheet" onclick="event.stopPropagation()">
+    <div class="log-sheet-handle"></div>
+    <div class="log-sheet-title">What are you logging?</div>
+    <div class="log-sheet-tiles">
+      <div class="log-sheet-tile" onclick="closeLogSheet();openAssessment()">
+        <div class="log-sheet-tile-icon" style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="log-sheet-tile-title">Movement</div>
+        <div class="log-sheet-tile-sub">Log a standard test across your 8 patterns</div>
+      </div>
+      <div class="log-sheet-tile" onclick="closeLogSheet();openBenchmarkLog()">
+        <div class="log-sheet-tile-icon" style="background:rgba(0,255,148,0.08);border:1px solid rgba(0,255,148,0.2)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00FF94" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="log-sheet-tile-title">Benchmark</div>
+        <div class="log-sheet-tile-sub">Log a result for your active benchmark</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ASSESSMENT SLIDESHOW -->
@@ -2622,6 +2669,49 @@ async function openBillingPortal(){
 let settingsNotifPref=JSON.parse(localStorage.getItem('std_notif')||'{"workout":true,"test":true,"checkin":true}');
 let settingsUnitPref=localStorage.getItem('std_unit')||'kg';
 
+function openLogSheet(){
+  document.getElementById('log-sheet-overlay').classList.add('open');
+}
+function closeLogSheet(e){
+  if(e&&e.target!==document.getElementById('log-sheet-overlay'))return;
+  document.getElementById('log-sheet-overlay').classList.remove('open');
+}
+function openBenchmarkLog(){
+  // Stub — will be built with full benchmark feature
+  toast('Benchmark logging coming soon','ok');
+}
+
+function openMessagesOverlay(){
+  // Show messages as full screen overlay
+  const el=document.getElementById('v-messages');
+  if(el)el.style.display='block';
+  if(!document.getElementById('msg-conv-list')){rMessages();}
+  else{renderConvList();}
+  // Add close button if not already there
+  if(!document.getElementById('msg-overlay-close')){
+    const close=document.createElement('button');
+    close.id='msg-overlay-close';
+    close.className='back-btn';
+    close.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:16px;z-index:201';
+    close.textContent='← Back';
+    close.onclick=closeMessagesOverlay;
+    document.body.appendChild(close);
+  }
+}
+
+function closeMessagesOverlay(){
+  const el=document.getElementById('v-messages');
+  if(el)el.style.display='none';
+  const btn=document.getElementById('msg-overlay-close');
+  if(btn)btn.remove();
+}
+
+function openCoachDashboard(){
+  // Open the coach overlay directly
+  document.getElementById('coach-page')?.classList.add('active');
+  rCoach();
+}
+
 function openSettings(){
   renderSettings();
   document.getElementById('settings-page').classList.add('active');
@@ -2828,6 +2918,7 @@ async function uploadAvatar(input){
     // Save to profile metadata
     await sb.auth.updateUser({data:{avatar_url:USER_AVATAR_URL}});
     toast('✓ Photo updated','ok');
+    updateTopbarAvatar();
     renderSettings();
     rProfile();
   }catch(err){
@@ -2845,7 +2936,7 @@ async function saveName(){
   CU.user_metadata.full_name=name;
   msg.textContent='✓ Name updated';msg.className='settings-msg ok';
   // Update topbar and profile
-  document.getElementById('tu').textContent=name.split(' ')[0];
+  updateTopbarAvatar();
   renderSettings();
   rProfile();
 }
@@ -3057,12 +3148,13 @@ async function signOut(){
 }
 function showApp(user){
   CU=user;
-  // Load avatar if set
   USER_AVATAR_URL=user.user_metadata?.avatar_url||null;
   document.getElementById('landing').style.display='none';
   document.getElementById('auth-modal').classList.remove('open');
   document.getElementById('app').style.display='block';
-  document.getElementById('tu').textContent=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
+  // Populate avatar in topbar
+  updateTopbarAvatar();
+  // Set home as active (index 0)
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab')[0]?.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -3074,6 +3166,16 @@ function showApp(user){
       <div style="font-size:13px;color:var(--mt)">Loading your profile…</div>
     </div>`;
   });
+}
+
+function updateTopbarAvatar(){
+  const el=document.getElementById('topbar-av');
+  if(!el||!CU)return;
+  if(USER_AVATAR_URL){
+    el.innerHTML=`<img src="${USER_AVATAR_URL}" alt="avatar">`;
+  } else {
+    el.textContent=gi(CU.user_metadata?.full_name||CU.email);
+  }
 }
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(ev==='SIGNED_IN'&&sess?.user){
@@ -3130,8 +3232,8 @@ window.clearStdCache=()=>{localStorage.removeItem(CACHE_VERSION);console.log('Ca
 async function load(){
   lastLoad=Date.now();
   IS_COACH=CU.app_metadata?.role==='coach';
-  document.getElementById('coach-badge').style.display=IS_COACH?'inline-flex':'none';
-  document.getElementById('coach-tab').style.display=IS_COACH?'block':'none';
+  // coach badge removed — coach identified via nav tab
+  document.getElementById('coach-tab').style.display=IS_COACH?'flex':'none';
 
   // Safe query wrapper — never throws, never hangs
   const q=async(query)=>{
@@ -4586,9 +4688,12 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
         </div>
       </div>`
       +buildSubscriptionCard()
+      +(IS_COACH?buildViewClientsTile():'')
       +h;
   } else {
-    document.getElementById('cp-body').innerHTML=h;
+    // Coach mode — prepend to existing content (action tiles + banner already there)
+    const existing=document.getElementById('cp-body');
+    if(existing)existing.innerHTML=(existing.innerHTML||'')+h;
   }
 }
 
@@ -5713,8 +5818,24 @@ function rLB(){
 function sLBF(f){lbF=f;rLB()}
 
 // ── TABS / UTILS ──
+function buildViewClientsTile(){
+  return`<div onclick="openCoachDashboard()"
+    style="background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s"
+    onmouseenter="this.style.borderColor='var(--gm)'"
+    onmouseleave="this.style.borderColor='rgba(255,255,255,0.15)'">
+    <div style="width:42px;height:42px;border-radius:var(--r);background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--dk)">View Clients</div>
+      <div style="font-size:12px;color:var(--mt);margin-top:2px">${ALL_ATHLETES.length} athlete${ALL_ATHLETES.length!==1?'s':''} on your roster</div>
+    </div>
+    <span style="font-size:18px;color:var(--mt)">›</span>
+  </div>`;
+}
+
 function goToWorkout(){
-  const btn=document.querySelector('#nav-tabs .nav-tab:nth-child(2)');
+  const btn=document.querySelectorAll('.nav-tab')[1];
   showTab('workout',btn);
 }
 function toggleSess(id){
@@ -5742,15 +5863,14 @@ function toast(msg,type='err'){
 }
 
 function showTab(t,btn){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>{
+    v.classList.remove('active');
+    if(v.id==='v-messages')v.style.display='none';
+  });
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  document.getElementById('v-'+t)?.classList.add('active');
+  const el=document.getElementById('v-'+t);
+  if(el){el.classList.add('active');el.style.display='';}
   if(btn)btn.classList.add('active');
-  if(t==='messages'){
-    // Only re-render list if not already rendered
-    if(!document.getElementById('msg-conv-list')){rMessages();}
-    else{renderConvList();}
-  }
 }
 function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 </script>
