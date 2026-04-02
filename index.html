@@ -3212,12 +3212,24 @@ function updateTopbarAvatar(){
   }
 }
 sb.auth.onAuthStateChange(async(ev,sess)=>{
-  if(ev==='SIGNED_IN'&&sess?.user){
+  if(ev==='SIGNED_IN'&&sess?.user&&!CU){
+    // Only load on genuine first sign-in, not token refresh
     showApp(sess.user);
     await load();
     checkOnboarding(sess.user);
   }
-  else if(ev==='SIGNED_OUT'){CU=null;document.getElementById('app').style.display='none';document.getElementById('landing').style.display='block';}
+  else if(ev==='SIGNED_OUT'){
+    CU=null;
+    AP={};LOGS=[];SETS=[];CHECKINS=[];AAP=[];
+    document.getElementById('app').style.display='none';
+    document.getElementById('landing').style.display='block';
+  }
+  // TOKEN_REFRESHED, USER_UPDATED etc — silently update CU but don't reload
+  else if(ev==='USER_UPDATED'&&sess?.user&&CU){
+    CU=sess.user;
+    USER_AVATAR_URL=sess.user.user_metadata?.avatar_url||null;
+    updateTopbarAvatar();
+  }
 });
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){showApp(session.user);await load();}else{document.getElementById('landing').style.display='block';}})();
 let lastLoad=0;
@@ -3546,17 +3558,27 @@ function rHome(){
       </div>
       <!-- Divider -->
       <div style="height:1px;background:var(--br);margin:0 -16px"></div>
-      <!-- Strongest / weakest -->
-      <div style="display:flex;gap:8px;padding-top:12px">
+      <!-- 4 insight tiles in 2x2 grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-top:12px">
         <div class="home-insight-tile">
           <div class="home-insight-label">Strongest</div>
           <div class="home-insight-val">${strongest?PL[strongest.p]:'—'}</div>
-          <div class="home-insight-sub">${strongest?`L${strongest.lv}`:'No data'}</div>
+          <div class="home-insight-sub">${strongest?`Level ${strongest.lv}`:'No data'}</div>
         </div>
         <div class="home-insight-tile">
           <div class="home-insight-label">Weakest</div>
           <div class="home-insight-val">${weakest?PL[weakest.p]:'—'}</div>
-          <div class="home-insight-sub">${weakest?`L${weakest.lv}`:'No data'}</div>
+          <div class="home-insight-sub">${weakest?`Level ${weakest.lv}`:'No data'}</div>
+        </div>
+        <div class="home-insight-tile" onclick="goToWorkout()" style="cursor:pointer">
+          <div class="home-insight-label">Next Session</div>
+          <div class="home-insight-val">Day ${curDay+1}</div>
+          <div class="home-insight-sub" style="color:var(--gm)">Tap to train →</div>
+        </div>
+        <div class="home-insight-tile">
+          <div class="home-insight-label">Assessed</div>
+          <div class="home-insight-val">${assessed.length}<span style="font-size:10px;color:var(--mt)">/8</span></div>
+          <div class="home-insight-sub">${assessed.length===8?'All patterns':'patterns assessed'}</div>
         </div>
       </div>
     </div>
