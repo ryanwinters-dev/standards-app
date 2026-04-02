@@ -480,6 +480,46 @@
     .msg-picker-search{width:100%;padding:10px 16px;background:var(--bg3);border:none;border-bottom:1px solid var(--br);font-size:15px;font-family:var(--fn);color:var(--dk);outline:none}
     .msg-picker-search::placeholder{color:var(--mt)}
 
+    /* ── BENCHMARKS ── */
+    .bm-onboard{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column}
+    .bm-onboard.active{display:flex}
+    .bm-onboard-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0}
+    .bm-slides{flex:1;overflow:hidden;position:relative}
+    .bm-slide{position:absolute;inset:0;padding:24px 20px;overflow-y:auto;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .3s}
+    .bm-slide.active{opacity:1;pointer-events:all}
+    .bm-eyebrow{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gm);margin-bottom:12px}
+    .bm-h1{font-family:var(--mono);font-size:clamp(26px,6vw,40px);font-weight:700;line-height:1.05;color:var(--dk);margin-bottom:14px}
+    .bm-body{font-size:15px;color:var(--mt);line-height:1.65;margin-bottom:20px}
+    .bm-cards{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    .bm-card{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:16px;cursor:pointer;transition:all .2s;position:relative}
+    .bm-card:hover{border-color:var(--gm)}
+    .bm-card.selected{border-color:var(--gm);background:rgba(0,229,255,0.06)}
+    .bm-card-name{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:4px}
+    .bm-card-desc{font-size:12px;color:var(--mt);margin-bottom:10px}
+    .bm-levels{display:flex;gap:4px}
+    .bm-level-pill{flex:1;text-align:center;font-size:9px;font-family:var(--mono);padding:4px 2px;border-radius:2px;background:var(--bg3);border:1px solid var(--br);color:var(--mt)}
+    .bm-level-pill.l5{border-color:rgba(0,255,148,0.3);color:var(--pass)}
+    .bm-card-check{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+    .bm-card.selected .bm-card-check{background:var(--gm);border-color:var(--gm);color:var(--bg)}
+    .bm-footer{padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));flex-shrink:0}
+    .bm-btn{width:100%;padding:14px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
+    .bm-btn:hover{opacity:.85}
+    .bm-btn:disabled{opacity:.3;cursor:not-allowed}
+    .bm-btn-secondary{width:100%;padding:12px;background:transparent;color:var(--mt);border:1px solid var(--br);border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:8px}
+    .bm-btn-secondary:hover{border-color:var(--gm);color:var(--gm)}
+    /* Log benchmark sheet */
+    .bm-log-sheet{background:var(--bg2);border-radius:20px 20px 0 0;width:100%;max-width:640px;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));animation:slideUp .25s ease}
+    .bm-log-field{margin-bottom:16px}
+    .bm-log-label{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mt);margin-bottom:8px;display:block}
+    .bm-time-inputs{display:flex;align-items:center;gap:8px}
+    .bm-time-input{flex:1;padding:12px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:24px;font-weight:700;font-family:var(--mono);color:var(--dk);text-align:center;outline:none;transition:border-color .2s}
+    .bm-time-input:focus{border-color:var(--gm)}
+    .bm-time-sep{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--mt)}
+    /* Leaderboard benchmark tab */
+    .lb-bm-tabs{display:flex;gap:4px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+    .lb-bm-tab{padding:6px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--br);border-radius:var(--r);background:transparent;color:var(--mt);cursor:pointer;white-space:nowrap;transition:all .2s}
+    .lb-bm-tab.active{background:var(--gm);color:var(--bg);border-color:var(--gm)}
+
     /* ── WORKOUT BUILDER ── */
     .wb-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:170;flex-direction:column;overflow:hidden}
     .wb-overlay.active{display:flex}
@@ -1382,10 +1422,25 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00FF94" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         </div>
         <div class="log-sheet-tile-title">Benchmark</div>
-        <div class="log-sheet-tile-sub">Log a result for your active benchmark</div>
+        <div class="log-sheet-tile-sub">${window.ACTIVE_BENCHMARK?'Log your '+window.ACTIVE_BENCHMARK.name+' result':'Select a benchmark first'}</div>
       </div>
     </div>
   </div>
+</div>
+
+<!-- BENCHMARK ONBOARDING -->
+<div id="bm-onboard" class="bm-onboard">
+  <div class="bm-onboard-topbar">
+    <button class="back-btn" onclick="closeBenchmarkOnboarding()">← Back</button>
+    <span id="bm-onboard-step" style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;color:var(--mt)"></span>
+  </div>
+  <div class="bm-slides" id="bm-slides"></div>
+  <div class="bm-footer" id="bm-footer"></div>
+</div>
+
+<!-- LOG BENCHMARK SHEET OVERLAY -->
+<div class="log-sheet-overlay" id="bm-log-overlay" onclick="closeBenchmarkLogSheet(event)">
+  <div class="bm-log-sheet" onclick="event.stopPropagation()" id="bm-log-sheet-body"></div>
 </div>
 
 <!-- ASSESSMENT SLIDESHOW -->
@@ -1550,6 +1605,12 @@ let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[],CHECKINS=[]
 let USER_TIER='free'; // 'free' | 'coached' | 'coach'
 let USER_SUB=null;    // full subscription row
 let USER_AVATAR_URL=null; // cached avatar URL
+let USER_IS_PUBLIC=true;  // profile visibility
+
+// ── BENCHMARK STATE ──
+let BENCHMARKS=[];          // all 4 benchmark definitions
+let ATHLETE_BENCHMARK=null; // active benchmark selection row
+let BENCHMARK_RESULTS=[];   // all submitted results for this athlete
 let USER_IS_PUBLIC=true; // default public
 let ALL_ATHLETES=[],ALL_PENDING=[],ALL_CHECKINS={},ALL_CLIENT_SETS={};
 let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
@@ -2577,6 +2638,423 @@ async function loadAthleteOverrides(){
   }
 }
 
+// ── BENCHMARKS ──
+
+// ── Data helpers ──
+function fmtSeconds(s){
+  if(!s&&s!==0)return'—';
+  const h=Math.floor(s/3600);
+  const m=Math.floor((s%3600)/60);
+  const sec=s%60;
+  if(h>0)return`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  return`${m}:${String(sec).padStart(2,'0')}`;
+}
+
+function parseTimeInput(mm,ss){
+  const m=parseInt(mm)||0;
+  const s=parseInt(ss)||0;
+  return m*60+s;
+}
+
+function getBenchmarkLevel(bm,seconds){
+  if(!seconds||!bm)return 0;
+  if(seconds<=bm.level_5)return 5;
+  if(seconds<=bm.level_4)return 4;
+  if(seconds<=bm.level_3)return 3;
+  if(seconds<=bm.level_2)return 2;
+  if(seconds<=bm.level_1)return 1;
+  return 0;
+}
+
+function getBMPB(benchmarkId){
+  const results=BENCHMARK_RESULTS.filter(r=>r.benchmark_id===benchmarkId);
+  if(!results.length)return null;
+  return Math.min(...results.map(r=>r.score_seconds));
+}
+
+// ── Load benchmark data ──
+async function loadBenchmarks(){
+  try{
+    const[bmRes,selRes,resRes]=await Promise.all([
+      sb.from('benchmarks').select('*'),
+      sb.from('athlete_benchmarks').select('*').eq('athlete_id',CU.id).eq('is_active',true).maybeSingle(),
+      sb.from('benchmark_results').select('*').eq('athlete_id',CU.id).order('submitted_at',{ascending:false}),
+    ]);
+    BENCHMARKS=bmRes.data||[];
+    ATHLETE_BENCHMARK=selRes.data||null;
+    BENCHMARK_RESULTS=resRes.data||[];
+
+    // Build ACTIVE_BENCHMARK for home screen
+    if(ATHLETE_BENCHMARK){
+      const bm=BENCHMARKS.find(b=>b.id===ATHLETE_BENCHMARK.benchmark_id);
+      const pb=getBMPB(ATHLETE_BENCHMARK.benchmark_id);
+      const level=pb?getBenchmarkLevel(bm,pb):0;
+      window.ACTIVE_BENCHMARK={
+        id:ATHLETE_BENCHMARK.benchmark_id,
+        name:bm?.name||'Benchmark',
+        pb:pb?fmtSeconds(pb):null,
+        pbSeconds:pb,
+        target:ATHLETE_BENCHMARK.target_seconds?fmtSeconds(ATHLETE_BENCHMARK.target_seconds):null,
+        level,
+        bm,
+      };
+    } else {
+      window.ACTIVE_BENCHMARK=null;
+    }
+  }catch(e){
+    console.warn('loadBenchmarks:',e.message);
+    BENCHMARKS=[];ATHLETE_BENCHMARK=null;BENCHMARK_RESULTS=[];
+    window.ACTIVE_BENCHMARK=null;
+  }
+}
+
+// ── Onboarding / selection flow ──
+let bmOnboardSlide=0;
+let bmSelectedId=null;
+
+function openBenchmarkOnboarding(){
+  bmOnboardSlide=0;
+  bmSelectedId=ATHLETE_BENCHMARK?.benchmark_id||null;
+  renderBmOnboard();
+  document.getElementById('bm-onboard').classList.add('active');
+}
+
+function closeBenchmarkOnboarding(){
+  document.getElementById('bm-onboard').classList.remove('active');
+}
+
+function renderBmOnboard(){
+  const slides=document.getElementById('bm-slides');
+  const footer=document.getElementById('bm-footer');
+  const stepEl=document.getElementById('bm-onboard-step');
+  const totalSlides=3;
+  stepEl.textContent=`${bmOnboardSlide+1} / ${totalSlides}`;
+
+  const slideContent=[
+    // Slide 0 — What are benchmarks
+    `<div class="bm-slide active">
+      <div class="bm-eyebrow">New feature</div>
+      <div class="bm-h1">Benchmarks.</div>
+      <div class="bm-body">[RADAR] measures how you move. Benchmarks measure what your body can sustain. Together they define the complete athlete.</div>
+      <div class="bm-body">Four tests. Each documented, objective, and trainable. A fifth training day is added to your programme built specifically to improve your benchmark.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        ${BENCHMARKS.map(b=>`<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r)">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--gm);flex-shrink:0"></div>
+          <div>
+            <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk)">${b.name}</div>
+            <div style="font-size:11px;color:var(--mt);margin-top:1px">${b.description}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`,
+    // Slide 1 — How it works
+    `<div class="bm-slide active">
+      <div class="bm-eyebrow">How it works</div>
+      <div class="bm-h1">Train it. Test it. Level up.</div>
+      <div class="bm-body">Select one benchmark as your active focus. A dedicated fifth training day is added to your programme immediately.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        ${[
+          {n:'1',t:'Select a benchmark',d:'Choose the endurance test you want to improve. Your programme updates immediately with a dedicated training day.'},
+          {n:'2',t:'Train on Day 5',d:'Your fifth session is built around improving your benchmark — short intervals, threshold work, long slow distance, and technique drills.'},
+          {n:'3',t:'Log your result',d:'Test yourself and submit your time. Your personal best is tracked. Reach Level 2 to unlock the ability to change your benchmark focus.'},
+        ].map(s=>`<div style="display:flex;gap:14px;padding:14px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r)">
+          <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:var(--gm);font-size:13px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">${s.n}</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--dk);margin-bottom:3px">${s.t}</div><div style="font-size:12px;color:var(--mt);line-height:1.5">${s.d}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>`,
+    // Slide 2 — Select
+    `<div class="bm-slide active">
+      <div class="bm-eyebrow">Choose your benchmark</div>
+      <div class="bm-h1">What will you train?</div>
+      <div class="bm-body">Select one. You can change your focus once you reach Level 2.</div>
+      <div class="bm-cards">
+        ${BENCHMARKS.map(b=>{
+          const pb=getBMPB(b.id);
+          const level=pb?getBenchmarkLevel(b,pb):0;
+          const sel=bmSelectedId===b.id;
+          const pills=[b.l1_label,b.l2_label,b.l3_label,b.l4_label,b.l5_label];
+          return`<div class="bm-card${sel?' selected':''}" onclick="selectBenchmark('${b.id}')">
+            <div class="bm-card-check">${sel?'✓':''}</div>
+            <div class="bm-card-name">${b.name}</div>
+            <div class="bm-card-desc">${b.description}</div>
+            <div class="bm-levels">
+              ${pills.map((p,i)=>`<div class="bm-level-pill${i===4?' l5':''}" style="${i<level?'background:rgba(0,229,255,0.15);border-color:var(--gm);color:var(--gm)':''}">${p}</div>`).join('')}
+            </div>
+            ${pb?`<div style="margin-top:10px;font-size:11px;color:var(--gm);font-family:var(--mono)">PB: ${fmtSeconds(pb)} · Level ${level}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`,
+  ];
+
+  slides.innerHTML=slideContent[bmOnboardSlide];
+
+  // Footer buttons
+  if(bmOnboardSlide<2){
+    footer.innerHTML=`<button class="bm-btn" onclick="bmNextSlide()">Continue →</button>`;
+  } else {
+    footer.innerHTML=`
+      <button class="bm-btn" id="bm-confirm-btn" onclick="confirmBenchmarkSelection()" ${!bmSelectedId?'disabled':''}>
+        ${ATHLETE_BENCHMARK?'Update focus':'Start training'}
+      </button>
+      ${ATHLETE_BENCHMARK?'<button class="bm-btn-secondary" onclick="closeBenchmarkOnboarding()">Keep current benchmark</button>':''}`;
+  }
+}
+
+function selectBenchmark(id){
+  // Check if already at Level 2+ on a different benchmark — allow change
+  if(ATHLETE_BENCHMARK&&ATHLETE_BENCHMARK.benchmark_id!==id){
+    const currentLevel=window.ACTIVE_BENCHMARK?.level||0;
+    if(currentLevel<2){
+      toast('Reach Level 2 to change your benchmark focus','err');
+      return;
+    }
+  }
+  bmSelectedId=id;
+  // Update card UI without full re-render
+  document.querySelectorAll('.bm-card').forEach(c=>{
+    const sel=c.querySelector('.bm-card-name').textContent===BENCHMARKS.find(b=>b.id===id)?.name;
+    c.classList.toggle('selected',sel);
+    const chk=c.querySelector('.bm-card-check');
+    if(chk)chk.textContent=sel?'✓':'';
+  });
+  const btn=document.getElementById('bm-confirm-btn');
+  if(btn)btn.disabled=false;
+}
+
+function bmNextSlide(){
+  bmOnboardSlide=Math.min(2,bmOnboardSlide+1);
+  renderBmOnboard();
+}
+
+async function confirmBenchmarkSelection(){
+  if(!bmSelectedId){toast('Please select a benchmark','err');return;}
+  const btn=document.getElementById('bm-confirm-btn');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+
+  try{
+    await sb.from('athlete_benchmarks')
+      .upsert({athlete_id:CU.id,benchmark_id:bmSelectedId,is_active:true,current_level:0},{onConflict:'athlete_id,benchmark_id'});
+
+    // Deactivate any other active benchmark
+    if(ATHLETE_BENCHMARK&&ATHLETE_BENCHMARK.benchmark_id!==bmSelectedId){
+      await sb.from('athlete_benchmarks')
+        .update({is_active:false})
+        .eq('athlete_id',CU.id)
+        .eq('benchmark_id',ATHLETE_BENCHMARK.benchmark_id);
+    }
+
+    await loadBenchmarks();
+    closeBenchmarkOnboarding();
+    rHome();
+    rWorkout(); // Day 5 now appears
+    toast('✓ Benchmark set — Day 5 added to your programme','ok');
+  }catch(e){
+    toast('Failed: '+e.message,'err');
+    if(btn){btn.disabled=false;btn.textContent='Start training';}
+  }
+}
+
+// ── Log benchmark result ──
+function openBenchmarkLog(){
+  if(!ATHLETE_BENCHMARK||!window.ACTIVE_BENCHMARK){
+    // No benchmark selected — go to onboarding
+    openBenchmarkOnboarding();
+    return;
+  }
+  const bm=window.ACTIVE_BENCHMARK;
+  const overlay=document.getElementById('bm-log-overlay');
+  const body=document.getElementById('bm-log-sheet-body');
+  if(!overlay||!body)return;
+
+  body.innerHTML=`
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 20px"></div>
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Log Result</div>
+    <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:20px">${bm.name}</div>
+    ${bm.pb?`<div style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt)">Current PB</div>
+      <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--gm)">${bm.pb}</div>
+    </div>`:''}
+    <div class="bm-log-field">
+      <label class="bm-log-label">Your time (mm : ss)</label>
+      <div class="bm-time-inputs">
+        <input class="bm-time-input" id="bm-mm" type="number" min="0" max="999" placeholder="00" inputmode="numeric">
+        <span class="bm-time-sep">:</span>
+        <input class="bm-time-input" id="bm-ss" type="number" min="0" max="59" placeholder="00" inputmode="numeric">
+      </div>
+    </div>
+    <div class="bm-log-field">
+      <label class="bm-log-label">Notes (optional)</label>
+      <textarea style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:14px;font-family:var(--fn);color:var(--dk);outline:none;resize:none;min-height:60px;transition:border-color .2s" id="bm-notes" placeholder="e.g. Track conditions, how you felt…"></textarea>
+    </div>
+    <button class="bm-btn" onclick="submitBenchmarkResult()">Save result</button>
+    <div id="bm-log-msg" style="text-align:center;font-size:12px;font-family:var(--mono);margin-top:10px;min-height:16px"></div>`;
+
+  overlay.classList.add('open');
+  setTimeout(()=>document.getElementById('bm-mm')?.focus(),300);
+}
+
+function closeBenchmarkLogSheet(e){
+  if(e&&e.target!==document.getElementById('bm-log-overlay'))return;
+  document.getElementById('bm-log-overlay')?.classList.remove('open');
+}
+
+async function submitBenchmarkResult(){
+  const mm=document.getElementById('bm-mm')?.value;
+  const ss=document.getElementById('bm-ss')?.value;
+  const notes=document.getElementById('bm-notes')?.value||'';
+  const msg=document.getElementById('bm-log-msg');
+
+  if(!mm&&!ss){if(msg)msg.textContent='Enter your time';return;}
+  const seconds=parseTimeInput(mm,ss);
+  if(seconds<=0){if(msg)msg.textContent='Invalid time';return;}
+
+  if(msg)msg.textContent='Saving…';
+
+  try{
+    await sb.from('benchmark_results').insert({
+      athlete_id:CU.id,
+      benchmark_id:ATHLETE_BENCHMARK.benchmark_id,
+      score_seconds:seconds,
+      notes:notes.trim()||null,
+    });
+
+    // Update level
+    const bm=BENCHMARKS.find(b=>b.id===ATHLETE_BENCHMARK.benchmark_id);
+    const pb=Math.min(seconds,window.ACTIVE_BENCHMARK?.pbSeconds||seconds);
+    const newLevel=getBenchmarkLevel(bm,pb);
+
+    await sb.from('athlete_benchmarks')
+      .update({current_level:newLevel})
+      .eq('athlete_id',CU.id)
+      .eq('benchmark_id',ATHLETE_BENCHMARK.benchmark_id);
+
+    await loadBenchmarks();
+    document.getElementById('bm-log-overlay')?.classList.remove('open');
+    rHome();
+
+    // Level up toast
+    const oldLevel=window.ACTIVE_BENCHMARK?.level||0;
+    if(newLevel>oldLevel){
+      toast(`Level ${newLevel} ${bm?.name} — Earned.`,'ok');
+    } else {
+      toast(`Result saved — ${fmtSeconds(seconds)}`,'ok');
+    }
+  }catch(e){
+    if(msg)msg.textContent='Failed: '+e.message;
+  }
+}
+
+// ── Day 5 generation ──
+const BENCHMARK_DAY5={
+  'run_5k':{
+    name:'5km Run Training',
+    circuits:[
+      {letter:'A',name:'Short Intervals',circuitSets:6,exercises:[{name:'400m Run at 5km pace',intent:'Speed',pid:'Core',type:'Main',meta:'90s rest between — run hard, not sprint'}]},
+      {letter:'B',name:'Threshold',circuitSets:3,exercises:[{name:'1200m at comfortably hard pace',intent:'Threshold',pid:'Core',type:'Main',meta:'2min rest between — should be able to speak in short sentences'}]},
+      {letter:'C',name:'Base Endurance',circuitSets:1,exercises:[{name:'20min easy continuous run',intent:'Aerobic',pid:'Core',type:'Main',meta:'Conversational pace — nose breathing if possible'}]},
+      {letter:'D',name:'Run Technique',circuitSets:4,exercises:[{name:'100m stride-out — focus on cadence and arm drive',intent:'Technique',pid:'Core',type:'Main',meta:'Walk back recovery — think tall posture, quick feet'}]},
+    ]
+  },
+  'row_2k':{
+    name:'2km Row Training',
+    circuits:[
+      {letter:'A',name:'Short Intervals',circuitSets:8,exercises:[{name:'250m row at max effort',intent:'Speed',pid:'Core',type:'Main',meta:'1min rest between — all out each rep'}]},
+      {letter:'B',name:'Threshold',circuitSets:4,exercises:[{name:'500m row at 2km race pace',intent:'Threshold',pid:'Core',type:'Main',meta:'90s rest between — hold your target split'}]},
+      {letter:'C',name:'Base Endurance',circuitSets:1,exercises:[{name:'20min easy row — 2 splits above race pace',intent:'Aerobic',pid:'Core',type:'Main',meta:'Consistent stroke rate around 20spm'}]},
+      {letter:'D',name:'Technique',circuitSets:5,exercises:[{name:'10 strokes — focus on catch position and leg drive',intent:'Technique',pid:'Core',type:'Main',meta:'Full rest between — arms straight at catch, drive with legs first'}]},
+    ]
+  },
+  'ski_500':{
+    name:'500m SkiErg Training',
+    circuits:[
+      {letter:'A',name:'Short Intervals',circuitSets:5,exercises:[{name:'200m ski at max effort',intent:'Speed',pid:'Core',type:'Main',meta:'1min rest between — go all out'}]},
+      {letter:'B',name:'Threshold',circuitSets:3,exercises:[{name:'500m ski at 90% effort',intent:'Threshold',pid:'Core',type:'Main',meta:'2min rest between — controlled aggression'}]},
+      {letter:'C',name:'Base Endurance',circuitSets:1,exercises:[{name:'15min continuous ski at easy pace',intent:'Aerobic',pid:'Core',type:'Main',meta:'Low and slow — build the aerobic base'}]},
+      {letter:'D',name:'Technique',circuitSets:4,exercises:[{name:'20 strokes — focus on arm extension and hip hinge at top',intent:'Technique',pid:'Core',type:'Main',meta:'Full rest between — reach long, hinge from hips, not lower back'}]},
+    ]
+  },
+  'bike_20k':{
+    name:'20km BikeErg Training',
+    circuits:[
+      {letter:'A',name:'Power Intervals',circuitSets:8,exercises:[{name:'1min at max watts',intent:'Speed',pid:'Core',type:'Main',meta:'1min rest between — sprint effort each rep'}]},
+      {letter:'B',name:'Threshold',circuitSets:3,exercises:[{name:'8min at threshold watts — RPE 7/10',intent:'Threshold',pid:'Core',type:'Main',meta:'3min rest between — uncomfortable but sustainable'}]},
+      {letter:'C',name:'Base Endurance',circuitSets:1,exercises:[{name:'25min easy ride at 60-65% max effort',intent:'Aerobic',pid:'Core',type:'Main',meta:'Comfortable cadence around 85rpm'}]},
+      {letter:'D',name:'Technique',circuitSets:1,exercises:[{name:'5min at 100+ RPM, low resistance — smooth pedal stroke',intent:'Technique',pid:'Core',type:'Main',meta:'Spin drills — focus on eliminating dead spots in the stroke'}]},
+    ]
+  },
+};
+
+function getBenchmarkDay5(){
+  if(!ATHLETE_BENCHMARK?.benchmark_id)return null;
+  return BENCHMARK_DAY5[ATHLETE_BENCHMARK.benchmark_id]||null;
+}
+
+// ── Leaderboard integration ──
+let lbBmFilter=null; // null = movement standards, benchmark_id = benchmark tab
+
+function renderBenchmarkLeaderboard(){
+  const el=document.getElementById('v-leaderboard');
+  if(!el)return;
+
+  // Get all results grouped by athlete, keep PB per benchmark
+  const pbMap={}; // athleteId → {benchmark_id: pb_seconds}
+  // We need all results - fetch them
+  sb.from('benchmark_results')
+    .select('athlete_id,benchmark_id,score_seconds')
+    .order('score_seconds',{ascending:true})
+    .then(({data})=>{
+      if(!data)return;
+      data.forEach(r=>{
+        if(!pbMap[r.athlete_id])pbMap[r.athlete_id]={};
+        if(!pbMap[r.athlete_id][r.benchmark_id]||r.score_seconds<pbMap[r.athlete_id][r.benchmark_id]){
+          pbMap[r.athlete_id][r.benchmark_id]=r.score_seconds;
+        }
+      });
+
+      const bm=BENCHMARKS.find(b=>b.id===lbBmFilter);
+      const athletes=Object.entries(pbMap)
+        .filter(([,scores])=>scores[lbBmFilter])
+        .map(([id,scores])=>({
+          id,
+          score:scores[lbBmFilter],
+          name:ALL_ATHLETES.find(a=>a.id===id)?.name||(id===CU.id?(CU.user_metadata?.full_name||CU.email).split(' ')[0]:'Athlete'),
+        }))
+        .sort((a,b)=>a.score-b.score); // lower is better for all 4
+
+      let h=`<div style="padding:4px 16px 12px;font-size:12px;color:var(--mt)">${bm?.description||''}</div>`;
+
+      if(!athletes.length){
+        h+=`<div class="empty"><div class="ei">🏁</div>No results logged yet.<br>Be the first.</div>`;
+      } else {
+        athletes.forEach((a,i)=>{
+          const level=getBenchmarkLevel(bm,a.score);
+          const me=a.id===CU.id;
+          const rc=i===0?'r1':i===1?'r2':i===2?'r3':'';
+          const ci=i%AVC.length;
+          const c=AVC[ci];
+          h+=`<div class="lbr${me?' me':''}">
+            <div class="lbrk ${rc}">${i+1}</div>
+            <div class="lbav" style="background:${c.bg};color:${c.fg}">${gi(a.name)}</div>
+            <div class="lbi">
+              <div class="lbn">${a.name}${me?' <span style="font-size:10px;color:var(--gm);font-family:var(--mono)">(you)</span>':''}</div>
+              <div class="lbns">${bm?.name||'Benchmark'}</div>
+            </div>
+            <div class="lbs">
+              <div class="lbsn" style="font-size:16px">${fmtSeconds(a.score)}</div>
+              <div class="lbsd" style="color:${level>0?'var(--gm)':'var(--mt)'}">L${level}</div>
+            </div>
+          </div>`;
+        });
+      }
+
+      // Inject into leaderboard below the filter tabs
+      const existing=document.getElementById('lb-bm-content');
+      if(existing)existing.innerHTML=h;
+    });
+}
+
 // ── STRIPE / SUBSCRIPTION ──
 
 function buildSubscriptionCard(){
@@ -2660,7 +3138,20 @@ let settingsNotifPref=JSON.parse(localStorage.getItem('std_notif')||'{"workout":
 let settingsUnitPref=localStorage.getItem('std_unit')||'kg';
 
 function openBenchmarkOnboarding(){
-  toast('Benchmark selection coming soon','ok');
+  if(!BENCHMARKS.length){
+    toast('Loading benchmarks…','ok');
+    loadBenchmarks().then(()=>{
+      bmOnboardSlide=0;
+      bmSelectedId=ATHLETE_BENCHMARK?.benchmark_id||null;
+      renderBmOnboard();
+      document.getElementById('bm-onboard').classList.add('active');
+    });
+    return;
+  }
+  bmOnboardSlide=0;
+  bmSelectedId=ATHLETE_BENCHMARK?.benchmark_id||null;
+  renderBmOnboard();
+  document.getElementById('bm-onboard').classList.add('active');
 }
 
 function openCheckin(){openCIModal();}
@@ -3319,6 +3810,9 @@ async function load(){
 
     // Init messaging (non-blocking)
     initMessaging().catch(e=>console.warn('Messaging init:',e.message));
+
+    // Load benchmarks (non-blocking — re-renders home when ready)
+    loadBenchmarks().then(()=>rHome()).catch(e=>console.warn('Benchmarks:',e.message));
 
     // Load subscription + privacy setting in background
     Promise.all([
@@ -4606,9 +5100,45 @@ function rWorkout(){
     document.getElementById('v-workout').innerHTML=h;
     return;
   }
+  const bmDay5=getBenchmarkDay5();
   h+=`<div class="day-sub-tabs">`;
   for(let d=0;d<4;d++)h+=`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}</button>`;
+  if(bmDay5)h+=`<button class="day-sub-tab${curDay===4?' act':''}" onclick="setDay(4)" style="${curDay===4?'':'border-color:rgba(0,255,148,0.3);color:var(--pass)'}">Day 5</button>`;
   h+=`</div>`;
+
+  // Day 5 — benchmark training session
+  if(curDay===4&&bmDay5){
+    h+=`<div style="background:rgba(0,255,148,0.06);border:1px solid rgba(0,255,148,0.2);border-radius:var(--rl);padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pass);margin-bottom:4px">Benchmark Day</div>
+      <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--dk)">${bmDay5.name}</div>
+    </div>`;
+    bmDay5.circuits.forEach((circuit,ci)=>{
+      const ck=`d4c${ci}`;
+      const isOpen=!!openCircuits[ck];
+      h+=`<div class="day-wrap"><div class="circuit-wrap">
+        <div class="circuit-hdr" onclick="toggleCircuit('${ck}')">
+          <div class="circuit-letter">${circuit.letter}</div>
+          <span class="circuit-label">${circuit.name}</span>
+          <span class="circuit-sets">${circuit.circuitSets} × ${circuit.exercises.length}</span>
+          <span class="circuit-arrow" id="arr-cb-${ck}">${isOpen?'▲':'▼'}</span>
+        </div>
+        <div class="circuit-body${isOpen?' open':''}" id="cb-${ck}">
+          ${circuit.exercises.map((ex,xi)=>`
+          <div style="padding:12px 14px;border-top:0.5px solid var(--br)">
+            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;color:var(--mt);flex-shrink:0">${circuit.letter}${xi+1}</span>
+              <span style="font-size:13px;font-weight:600;flex:1">${ex.name}</span>
+            </div>
+            <div style="font-size:11px;color:var(--mt);padding-left:18px">${ex.meta}</div>
+          </div>`).join('')}
+        </div>
+      </div></div>`;
+    });
+    h+=`<button class="start-workout-btn" style="background:var(--pass);color:var(--bg)" onclick="openBenchmarkLog()">Log Benchmark Result →</button>`;
+    document.getElementById('v-workout').innerHTML=h;
+    return;
+  }
+
   const day=buildDay(curDay);
   const totalS=day.circuits.reduce((s,c)=>s+(c.circuitSets*c.exercises.length),0);
   // Warm up — collapsible, closed by default
@@ -5880,7 +6410,18 @@ function rLB(){
   })).sort((a,b)=>b.ds-a.ds);
 
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
-  let h=`<div class="lbf">${['all',...PATS].map(f=>`<button class="lbfb${lbF===f?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}</div>`;
+  let h=`<div class="lbf" style="display:flex;flex-wrap:wrap;gap:4px;padding:0 0 12px">
+    ${['all',...PATS].map(f=>`<button class="lbfb${lbF===f&&!lbBmFilter?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}
+    ${BENCHMARKS.map(b=>`<button class="lbfb${lbBmFilter===b.id?' act':''}" onclick="sLBBm('${b.id}')" style="${lbBmFilter===b.id?'':'border-color:rgba(0,255,148,0.3);color:var(--pass)'}">${b.name.replace(' Run','').replace('km','k').replace('m SkiErg','m Ski')}</button>`).join('')}
+  </div>`;
+
+  // Benchmark leaderboard
+  if(lbBmFilter){
+    h+=`<div id="lb-bm-content"><div class="empty"><div class="ei">⟳</div>Loading…</div></div>`;
+    document.getElementById('v-leaderboard').innerHTML=h;
+    renderBenchmarkLeaderboard();
+    return;
+  }
 
   if(!aths.length){
     h+=`<div class="empty"><div class="ei">🏆</div>No athletes yet.</div>`;
@@ -5921,7 +6462,8 @@ function rLB(){
   }
   document.getElementById('v-leaderboard').innerHTML=h;
 }
-function sLBF(f){lbF=f;rLB()}
+function sLBF(f){lbF=f;lbBmFilter=null;rLB();}
+function sLBBm(id){lbBmFilter=id;rLB();}
 
 // ── TABS / UTILS ──
 function buildViewClientsTile(){
