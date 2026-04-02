@@ -1608,10 +1608,9 @@ let USER_AVATAR_URL=null; // cached avatar URL
 let USER_IS_PUBLIC=true;  // profile visibility
 
 // ── BENCHMARK STATE ──
-let BENCHMARKS=[];          // all 4 benchmark definitions
-let ATHLETE_BENCHMARK=null; // active benchmark selection row
-let BENCHMARK_RESULTS=[];   // all submitted results for this athlete
-let USER_IS_PUBLIC=true; // default public
+let BENCHMARKS=[];
+let ATHLETE_BENCHMARK=null;
+let BENCHMARK_RESULTS=[];
 let ALL_ATHLETES=[],ALL_PENDING=[],ALL_CHECKINS={},ALL_CLIENT_SETS={};
 let selPat=null,lbF='all',curWeek=1,curDay=0,openCircuits={};
 let profCalDate=new Date();
@@ -2712,12 +2711,7 @@ async function loadBenchmarks(){
 let bmOnboardSlide=0;
 let bmSelectedId=null;
 
-function openBenchmarkOnboarding(){
-  bmOnboardSlide=0;
-  bmSelectedId=ATHLETE_BENCHMARK?.benchmark_id||null;
-  renderBmOnboard();
-  document.getElementById('bm-onboard').classList.add('active');
-}
+// openBenchmarkOnboarding defined below
 
 function closeBenchmarkOnboarding(){
   document.getElementById('bm-onboard').classList.remove('active');
@@ -3163,10 +3157,7 @@ function closeLogSheet(e){
   if(e&&e.target!==document.getElementById('log-sheet-overlay'))return;
   document.getElementById('log-sheet-overlay').classList.remove('open');
 }
-function openBenchmarkLog(){
-  // Stub — will be built with full benchmark feature
-  toast('Benchmark logging coming soon','ok');
-}
+// openBenchmarkLog defined in benchmark section
 
 function openMessagesOverlay(){
   // Show messages as full screen overlay
