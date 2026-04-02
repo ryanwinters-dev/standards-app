@@ -63,7 +63,8 @@
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:var(--red)}.msg.ok{color:var(--pass)}
     #app{display:none}
-    .topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;justify-content:space-between;position:sticky;top:0;z-index:100}
+    #v-home{overflow:hidden!important;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));max-height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
+    .topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:10px;justify-content:space-between;position:sticky;top:0;z-index:100}
     .tl{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}.tl .bracket{color:var(--gm)}
     .topbar-r{display:flex;align-items:center;gap:12px}
     .topbar-chat{width:34px;height:34px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;color:var(--mt);transition:color .2s}
@@ -159,10 +160,42 @@
     .empty{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
     .ei{font-size:32px;margin-bottom:8px}
 
-    /* ── HOME ── */
-    .home-greeting{margin-bottom:16px}
-    .home-greeting h1{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}
-    .home-greeting p{font-size:13px;color:var(--mt);margin-top:2px}
+    /* ── HOME SCREEN — fixed single screen ── */
+    .home-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden;background:var(--bg);padding:0}
+    .home-checkin-strip{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;flex-shrink:0}
+    .home-checkin-greeting{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--md);letter-spacing:.02em}
+    .home-checkin-days{display:flex;gap:10px}
+    .home-ci-day{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+    .home-ci-dot{width:10px;height:10px;border-radius:50%;background:var(--br);transition:all .2s}
+    .home-ci-dot.done{background:var(--pass)}
+    .home-ci-dot.today{background:transparent;border:2px solid var(--gm)}
+    .home-ci-label{font-size:8px;font-family:var(--mono);color:var(--mt);letter-spacing:.06em}
+    /* Radar wrap — square, takes remaining space above card */
+    .home-radar-wrap{flex:1;position:relative;min-height:0;overflow:hidden}
+    .home-radar-slides{display:flex;width:200%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+    .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .home-radar-inner{position:relative;width:min(100%,100vw - 32px);aspect-ratio:1;max-height:100%}
+    .home-radar-inner svg{width:100%;height:100%}
+    .home-radar-score{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+    .home-radar-num{font-size:48px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
+    .home-radar-denom{font-size:14px;color:var(--mt);font-family:var(--mono)}
+    .home-slide-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+    .home-slide-dot{width:6px;height:6px;border-radius:50%;background:var(--br);transition:all .2s}
+    .home-slide-dot.active{background:var(--gm);width:18px;border-radius:3px}
+    /* Benchmark slide */
+    .home-bench-slide{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+    .home-bench-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mt);margin-bottom:16px;align-self:flex-start}
+    .home-bench-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1}
+    /* Floating card */
+    .home-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:20px 20px 0 0;padding:16px 16px 0;flex-shrink:0;box-shadow:0 -4px 24px rgba(0,0,0,.4)}
+    .home-snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:12px}
+    .home-snap-tile{text-align:center;padding:4px 0}
+    .home-snap-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
+    .home-snap-label{font-size:9px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-top:3px}
+    .home-insight-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:10px 12px}
+    .home-insight-label{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px}
+    .home-insight-val{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .home-insight-sub{font-size:10px;color:var(--mt);font-family:var(--mono);margin-top:1px}
 
     .checkin-strip{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:12px 14px;margin-bottom:14px;cursor:pointer;transition:border-color .2s}
     .checkin-strip:hover{border-color:var(--gm)}
@@ -643,9 +676,9 @@
 <style>
 /* ── LANDING PAGE ── */
 #landing{display:none;min-height:100vh;font-family:var(--sans,'DM Sans',sans-serif);background:var(--bg)}
-.lp-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 32px;padding-top:env(safe-area-inset-top);height:calc(60px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:10px;justify-content:space-between;background:rgba(8,8,8,.92);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .3s}
+.lp-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:10px;justify-content:space-between;background:var(--bg2);backdrop-filter:blur(12px);border-bottom:1px solid var(--br);transition:border-color .3s}
 .lp-nav.scrolled{border-color:rgba(255,255,255,0.08)}
-.lp-wordmark{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--dk)}
+.lp-wordmark{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--dk);padding-bottom:2px}
 .lp-wordmark .bracket{color:var(--gm)}
 .lp-nav-links{display:flex;align-items:center;gap:8px}
 .lp-nav-link{padding:7px 14px;font-size:10px;font-weight:700;color:var(--mt);background:transparent;border:none;cursor:pointer;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;transition:color .2s}
@@ -1269,10 +1302,7 @@
       <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
       <span class="nav-label">Profile</span>
     </button>
-    <button class="nav-tab" id="coach-tab" style="display:none" onclick="openCoachDashboard()">
-      <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span>
-      <span class="nav-label">Clients</span>
-    </button>
+
   </div>
   <div class="main">
     <div id="v-home" class="view active"></div>
@@ -2552,46 +2582,8 @@ async function loadAthleteOverrides(){
 // ── STRIPE / SUBSCRIPTION ──
 
 function buildSubscriptionCard(){
-  const tierLabel={free:'Free',coached:'Coached Athlete',coach:'Coach Licence'}[USER_TIER]||'Free';
-  const tierCol={free:'var(--mt)',coached:'var(--gm)',coach:'var(--dk)'}[USER_TIER];
-  const periodEnd=USER_SUB?.current_period_end
-    ?new Date(USER_SUB.current_period_end).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
-    :null;
-
-  if(USER_TIER==='free'){
-    return`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div>
-          <div style="font-size:13px;font-weight:600">Free plan</div>
-          <div style="font-size:12px;color:var(--mt);margin-top:2px">Upgrade to unlock coached features</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="startCheckout('coached')" style="padding:10px;background:var(--gm);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">
-          Coached — £15/mo
-        </button>
-        <button onclick="startCheckout('coach')" style="padding:10px;background:var(--bg3);color:var(--mt);border:1px solid var(--brm);border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer">
-          Coach — £49/mo
-        </button>
-      </div>
-    </div>`;
-  }
-
-  return`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="font-size:13px;font-weight:600">${tierLabel}</div>
-          <div style="width:8px;height:8px;border-radius:50%;background:var(--gm)"></div>
-          <div style="font-size:12px;color:var(--gm);font-weight:500">Active</div>
-        </div>
-        ${periodEnd?`<div style="font-size:12px;color:var(--mt);margin-top:3px">Renews ${periodEnd}</div>`:''}
-      </div>
-      <button onclick="openBillingPortal()" style="padding:7px 14px;border:0.5px solid var(--br);border-radius:8px;background:transparent;font-size:12px;font-weight:500;color:var(--md);cursor:pointer;font-family:var(--fn)">
-        Manage
-      </button>
-    </div>
-  </div>`;
+  // Subscription info moved to settings page
+  return '';
 }
 
 async function startCheckout(tier){
@@ -2669,6 +2661,12 @@ async function openBillingPortal(){
 let settingsNotifPref=JSON.parse(localStorage.getItem('std_notif')||'{"workout":true,"test":true,"checkin":true}');
 let settingsUnitPref=localStorage.getItem('std_unit')||'kg';
 
+function openBenchmarkOnboarding(){
+  toast('Benchmark selection coming soon','ok');
+}
+
+function openCheckin(){openCIModal();}
+
 function openLogSheet(){
   document.getElementById('log-sheet-overlay').classList.add('open');
 }
@@ -2707,9 +2705,38 @@ function closeMessagesOverlay(){
 }
 
 function openCoachDashboard(){
-  // Open the coach overlay directly
-  document.getElementById('coach-page')?.classList.add('active');
+  // Show coach overlay as full-screen layer
+  let overlay=document.getElementById('coach-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='coach-overlay';
+    overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:160;display:flex;flex-direction:column;overflow:hidden';
+    overlay.innerHTML=`
+      <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0">
+        <button class="back-btn" onclick="closeCoachDashboard()">← Back</button>
+        <span style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1">Client Dashboard</span>
+      </div>
+      <div id="coach-overlay-body" style="flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none"></div>`;
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display='flex';
+  rCoachInEl(document.getElementById('coach-overlay-body'));
+}
+
+function closeCoachDashboard(){
+  const overlay=document.getElementById('coach-overlay');
+  if(overlay)overlay.style.display='none';
+}
+
+function rCoachInEl(el){
+  if(!el||!IS_COACH)return;
+  // Render coach content into given element
+  document.getElementById('v-coach').innerHTML='';
   rCoach();
+  // Move rendered content to overlay
+  setTimeout(()=>{
+    el.innerHTML=document.getElementById('v-coach').innerHTML;
+  },50);
 }
 
 function openSettings(){
@@ -3233,7 +3260,7 @@ async function load(){
   lastLoad=Date.now();
   IS_COACH=CU.app_metadata?.role==='coach';
   // coach badge removed — coach identified via nav tab
-  document.getElementById('coach-tab').style.display=IS_COACH?'flex':'none';
+  // Coach tab removed from nav - access via profile page
 
   // Safe query wrapper — never throws, never hangs
   const q=async(query)=>{
@@ -3410,145 +3437,184 @@ function buildCheckinStrip(days7,dayNames,streak){
 function rHome(){
   const nm=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
   const hour=new Date().getHours();
+  const greet=hour<12?'Morning':hour<17?'Afternoon':'Evening';
   const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0);
-  const isNew=tot===0&&LOGS.length===0;
-  const awaitingReview=tot===0&&LOGS.length>0;
 
-  // 7-day streak
+  // 7-day check-in strip
   const today=new Date();
   const days7=[];
   for(let i=6;i>=0;i--){
     const d=new Date(today);d.setDate(d.getDate()-i);
     const ds=d.toISOString().split('T')[0];
     const done=CHECKINS.some(c=>c.checkin_date===ds);
-    const isToday=i===0;
-    days7.push({d,ds,done,isToday});
+    days7.push({d,ds,done,isToday:i===0});
   }
-  const dayNames=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const dayNames=['S','M','T','W','T','F','S'];
 
-  let h=`<div class="home-greeting">
-    <h1>${hour<12?'Good morning':hour<17?'Good afternoon':'Good evening'}, ${nm}</h1>
-    <p>${isNew?'Welcome to STANDARDS':awaitingReview?'Assessment submitted — awaiting review':tot+'/40 standards achieved'}</p>
-  </div>`;
-
-  // ── NEW ATHLETE ONBOARDING STATE ──
-  if(isNew||awaitingReview){
-    h+=`
-    <!-- Welcome card -->
-    <div style="background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:20px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:12px">Welcome to STANDARDS</div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">1</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">Your coach will assess your movement</div>
-            <div style="font-size:12px;color:#666">8 patterns. 5 levels each. Your score out of 40 reflects exactly where you are.</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">2</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">Your programme is built from your levels</div>
-            <div style="font-size:12px;color:#666">Every session targets your weakest patterns with the right exercises at the right intensity.</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">3</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">Test when you're ready. Progress when you pass.</div>
-            <div style="font-size:12px;color:#666">Submit a video test for any pattern. Your coach reviews it and your level updates automatically.</div>
-          </div>
-        </div>
-      </div>
-      <div style="background:#111;border-radius:10px;padding:14px 16px;margin-top:4px">
-        ${awaitingReview
-          ?`<div style="font-size:12px;color:#888;margin-bottom:6px">✓ Assessment submitted — your coach is reviewing your videos.</div>
-             <div style="font-size:12px;color:#555">You'll be notified once your levels are assigned and your programme is ready.</div>`
-          :`<div style="font-size:12px;color:#888;margin-bottom:10px">Your movement assessment is pending. Complete it now so your coach can build your programme.</div>
-             <button class="start-assess-btn" onclick="openAssessment()">🎥 Start Assessment →</button>`
-        }
-      </div>
-    </div>
-
-    <!-- Spider diagram — shows all zeros, framed positively -->
-    <div class="spider-card">
-      <div class="spider-card-top">
-        <span class="spider-card-title">Movement Profile</span>
-        <span class="spider-score" style="background:#f1efe8;color:#888">Pending</span>
-      </div>
-      ${drawSpider()}
-      <div style="font-size:12px;color:var(--mt);text-align:center;margin-top:6px">Your profile will fill in as you get assessed across all 8 patterns</div>
-    </div>
-
-    <!-- Assessment CTA card or submitted state -->
-    ${!awaitingReview?`<div class="start-assess-card" onclick="openAssessment()">
-      <div class="start-assess-body">
-        <div class="start-assess-title">Complete Your Assessment</div>
-        <div class="start-assess-sub">Film yourself performing each of the 8 movement patterns. Your coach reviews your videos and assigns your levels. Your programme unlocks immediately after.</div>
-        <div class="start-assess-patterns">
-          ${PATS.map(p=>`<span class="start-assess-pat">${PL[p]}</span>`).join('')}
-        </div>
-        <button class="start-assess-btn" onclick="event.stopPropagation();openAssessment()">🎥 Start Assessment →</button>
-      </div>
-    </div>`:''}`;
-
-    // Check-in strip still shows for new athletes
-    const streak7=days7.filter(x=>x.done).length;
-    h+=buildCheckinStrip(days7,dayNames,streak7);
-    document.getElementById('v-home').innerHTML=h;
-    return;
+  // Streak count
+  let streak=0;
+  for(let i=0;i<CHECKINS.length;i++){
+    const diff=Math.round((today-new Date(CHECKINS[i].checkin_date+'T12:00:00'))/(1000*60*60*24));
+    if(diff===i)streak++;else break;
   }
 
-  // ── RETURNING ATHLETE HOME ──
+  // Snapshot stats
+  const weekAgo=new Date(today-7*24*60*60*1000);
+  const setsThisWeek=SETS.filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
+  const allDates=new Set(SETS.map(s=>s.session_date||s.logged_at?.split('T')[0]).filter(Boolean));
+  const sessionsTotal=allDates.size;
+  const levels=PATS.map(p=>({p,lv:AP[p]||0}));
+  const assessed=levels.filter(x=>x.lv>0);
+  const strongest=assessed.length?assessed.reduce((a,b)=>b.lv>a.lv?b:a,assessed[0]):null;
+  const weakest=assessed.length?assessed.reduce((a,b)=>b.lv<a.lv?b:a,assessed[0]):null;
 
-  // Check-in strip
-  const streak7=days7.filter(x=>x.done).length;
-  h+=buildCheckinStrip(days7,dayNames,streak7);
+  // Active benchmark (stub - will be populated by benchmark system)
+  const activeBenchmark=window.ACTIVE_BENCHMARK||null;
 
-  // Spider diagram
-  h+=`<div class="spider-card">
-    <div class="spider-card-top">
-      <span class="spider-card-title">Movement Profile</span>
-      <span class="spider-score">${tot} / 40</span>
+  const h=`<div class="home-fixed">
+    <!-- Check-in strip -->
+    <div class="home-checkin-strip">
+      <div class="home-checkin-greeting">${greet}, ${nm}</div>
+      <div class="home-checkin-days">
+        ${days7.map((day,i)=>{
+          const dn=dayNames[day.d.getDay()];
+          return`<div class="home-ci-day" onclick="openCheckin()">
+            <div class="home-ci-dot${day.done?' done':day.isToday?' today':''}"></div>
+            <div class="home-ci-label">${dn}</div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>
-    ${drawSpider()}
-    <div class="spider-legend">
-      <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#00E5FF;opacity:.7"></div>Current</div>
-      <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#00E5FF;opacity:.3;border:1px dashed #00E5FF"></div>Previous</div>
-      <div class="spider-legend-item"><div class="spider-legend-dot" style="background:transparent;border:1.5px solid #E0E0DC"></div>Target (L5)</div>
+
+    <!-- Radar card - swipeable between radar and benchmarks -->
+    <div class="home-radar-wrap">
+      <div class="home-radar-slides" id="home-slides">
+        <!-- Slide 1: Radar -->
+        <div class="home-radar-slide">
+          <div class="home-radar-inner">
+            ${drawSpider()}
+            <div class="home-radar-score">
+              <div class="home-radar-num">${tot}</div>
+              <div class="home-radar-denom">/ 40</div>
+            </div>
+          </div>
+        </div>
+        <!-- Slide 2: Benchmarks -->
+        <div class="home-radar-slide">
+          <div class="home-bench-slide">
+            <div class="home-bench-title">Benchmarks</div>
+            ${activeBenchmark?buildActiveBenchmarkSlide(activeBenchmark):`
+            <div class="home-bench-empty">
+              <div style="font-size:28px;margin-bottom:8px">◎</div>
+              <div style="font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--mt);margin-bottom:4px">NO ACTIVE BENCHMARK</div>
+              <div style="font-size:12px;color:var(--mt);margin-bottom:16px;text-align:center;max-width:200px">Select a benchmark to track your endurance progress</div>
+              <button onclick="openBenchmarkOnboarding()" style="padding:8px 20px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Choose Benchmark</button>
+            </div>`}
+          </div>
+        </div>
+      </div>
+      <!-- Slide dots -->
+      <div class="home-slide-dots">
+        <div class="home-slide-dot active" id="dot-0"></div>
+        <div class="home-slide-dot" id="dot-1"></div>
+      </div>
+    </div>
+
+    <!-- Floating card -->
+    <div class="home-card">
+      <!-- Snapshot row -->
+      <div class="home-snap-grid">
+        <div class="home-snap-tile">
+          <div class="home-snap-val">${sessionsTotal}</div>
+          <div class="home-snap-label">Sessions</div>
+        </div>
+        <div class="home-snap-tile">
+          <div class="home-snap-val" style="color:var(--gm)">${tot}</div>
+          <div class="home-snap-label">Score</div>
+        </div>
+        <div class="home-snap-tile">
+          <div class="home-snap-val">${streak}</div>
+          <div class="home-snap-label">Streak</div>
+        </div>
+        <div class="home-snap-tile">
+          <div class="home-snap-val" style="color:var(--pass)">${setsThisWeek}</div>
+          <div class="home-snap-label">Sets / wk</div>
+        </div>
+      </div>
+      <!-- Divider -->
+      <div style="height:1px;background:var(--br);margin:0 -16px"></div>
+      <!-- Strongest / weakest -->
+      <div style="display:flex;gap:8px;padding-top:12px">
+        <div class="home-insight-tile">
+          <div class="home-insight-label">Strongest</div>
+          <div class="home-insight-val">${strongest?PL[strongest.p]:'—'}</div>
+          <div class="home-insight-sub">${strongest?`L${strongest.lv}`:'No data'}</div>
+        </div>
+        <div class="home-insight-tile">
+          <div class="home-insight-label">Weakest</div>
+          <div class="home-insight-val">${weakest?PL[weakest.p]:'—'}</div>
+          <div class="home-insight-sub">${weakest?`L${weakest.lv}`:'No data'}</div>
+        </div>
+      </div>
     </div>
   </div>`;
-
-  // Training snapshot
-  h+=buildTrainingSnapshot();
-
-  // Next session preview
-  const nextDay=buildDay(curDay);
-  const totalSets=nextDay.circuits.reduce((s,c)=>s+(c.circuitSets*c.exercises.length),0);
-  const wib=weekInBlock();
-  const wl=['','Base','Build','Overreach','Deload'];
-  h+=`<div class="session-preview">
-    <div class="session-preview-hdr">
-      <span class="session-preview-title">Next Session — Day ${curDay+1}</span>
-      <span class="session-preview-sub">${totalSets} sets · Block ${blockNumber()} W${wib} ${wl[wib]}</span>
-    </div>`;
-  nextDay.circuits.forEach(circuit=>{
-    const exNames=circuit.exercises.map(e=>e.ex?e.ex.name:PL[e.pid]).join(' · ');
-    h+=`<div class="session-circuit-row">
-      <div class="session-circuit-letter">${circuit.letter}</div>
-      <div class="session-circuit-info">
-        <div class="session-circuit-name">${circuit.name} circuit</div>
-        <div class="session-circuit-exs">${exNames}</div>
-      </div>
-      <div class="session-circuit-sets">${circuit.circuitSets}×${circuit.exercises.length}</div>
-    </div>`;
-  });
-  h+=`<button class="start-workout-btn" onclick="goToWorkout()">Start Workout →</button>`;
-  h+=`</div>`;
 
   document.getElementById('v-home').innerHTML=h;
+
+  // Init swipe on radar slides
+  initHomeSlides();
 }
 
+function buildActiveBenchmarkSlide(bm){
+  const pb=bm.pb||null;
+  const target=bm.target||null;
+  const level=bm.level||0;
+  const pct=Math.min(100,Math.round(((level)/5)*100));
+  return`<div style="width:100%;padding:0 8px">
+    <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:4px">${bm.name}</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+      <div>
+        <div style="font-size:10px;color:var(--mt);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase">Personal Best</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--gm)">${pb||'—'}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;color:var(--mt);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase">Target</div>
+        <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--mt)">${target||'Set target'}</div>
+      </div>
+    </div>
+    <!-- Progress bar -->
+    <div style="height:6px;background:var(--br);border-radius:3px;overflow:hidden;margin-bottom:6px">
+      <div style="height:100%;width:${pct}%;background:var(--gm);border-radius:3px;transition:width .6s ease"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between">
+      <div style="font-size:10px;color:var(--gm);font-family:var(--mono)">Level ${level}</div>
+      <div style="font-size:10px;color:var(--mt);font-family:var(--mono)">Level 5 target</div>
+    </div>
+    <!-- Level markers -->
+    <div style="display:flex;justify-content:space-between;margin-top:12px">
+      ${[1,2,3,4,5].map(l=>`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${l<=level?'var(--gm)':'var(--br)'}"></div>
+        <div style="font-size:9px;font-family:var(--mono);color:${l<=level?'var(--gm)':'var(--mt)'}">L${l}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function initHomeSlides(){
+  const slides=document.getElementById('home-slides');
+  if(!slides)return;
+  let startX=0,curSlide=0;
+  slides.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  slides.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-startX;
+    if(Math.abs(dx)>40){
+      curSlide=dx<0?Math.min(1,curSlide+1):Math.max(0,curSlide-1);
+      slides.style.transform=`translateX(-${curSlide*100}%)`;
+      document.getElementById('dot-0')?.classList.toggle('active',curSlide===0);
+      document.getElementById('dot-1')?.classList.toggle('active',curSlide===1);
+    }
+  },{passive:true});
+}
 function buildTrainingSnapshotForAthlete(scores,logs,sets,checkins){
   const now=new Date();
   const weekAgo=new Date(now-7*24*60*60*1000);
@@ -4667,11 +4733,8 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
 
   // ── RENDER ──
   if(!isCoach){
-    const tierBadge={
-      free:'',
-      coached:`<span style="font-size:11px;font-weight:600;color:var(--gd);background:var(--gl);padding:2px 8px;border-radius:99px;margin-left:6px">Coached</span>`,
-      coach:`<span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--bg);background:var(--gm);padding:2px 8px;border-radius:2px;margin-left:6px">COACH</span>`,
-    }[USER_TIER]||'';
+    const tierLabel=IS_COACH?'Coach':USER_TIER==='coached'?'Coached Athlete':'Athlete';
+    const tierCol=IS_COACH?'var(--gm)':USER_TIER==='coached'?'var(--gm)':'var(--mt)';
     const avatarHtml=USER_AVATAR_URL
       ?`<img src="${USER_AVATAR_URL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
       :gi(CU.user_metadata?.full_name||CU.email);
@@ -4679,15 +4742,14 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
       `<div class="ph" onclick="openSettings()" style="cursor:pointer">
         <div class="av">${avatarHtml}</div>
         <div style="flex:1">
-          <div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}${tierBadge}</div>
-          <div class="ps">${IS_COACH?'Coach':'Athlete'} · [RADAR]</div>
+          <div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}</div>
+          <div class="ps" style="color:${tierCol}">${tierLabel} · [RADAR]</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div class="sc">${tot} / 40</div>
           <span style="font-size:18px;color:var(--br)">›</span>
         </div>
       </div>`
-      +buildSubscriptionCard()
       +(IS_COACH?buildViewClientsTile():'')
       +h;
   } else {
