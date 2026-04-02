@@ -162,13 +162,13 @@
 
     /* ── HOME SCREEN — fixed single screen ── */
     .home-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden;background:var(--bg);padding:0}
-    .home-checkin-strip{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;flex-shrink:0}
-    .home-checkin-greeting{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--md);letter-spacing:.02em}
-    .home-checkin-days{display:flex;gap:10px}
-    .home-ci-day{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
-    .home-ci-dot{width:10px;height:10px;border-radius:50%;background:var(--br);transition:all .2s}
-    .home-ci-dot.done{background:var(--pass)}
-    .home-ci-dot.today{background:transparent;border:2px solid var(--gm)}
+    .home-checkin-strip{padding:10px 16px 6px;flex-shrink:0}
+    .home-checkin-greeting{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--md);letter-spacing:.02em;margin-bottom:10px}
+    .home-checkin-bar{display:flex;gap:3px;width:100%}
+    .home-ci-seg{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+    .home-ci-track{width:100%;height:4px;border-radius:2px;background:var(--br);transition:all .3s}
+    .home-ci-track.done{background:var(--pass)}
+    .home-ci-track.today{background:var(--gm);opacity:.6}
     .home-ci-label{font-size:8px;font-family:var(--mono);color:var(--mt);letter-spacing:.06em}
     /* Radar wrap — square, takes remaining space above card */
     .home-radar-wrap{flex:1;position:relative;min-height:0;overflow:hidden}
@@ -176,9 +176,7 @@
     .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .home-radar-inner{position:relative;width:min(100%,100vw - 32px);aspect-ratio:1;max-height:100%}
     .home-radar-inner svg{width:100%;height:100%}
-    .home-radar-score{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-    .home-radar-num{font-size:48px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
-    .home-radar-denom{font-size:14px;color:var(--mt);font-family:var(--mono)}
+
     .home-slide-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
     .home-slide-dot{width:6px;height:6px;border-radius:50%;background:var(--br);transition:all .2s}
     .home-slide-dot.active{background:var(--gm);width:18px;border-radius:3px}
@@ -187,7 +185,7 @@
     .home-bench-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mt);margin-bottom:16px;align-self:flex-start}
     .home-bench-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1}
     /* Floating card */
-    .home-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:20px 20px 0 0;padding:16px 16px 0;flex-shrink:0;box-shadow:0 -4px 24px rgba(0,0,0,.4)}
+    .home-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:20px 20px 0 0;padding:16px 16px calc(8px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -4px 24px rgba(0,0,0,.4)}
     .home-snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:12px}
     .home-snap-tile{text-align:center;padding:4px 0}
     .home-snap-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
@@ -236,7 +234,7 @@
 
     /* ── CHECK-IN MODAL ── */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-    .ci-modal{background:var(--cd);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease}
+    .ci-modal{background:var(--bg2);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease}
     .ci-modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
     .ci-modal-title{font-size:17px;font-weight:700;color:var(--dk)}
     .ci-close{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;color:var(--mt);display:flex;align-items:center;justify-content:center}
@@ -288,7 +286,7 @@
     .set-table{width:100%;border-collapse:collapse;margin-bottom:6px}
     .set-table th{font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;padding:4px 6px;text-align:left;border-bottom:0.5px solid var(--br)}
     .set-table td{padding:4px 4px}
-    .set-inp{width:100%;padding:5px 7px;border:0.5px solid var(--br);border-radius:5px;font-size:13px;font-family:var(--fn);background:var(--cd);color:var(--dk);outline:none}
+    .set-inp{width:100%;padding:5px 7px;border:0.5px solid var(--br);border-radius:5px;font-size:13px;font-family:var(--fn);background:var(--bg2);color:var(--dk);outline:none}
     .set-inp:focus{border-color:var(--gm);background:var(--bg3)}.set-inp.done{background:var(--gl);border-color:var(--gm);color:var(--gd)}
     .set-num-cell{font-size:11px;font-weight:600;color:var(--mt);width:36px;padding:4px 6px}
     .set-target{font-size:11px;color:var(--mt);padding:4px 6px;white-space:nowrap}
@@ -302,7 +300,7 @@
 
     /* ── DEMO MODAL ── */
     .demo-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
-    .demo-modal{background:var(--cd);border-radius:16px;padding:20px;width:100%;max-width:580px;animation:fi .2s ease}
+    .demo-modal{background:var(--bg2);border-radius:16px;padding:20px;width:100%;max-width:580px;animation:fi .2s ease}
     .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
     .modal-title{font-size:15px;font-weight:600}
     .modal-close{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:14px;color:var(--mt);display:flex;align-items:center;justify-content:center}
@@ -311,7 +309,7 @@
 
     /* ── TEST MODAL ── */
     .test-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-    .test-modal{background:var(--cd);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
+    .test-modal{background:var(--bg2);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
     .video-upload{border:2px dashed var(--br);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px}
     .video-upload:hover{border-color:var(--gm);background:var(--gl)}
     .video-upload input{display:none}
@@ -350,7 +348,7 @@
     .pat-hist-row:last-child{border-bottom:none}
 
     /* Calendar — horizontal week scroll */
-    .cal-wrap{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px}
+    .cal-wrap{background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px}
     .cal-hdr{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--br)}
     .cal-title{font-size:13px;font-weight:600}
     .cal-nav{display:flex;gap:4px}
@@ -367,11 +365,11 @@
     .cal-week-num.selected{box-shadow:0 0 0 2px var(--gd)}
     .cal-day-detail{border-top:0.5px solid var(--br);padding:10px 14px;animation:fi .15s ease;background:var(--bg)}
     .cal-day-detail-hdr{font-size:12px;font-weight:600;color:var(--md);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-    .cal-day-close{font-size:11px;color:var(--mt);cursor:pointer;padding:2px 6px;border:0.5px solid var(--br);border-radius:4px;background:var(--cd)}
+    .cal-day-close{font-size:11px;color:var(--mt);cursor:pointer;padding:2px 6px;border:0.5px solid var(--br);border-radius:4px;background:var(--bg2)}
     .cal-list-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:7px;border-top:0.5px solid var(--br);font-size:11px;font-weight:500;color:var(--mt);cursor:pointer;background:transparent;border-left:none;border-right:none;border-bottom:none;font-family:var(--fn);transition:all .15s}
     .cal-list-btn:hover{color:var(--gm);background:var(--bg)}
 
-    .dc{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
+    .dc{background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:14px;animation:fi .2s ease}
     .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .dt{font-size:14px;font-weight:600}
     .dx{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--br);background:transparent;cursor:pointer;font-size:13px;color:var(--mt);display:flex;align-items:center;justify-content:center}
@@ -388,11 +386,11 @@
     /* ── SETTINGS PAGE ── */
     #settings-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:160;flex-direction:column}
     #settings-page.active{display:flex}
-    .settings-topbar{background:var(--cd);border-bottom:0.5px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;gap:12px;padding-bottom:8px;flex-shrink:0}
+    .settings-topbar{background:var(--bg2);border-bottom:0.5px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;gap:12px;padding-bottom:8px;flex-shrink:0}
     .settings-body{flex:1;overflow-y:auto;padding:8px 0 48px}
     .settings-section{padding:0 16px;margin-top:28px}
     .settings-section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:8px;padding:0 4px}
-    .settings-group{background:var(--cd);border:0.5px solid var(--br);border-radius:14px;overflow:hidden}
+    .settings-group{background:var(--bg2);border:0.5px solid var(--br);border-radius:14px;overflow:hidden}
     .settings-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:0.5px solid var(--br);cursor:pointer;transition:background .15s}
     .settings-row:last-child{border-bottom:none}
     .settings-row:hover{background:var(--bg)}
@@ -403,7 +401,7 @@
     .settings-row-sub{font-size:12px;color:var(--mt);margin-top:1px}
     .settings-row-right{font-size:13px;color:var(--mt);display:flex;align-items:center;gap:6px}
     .settings-row-arrow{font-size:16px;color:var(--br)}
-    .settings-avatar-wrap{display:flex;flex-direction:column;align-items:center;padding:28px 16px 20px;background:var(--cd);border-bottom:0.5px solid var(--br)}
+    .settings-avatar-wrap{display:flex;flex-direction:column;align-items:center;padding:28px 16px 20px;background:var(--bg2);border-bottom:0.5px solid var(--br)}
     .settings-av{width:80px;height:80px;border-radius:50%;background:var(--gl);color:var(--gd);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;margin-bottom:12px;position:relative;overflow:hidden;cursor:pointer;border:3px solid var(--gl)}
     .settings-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
     .settings-av-edit{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:11px;font-weight:600;text-align:center;padding:4px 0}
@@ -543,11 +541,11 @@
     .assessment-demo{background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden;margin-bottom:20px}
     .assessment-demo-placeholder{padding:32px 20px;text-align:center}
     .assessment-demo-icon{font-size:32px;margin-bottom:8px}
-    .assessment-demo-text{font-size:13px;color:#666;margin-bottom:4px}
+    .assessment-demo-text{font-size:13px;color:var(--mt);margin-bottom:4px}
     .assessment-demo-sub{font-size:12px;color:#444}
     .assessment-video-embed{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
     .assessment-video-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
-    .assessment-targets{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:20px}
+    .assessment-targets{background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;padding:14px 16px;margin-bottom:20px}
     .assessment-targets-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
     .assessment-target-row{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:0.5px solid var(--br);font-size:13px}
     .assessment-target-row:last-child{border-bottom:none}
@@ -579,13 +577,13 @@
     .start-assess-card:hover{opacity:.92}
     .start-assess-body{padding:20px}
     .start-assess-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:6px}
-    .start-assess-sub{font-size:13px;color:#888;margin-bottom:16px;line-height:1.5}
+    .start-assess-sub{font-size:13px;color:var(--mt);margin-bottom:16px;line-height:1.5}
     .start-assess-patterns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
-    .start-assess-pat{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:#1a1a1a;color:#666}
+    .start-assess-pat{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--bg3);color:var(--mt)}
     .start-assess-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 
 
-    .coach-client-card{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
+    .coach-client-card{background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
     .coach-client-card:hover{border-color:var(--gm);transform:translateY(-1px)}
     .ccc-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0}
     .ccc-info{flex:1;min-width:0}
@@ -614,7 +612,7 @@
     .cp-section{margin-bottom:20px}
     .cp-section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
     .cp-pat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .cp-pat{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:12px}
+    .cp-pat{background:var(--bg2);border:0.5px solid var(--br);border-radius:10px;padding:12px}
     .cp-pat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
     .cp-pat-name{font-size:13px;font-weight:600}
     .cp-pat-lv{font-size:13px;font-weight:700}
@@ -646,7 +644,7 @@
     .workout-hist-row:last-child{border-bottom:none}
 
     /* ── HISTORY ── */
-    .hist-card{background:var(--cd);border:0.5px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:10px}
+    .hist-card{background:var(--bg2);border:0.5px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:10px}
     .hist-hdr{padding:10px 14px;background:var(--bg);border-bottom:0.5px solid var(--br);display:flex;justify-content:space-between}
     .hist-title{font-size:13px;font-weight:600}.hist-count{font-size:12px;color:var(--mt)}
     .hist-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:0.5px solid var(--br);font-size:13px}
@@ -655,12 +653,12 @@
 
     /* ── LEADERBOARD ── */
     .lbf{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
-    .lbfb{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;border:0.5px solid var(--br);background:var(--cd);color:var(--mt);cursor:pointer;font-family:var(--fn);transition:all .15s}
+    .lbfb{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;border:0.5px solid var(--br);background:var(--bg2);color:var(--mt);cursor:pointer;font-family:var(--fn);transition:all .15s}
     .lbfb.act{background:var(--gl);color:var(--gd);border-color:var(--gm)}
-    .lbr{background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+    .lbr{background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
     .lbr.me{border-color:var(--gm);border-width:1.5px}
     .lbrk{font-size:18px;font-weight:700;width:26px;text-align:center;flex-shrink:0}
-    .r1{color:#B8860B}.r2{color:#888}.r3{color:#8B4513}
+    .r1{color:#B8860B}.r2{color:var(--mt)}.r3{color:#8B4513}
     .lbav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
     .lbi{flex:1}.lbn{font-size:13px;font-weight:600}.lbns{font-size:12px;color:var(--mt)}
     .lbs{text-align:right}.lbsn{font-size:20px;font-weight:700;color:var(--gm);line-height:1}.lbsd{font-size:11px;color:var(--mt)}
@@ -707,7 +705,7 @@
 .lp-stat{padding:32px 24px;background:var(--bg2);text-align:center}
 .lp-stat-n{font-family:var(--mono);font-size:44px;font-weight:700;color:var(--dk);line-height:1;letter-spacing:-.02em}
 .lp-stat-n span{color:var(--gm)}
-.lp-stat-l{font-size:13px;font-weight:400;color:#666;margin-top:8px;letter-spacing:.02em}
+.lp-stat-l{font-size:13px;font-weight:400;color:var(--mt);margin-top:8px;letter-spacing:.02em}
 
 /* Section base */
 .lp-section{padding:96px 24px;max-width:1000px;margin:0 auto}
@@ -785,9 +783,9 @@
 .lp-price-card.featured{border:1px solid var(--gm);background:var(--bg3)}
 .lp-price-card.featured .lp-price-tier{color:var(--gm)}
 .lp-price-card.featured .lp-price-amount{color:#fff}
-.lp-price-card.featured .lp-price-per{color:#555}
-.lp-price-card.featured .lp-price-desc{color:#555}
-.lp-price-card.featured .lp-price-feature{color:#888;border-color:#222}
+.lp-price-card.featured .lp-price-per{color:var(--mt)}
+.lp-price-card.featured .lp-price-desc{color:var(--mt)}
+.lp-price-card.featured .lp-price-feature{color:var(--mt);border-color:#222}
 .lp-price-card.featured .lp-price-feature::before{background:var(--gm)}
 .lp-price-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gm);color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;padding:3px 12px;border-radius:99px;white-space:nowrap}
 .lp-price-tier{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mt);margin-bottom:16px}
@@ -976,9 +974,9 @@
   <div class="lp-how" id="lp-how">
     <div class="lp-how-inner">
       <div class="lp-reveal">
-        <span class="lp-tag" style="color:#555">The Loop</span>
+        <span class="lp-tag" style="color:var(--mt)">The Loop</span>
         <h2 class="lp-h2" style="color:#fff">Five steps.<br><em>One system.</em></h2>
-        <p class="lp-lead" style="color:#555">STANDARDS isn't a workout app. It's a progression engine. Every session has a purpose. Every test has an outcome. Nothing is arbitrary.</p>
+        <p class="lp-lead" style="color:var(--mt)">STANDARDS isn't a workout app. It's a progression engine. Every session has a purpose. Every test has an outcome. Nothing is arbitrary.</p>
       </div>
       <div class="lp-how-steps lp-reveal">
         <div class="lp-how-step">
@@ -1135,7 +1133,7 @@
               <div class="lp-mock-score">12 / 40 · 6 patterns active</div>
             </div>
           </div>
-          <div style="padding:12px;background:var(--cd);border-radius:10px;border:0.5px solid var(--br)">
+          <div style="padding:12px;background:var(--bg2);border-radius:10px;border:0.5px solid var(--br)">
             <div style="font-size:11px;color:var(--mt);margin-bottom:8px;font-weight:500">Movement coverage</div>
             <div style="display:flex;flex-direction:column;gap:6px">
               <div style="display:flex;align-items:center;gap:8px">
@@ -1229,7 +1227,7 @@
   <footer class="lp-footer">
     <div class="lp-footer-inner">
       <div class="lp-footer-mark"><span class="bracket">[</span>RADAR<span class="bracket">]</span></div>
-      <div class="lp-footer-copy">© 2025 STANDARDS. Movement methodology for serious athletes.</div>
+      <div class="lp-footer-copy">© 2025 [RADAR]. Know your level.</div>
     </div>
   </footer>
 
@@ -1598,7 +1596,7 @@ const OB_SLIDES=[
   // Slide 0 — Welcome
   (name)=>`
     <div style="max-width:500px">
-      <div class="ob-eyebrow">Welcome to STANDARDS</div>
+      <div class="ob-eyebrow">Welcome to [RADAR]</div>
       <h1 class="ob-h1">Hi ${name}.<br>Let's get you<br><em>started.</em></h1>
       <p class="ob-body">STANDARDS is a movement methodology built around one simple idea: <span class="ob-highlight">know exactly where you stand, and exactly what to do next.</span></p>
       <div class="ob-card">
@@ -2643,7 +2641,7 @@ async function openBillingPortal(){
     window.history.replaceState({},'',window.location.pathname);
     // Show success after app loads
     setTimeout(()=>{
-      toast('🎉 Subscription activated! Welcome to STANDARDS.','ok');
+      toast('🎉 Subscription activated! Welcome to [RADAR].','ok');
       // Reload subscription data
       sb.from('subscriptions').select('*').eq('athlete_id',CU?.id).single()
         .then(({data})=>{
@@ -2705,38 +2703,47 @@ function closeMessagesOverlay(){
 }
 
 function openCoachDashboard(){
-  // Show coach overlay as full-screen layer
   let overlay=document.getElementById('coach-overlay');
   if(!overlay){
     overlay=document.createElement('div');
     overlay.id='coach-overlay';
     overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:160;display:flex;flex-direction:column;overflow:hidden';
-    overlay.innerHTML=`
-      <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0">
-        <button class="back-btn" onclick="closeCoachDashboard()">← Back</button>
-        <span style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1">Client Dashboard</span>
-      </div>
-      <div id="coach-overlay-body" style="flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none"></div>`;
+    const topbar=document.createElement('div');
+    topbar.style.cssText='background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0';
+    topbar.innerHTML=`<button class="back-btn" onclick="closeCoachDashboard()">← Back</button>
+      <span style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1">My Clients</span>`;
+    // Body reuses v-coach div directly
+    const body=document.createElement('div');
+    body.style.cssText='flex:1;overflow-y:auto;scrollbar-width:none';
+    body.appendChild(document.getElementById('v-coach'));
+    overlay.appendChild(topbar);
+    overlay.appendChild(body);
     document.body.appendChild(overlay);
+  } else {
+    // Re-attach v-coach if needed
+    const body=overlay.querySelector('div:last-child');
+    if(body&&!body.contains(document.getElementById('v-coach'))){
+      body.appendChild(document.getElementById('v-coach'));
+    }
   }
   overlay.style.display='flex';
-  rCoachInEl(document.getElementById('coach-overlay-body'));
+  // Make v-coach visible and render
+  const vc=document.getElementById('v-coach');
+  if(vc){vc.style.display='block';vc.classList.add('active');}
+  rCoach();
 }
 
 function closeCoachDashboard(){
   const overlay=document.getElementById('coach-overlay');
   if(overlay)overlay.style.display='none';
-}
-
-function rCoachInEl(el){
-  if(!el||!IS_COACH)return;
-  // Render coach content into given element
-  document.getElementById('v-coach').innerHTML='';
-  rCoach();
-  // Move rendered content to overlay
-  setTimeout(()=>{
-    el.innerHTML=document.getElementById('v-coach').innerHTML;
-  },50);
+  // Return v-coach to its original parent
+  const vc=document.getElementById('v-coach');
+  const main=document.querySelector('.main');
+  if(vc&&main&&!main.contains(vc)){
+    main.appendChild(vc);
+    vc.style.display='';
+    vc.classList.remove('active');
+  }
 }
 
 function openSettings(){
@@ -2821,7 +2828,7 @@ function renderSettings(){
         <span class="settings-row-arrow">›</span>
       </div>
       <div class="settings-row" onclick="startCheckout('coach');closeSettings()">
-        <div class="settings-row-icon" style="background:#f0f0ec">🏆</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">🏆</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Coach Licence</div>
           <div class="settings-row-sub">£49/month · Full coaching platform</div>
@@ -2829,7 +2836,7 @@ function renderSettings(){
         <span class="settings-row-arrow">›</span>
       </div>`:`
       <div class="settings-row" onclick="openBillingPortal()">
-        <div class="settings-row-icon" style="background:#f0f0ec">⚙️</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">⚙️</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Manage billing</div>
           <div class="settings-row-sub">Cancel, change plan, update payment method</div>
@@ -2852,7 +2859,7 @@ function renderSettings(){
         <button class="settings-toggle${USER_IS_PUBLIC?' on':''}" onclick="togglePublicProfile()" id="toggle-public"></button>
       </div>
       <div class="settings-row" style="cursor:default">
-        <div class="settings-row-icon" style="background:#f0f0ec">⚖️</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">⚖️</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Weight units</div>
           <div class="settings-row-sub">Used across your programme and check-ins</div>
@@ -2863,7 +2870,7 @@ function renderSettings(){
         </div>
       </div>
       <div class="settings-row" style="cursor:default">
-        <div class="settings-row-icon" style="background:#f0f0ec">🏋️</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">🏋️</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Workout reminders</div>
           <div class="settings-row-sub">Daily push notification to train</div>
@@ -2871,7 +2878,7 @@ function renderSettings(){
         <button class="settings-toggle${settingsNotifPref.workout?' on':''}" onclick="toggleNotif('workout')" id="notif-workout"></button>
       </div>
       <div class="settings-row" style="cursor:default">
-        <div class="settings-row-icon" style="background:#f0f0ec">📋</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">📋</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Test reminders</div>
           <div class="settings-row-sub">Prompt when you're ready to level up</div>
@@ -2879,7 +2886,7 @@ function renderSettings(){
         <button class="settings-toggle${settingsNotifPref.test?' on':''}" onclick="toggleNotif('test')" id="notif-test"></button>
       </div>
       <div class="settings-row" style="cursor:default">
-        <div class="settings-row-icon" style="background:#f0f0ec">✅</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">✅</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Check-in reminders</div>
           <div class="settings-row-sub">Morning nudge to log your daily check-in</div>
@@ -2894,7 +2901,7 @@ function renderSettings(){
     <div class="settings-section-label">Account</div>
     <div class="settings-group">
       <div class="settings-row" onclick="signOut()">
-        <div class="settings-row-icon" style="background:#f0f0ec">🚪</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">🚪</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Sign out</div>
           <div class="settings-row-sub">Sign out of this device</div>
@@ -2921,7 +2928,7 @@ function renderSettings(){
       <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:8px">Are you sure? This cannot be undone.</div>
       <div style="font-size:12px;color:var(--mt);margin-bottom:12px">All your data, levels, sessions and check-ins will be permanently deleted.</div>
       <div style="display:flex;gap:8px">
-        <button onclick="document.getElementById('s-delete-confirm').style.display='none'" style="flex:1;padding:10px;border:0.5px solid var(--br);border-radius:8px;background:var(--cd);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">Cancel</button>
+        <button onclick="document.getElementById('s-delete-confirm').style.display='none'" style="flex:1;padding:10px;border:0.5px solid var(--br);border-radius:8px;background:var(--bg2);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">Cancel</button>
         <button onclick="deleteAccount()" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--red);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn)">Delete forever</button>
       </div>
     </div>
@@ -3475,11 +3482,11 @@ function rHome(){
     <!-- Check-in strip -->
     <div class="home-checkin-strip">
       <div class="home-checkin-greeting">${greet}, ${nm}</div>
-      <div class="home-checkin-days">
-        ${days7.map((day,i)=>{
-          const dn=dayNames[day.d.getDay()];
-          return`<div class="home-ci-day" onclick="openCheckin()">
-            <div class="home-ci-dot${day.done?' done':day.isToday?' today':''}"></div>
+      <div class="home-checkin-bar">
+        ${days7.map(day=>{
+          const dn=['S','M','T','W','T','F','S'][day.d.getDay()];
+          return`<div class="home-ci-seg" onclick="openCheckin()">
+            <div class="home-ci-track${day.done?' done':day.isToday?' today':''}"></div>
             <div class="home-ci-label">${dn}</div>
           </div>`;
         }).join('')}
@@ -3493,10 +3500,6 @@ function rHome(){
         <div class="home-radar-slide">
           <div class="home-radar-inner">
             ${drawSpider()}
-            <div class="home-radar-score">
-              <div class="home-radar-num">${tot}</div>
-              <div class="home-radar-denom">/ 40</div>
-            </div>
           </div>
         </div>
         <!-- Slide 2: Benchmarks -->
@@ -3601,17 +3604,36 @@ function buildActiveBenchmarkSlide(bm){
 }
 
 function initHomeSlides(){
-  const slides=document.getElementById('home-slides');
-  if(!slides)return;
-  let startX=0,curSlide=0;
-  slides.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
-  slides.addEventListener('touchend',e=>{
+  const wrap=document.getElementById('home-slides');
+  if(!wrap)return;
+  let startX=0,isDragging=false,curSlide=0;
+  const TOTAL=2;
+  const goTo=(n)=>{
+    curSlide=Math.max(0,Math.min(TOTAL-1,n));
+    wrap.style.transform=`translateX(-${curSlide*50}%)`;
+    for(let i=0;i<TOTAL;i++){
+      document.getElementById('dot-'+i)?.classList.toggle('active',i===curSlide);
+    }
+  };
+  wrap.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;
+    isDragging=true;
+  },{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    if(!isDragging)return;
+    const dx=e.touches[0].clientX-startX;
+    const base=-curSlide*50;
+    const pct=base+(dx/(wrap.parentElement.offsetWidth))*50;
+    wrap.style.transform=`translateX(${pct}%)`;
+  },{passive:true});
+  wrap.addEventListener('touchend',e=>{
+    if(!isDragging)return;
+    isDragging=false;
     const dx=e.changedTouches[0].clientX-startX;
-    if(Math.abs(dx)>40){
-      curSlide=dx<0?Math.min(1,curSlide+1):Math.max(0,curSlide-1);
-      slides.style.transform=`translateX(-${curSlide*100}%)`;
-      document.getElementById('dot-0')?.classList.toggle('active',curSlide===0);
-      document.getElementById('dot-1')?.classList.toggle('active',curSlide===1);
+    if(Math.abs(dx)>50){
+      goTo(dx<0?curSlide+1:curSlide-1);
+    } else {
+      goTo(curSlide); // snap back
     }
   },{passive:true});
 }
@@ -3923,7 +3945,7 @@ function renderAssessSlide(){
         ?`<div class="assessment-video-embed"><iframe src="${getYouTubeEmbed(std.demo_url)}" allow="autoplay;encrypted-media" allowfullscreen></iframe></div>`
         :`<div class="assessment-demo-placeholder">
           <div class="assessment-demo-icon">🎬</div>
-          <div class="assessment-demo-text" style="color:#888">Coach demo coming soon</div>
+          <div class="assessment-demo-text" style="color:var(--mt)">Coach demo coming soon</div>
           <div class="assessment-demo-sub">Video guide will appear here once uploaded</div>
         </div>`
       }
@@ -4004,7 +4026,7 @@ function renderAssessSummary(){
       <div style="font-size:14px;color:var(--mt)">${submittedCount} of 8 patterns have video attached. Your coach will review each one and assign your levels.</div>
     </div>
 
-    <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px">`;
+    <div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px">`;
 
   PATS.forEach(pid=>{
     const data=assessData[pid];
@@ -4230,7 +4252,7 @@ function buildWarmUp(dayIndex){
   const isOpen=!!openCircuits[wuKey];
 
   let h=`<div style="border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:8px">
-    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--cd);border-bottom:${isOpen?'0.5px solid var(--br)':'none'}" onclick="toggleCircuit('${wuKey}')">
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg2);border-bottom:${isOpen?'0.5px solid var(--br)':'none'}" onclick="toggleCircuit('${wuKey}')">
       <div style="width:28px;height:28px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:10px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">WU</div>
       <div style="flex:1">
         <div style="font-size:13px;font-weight:600">Warm Up Protocol</div>
@@ -4246,7 +4268,7 @@ function buildWarmUp(dayIndex){
       const ex1=data.ex1[tierName][dayIndex];
       const ex2=data.ex2[tierName][dayIndex];
       const meta=data.meta[tierIndex];
-      h+=`<div style="padding:12px 14px;border-bottom:0.5px solid var(--br);background:var(--cd)">
+      h+=`<div style="padding:12px 14px;border-bottom:0.5px solid var(--br);background:var(--bg2)">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
           <span style="font-size:14px">${phaseIcons[phase]}</span>
           <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mt)">${phase}</span>
@@ -4265,7 +4287,7 @@ function buildWarmUp(dayIndex){
         </div>
       </div>`;
     });
-    h+=`<div style="padding:10px 14px;background:var(--cd)">
+    h+=`<div style="padding:10px 14px;background:var(--bg2)">
       <button style="width:100%;padding:8px;background:var(--gl);border:0.5px solid var(--gm);border-radius:8px;font-size:13px;font-weight:600;color:var(--gd);cursor:pointer;font-family:var(--fn)" onclick="markWarmUpDone('${wuKey}')">✓ Warm Up Complete</button>
     </div>`;
   }
@@ -4283,8 +4305,8 @@ function buildAccessories(dayIndex){
     const isOpen=!!openCircuits[ck];
     const isLast=ci===circuits.length-1;
 
-    h+=`<div style="border:0.5px solid var(--br);border-top:none;background:var(--cd)${isLast?';border-radius:0 0 10px 10px;overflow:hidden':''}">
-      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--cd)" onclick="toggleCircuit('${ck}')">
+    h+=`<div style="border:0.5px solid var(--br);border-top:none;background:var(--bg2)${isLast?';border-radius:0 0 10px 10px;overflow:hidden':''}">
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg2)" onclick="toggleCircuit('${ck}')">
         <div style="width:28px;height:28px;border-radius:6px;background:#888;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-.3px">ACC</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:600">${circuit.name}</div>
@@ -4854,7 +4876,7 @@ function buildCheckinTiles(checkins,isCoach,athleteId){
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">`;
 
   TILES.forEach(({icon,label,val,extra,col})=>{
-    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:10px;padding:9px 8px">
+    h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:10px;padding:9px 8px">
       <div style="font-size:9px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">${icon} ${label}</div>
       <div style="font-size:18px;font-weight:700;color:${col};line-height:1;letter-spacing:-.5px">${val}</div>
       ${extra}
@@ -4866,7 +4888,7 @@ function buildCheckinTiles(checkins,isCoach,athleteId){
   // Check-in log — collapsible with full entry expansion
   const ciKey=`ci-entries-${athleteId?athleteId.slice(0,8):'me'}`;
   const isOpen=!!openPatHist[ciKey];
-  h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px">
+  h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer" onclick="togglePatHist('${ciKey}')">
       <span style="font-size:13px;font-weight:600">Check-in log (${checkins.length})</span>
       <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
@@ -4911,7 +4933,7 @@ function buildCheckinTiles(checkins,isCoach,athleteId){
 
         h+=`<div style="background:var(--bg);padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px">`;
         fields.forEach(([label,val,col])=>{
-          h+=`<div style="background:var(--cd);border-radius:8px;padding:8px 10px">
+          h+=`<div style="background:var(--bg2);border-radius:8px;padding:8px 10px">
             <div style="font-size:9px;color:var(--mt);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${label}</div>
             <div style="font-size:15px;font-weight:700;color:${col}">${val}</div>
           </div>`;
@@ -5170,7 +5192,7 @@ function rCoach(){
   let h='';
 
   // Invite athlete form
-  h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;padding:16px;margin-bottom:14px">
+  h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;padding:16px;margin-bottom:14px">
     <div style="font-size:13px;font-weight:600;margin-bottom:12px">Invite an Athlete</div>
     <label>Full name</label>
     <input type="text" id="invite-name" placeholder="e.g. John Smith" style="margin-bottom:10px"/>
@@ -5440,7 +5462,7 @@ function renderCoachWorkout(){
   const wl=['','Base','Build','Overreach','Deload'];
   let h=`<div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px">`;
   for(let d=0;d<4;d++){
-    h+=`<button style="padding:6px 14px;border:0.5px solid ${coachWorkoutDay===d?'var(--gm)':'var(--br)'};border-radius:8px;background:${coachWorkoutDay===d?'var(--gm)':'var(--cd)'};color:${coachWorkoutDay===d?'#fff':'var(--md)'};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);flex-shrink:0" onclick="setCoachWorkoutDay(${d})">Day ${d+1}</button>`;
+    h+=`<button style="padding:6px 14px;border:0.5px solid ${coachWorkoutDay===d?'var(--gm)':'var(--br)'};border-radius:8px;background:${coachWorkoutDay===d?'var(--gm)':'var(--bg2)'};color:${coachWorkoutDay===d?'#fff':'var(--md)'};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);flex-shrink:0" onclick="setCoachWorkoutDay(${d})">Day ${d+1}</button>`;
   }
   h+=`</div>`;
   h+=`<div style="font-size:12px;color:var(--mt);margin-bottom:14px">Block ${blockNumber()} · Week ${wib} — ${wl[wib]}</div>`;
@@ -5449,7 +5471,7 @@ function renderCoachWorkout(){
   day.circuits.forEach((circuit,ci)=>{
     const ck=`coach-d${coachWorkoutDay}c${ci}`;
     const isOpen=!!coachWorkoutOpenCircuits[ck];
-    h+=`<div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;margin-bottom:10px;overflow:hidden">
+    h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;margin-bottom:10px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleCoachCircuit('${ck}')">
         <div style="width:26px;height:26px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center">${circuit.letter}</div>
         <span style="font-size:13px;font-weight:600;flex:1">${circuit.name} circuit</span>
@@ -5632,9 +5654,9 @@ function openPatternPage(pid,athleteId,isCoach){
     const nextStd=STD.find(s=>s.pattern_id===pid&&s.level===lvl+1);
     const mx=EX.find(e=>e.pattern_id===pid&&e.level_focus===lvl&&e.type==='Main');
 
-    h+=`<div style="background:var(--cd);border:${current?'1.5px solid '+lvlCol:'0.5px solid var(--br)'};border-radius:12px;margin-bottom:8px;overflow:hidden">
+    h+=`<div style="background:var(--bg2);border:${current?'1.5px solid '+lvlCol:'0.5px solid var(--br)'};border-radius:12px;margin-bottom:8px;overflow:hidden">
       <!-- Card header — always visible, tappable -->
-      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:${current&&!isOpen?'var(--gl)':isOpen?'var(--gl)':'var(--cd)'}" onclick="setPatternLevel(${lvl},'${pid}','${athleteId||''}',${isCoach})">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:${current&&!isOpen?'var(--gl)':isOpen?'var(--gl)':'var(--bg2)'}" onclick="setPatternLevel(${lvl},'${pid}','${athleteId||''}',${isCoach})">
         <div style="width:32px;height:32px;border-radius:50%;background:${done?lvlCol:'var(--br)'};color:${done?'#fff':'var(--mt)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${done&&!current?'✓':lvl}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:${done?lvlCol:'var(--md)'}${!done?';opacity:.6':''}">${std?.test_exercise||'Level '+lvl}</div>
@@ -5659,7 +5681,7 @@ function openPatternPage(pid,athleteId,isCoach){
       } else {
         h+=`<div style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl);padding:24px;text-align:center;margin-bottom:14px">
           <div style="font-size:24px;margin-bottom:6px">🎬</div>
-          <div style="font-size:13px;color:#666;font-weight:500">Demo video coming soon</div>
+          <div style="font-size:13px;color:var(--mt);font-weight:500">Demo video coming soon</div>
           <div style="font-size:11px;color:#444;margin-top:4px">Ryan will add a coaching video here</div>
         </div>`;
       }
@@ -5745,10 +5767,10 @@ function openPatternPage(pid,athleteId,isCoach){
       // Next level preview
       if(nextStd){
         h+=`<div style="background:var(--bg3);border:1px solid var(--brm);border-radius:var(--rl);padding:12px 14px;margin-bottom:12px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#555;margin-bottom:6px">Next → Level ${lvl+1}</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:6px">Next → Level ${lvl+1}</div>
           <div style="font-size:14px;font-weight:700;color:#fff">${nextStd.test_exercise}</div>
-          <div style="font-size:12px;color:#888;margin-top:3px">${nextStd.load_standard} · ${nextStd.quality_focus||''}</div>
-          ${nextStd.next_level_target?`<div style="font-size:12px;color:#666;margin-top:6px;font-style:italic">"${nextStd.next_level_target}"</div>`:''}
+          <div style="font-size:12px;color:var(--mt);margin-top:3px">${nextStd.load_standard} · ${nextStd.quality_focus||''}</div>
+          ${nextStd.next_level_target?`<div style="font-size:12px;color:var(--mt);margin-top:6px;font-style:italic">"${nextStd.next_level_target}"</div>`:''}
         </div>`;
       } else {
         h+=`<div style="background:var(--gm);border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center">
@@ -5775,7 +5797,7 @@ function openPatternPage(pid,athleteId,isCoach){
   // ── TEST HISTORY ──
   if(logs.length){
     h+=`<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin:16px 0 10px">Test History</div>
-    <div style="background:var(--cd);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px">`;
+    <div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px">`;
     logs.forEach(log=>{
       const sc=log.passed===true?'var(--gm)':log.passed===false?'var(--red)':'var(--amber)';
       const sl=log.passed===true?'Passed':log.passed===false?'Failed':'Pending';
