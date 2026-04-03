@@ -1422,7 +1422,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00FF94" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         </div>
         <div class="log-sheet-tile-title">Benchmark</div>
-        <div class="log-sheet-tile-sub">${window.ACTIVE_BENCHMARK?'Log your '+window.ACTIVE_BENCHMARK.name+' result':'Select a benchmark first'}</div>
+        <div class="log-sheet-tile-sub">Log any of your 4 benchmark results</div>
       </div>
     </div>
   </div>
@@ -2851,24 +2851,57 @@ async function confirmBenchmarkSelection(){
 }
 
 // ── Log benchmark result ──
+function openBenchmarkLogForId(benchmarkId){
+  // Log any benchmark regardless of active selection
+  const bm=BENCHMARKS.find(b=>b.id===benchmarkId);
+  if(!bm)return;
+  const pb=getBMPB(benchmarkId);
+  _openBmLogSheet(bm,pb,benchmarkId);
+}
+
 function openBenchmarkLog(){
-  if(!ATHLETE_BENCHMARK||!window.ACTIVE_BENCHMARK){
-    // No benchmark selected — go to onboarding
-    openBenchmarkOnboarding();
+  // Called from + log sheet — if no benchmark selected, show picker
+  if(!BENCHMARKS.length){toast('Loading benchmarks…','ok');return;}
+  if(BENCHMARKS.length===1){
+    openBenchmarkLogForId(BENCHMARKS[0].id);
     return;
   }
-  const bm=window.ACTIVE_BENCHMARK;
+  // Show picker for all 4
   const overlay=document.getElementById('bm-log-overlay');
   const body=document.getElementById('bm-log-sheet-body');
   if(!overlay||!body)return;
+  body.innerHTML=`
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:16px">Which benchmark?</div>
+    ${BENCHMARKS.map(b=>{
+      const pb=getBMPB(b.id);
+      const level=pb?getBenchmarkLevel(b,pb):0;
+      return`<div onclick="openBenchmarkLogForId('${b.id}');closeBenchmarkLogSheet()"
+        style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--br);cursor:pointer">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--dk)">${b.name}</div>
+          <div style="font-size:11px;color:var(--mt);font-family:var(--mono);margin-top:2px">${pb?'PB: '+fmtSeconds(pb)+' · L'+level:'No result yet'}</div>
+        </div>
+        <span style="font-size:18px;color:var(--mt)">›</span>
+      </div>`;
+    }).join('')}`;
+  overlay.classList.add('open');
+}
+
+function _openBmLogSheet(bm,pb,benchmarkId){
+  const overlay=document.getElementById('bm-log-overlay');
+  const body=document.getElementById('bm-log-sheet-body');
+  if(!overlay||!body)return;
+  // Store which benchmark we're logging
+  overlay.dataset.benchmarkId=benchmarkId;
 
   body.innerHTML=`
-    <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 20px"></div>
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
     <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Log Result</div>
-    <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:20px">${bm.name}</div>
-    ${bm.pb?`<div style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:16px">${bm.name}</div>
+    ${pb?`<div style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
       <div style="font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt)">Current PB</div>
-      <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--gm)">${bm.pb}</div>
+      <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--gm)">${fmtSeconds(pb)}</div>
     </div>`:''}
     <div class="bm-log-field">
       <label class="bm-log-label">Your time (mm : ss)</label>
@@ -2880,11 +2913,10 @@ function openBenchmarkLog(){
     </div>
     <div class="bm-log-field">
       <label class="bm-log-label">Notes (optional)</label>
-      <textarea style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:14px;font-family:var(--fn);color:var(--dk);outline:none;resize:none;min-height:60px;transition:border-color .2s" id="bm-notes" placeholder="e.g. Track conditions, how you felt…"></textarea>
+      <textarea style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:14px;font-family:var(--fn);color:var(--dk);outline:none;resize:none;min-height:56px;transition:border-color .2s" id="bm-notes" placeholder="e.g. Track conditions, how you felt…"></textarea>
     </div>
     <button class="bm-btn" onclick="submitBenchmarkResult()">Save result</button>
     <div id="bm-log-msg" style="text-align:center;font-size:12px;font-family:var(--mono);margin-top:10px;min-height:16px"></div>`;
-
   overlay.classList.add('open');
   setTimeout(()=>document.getElementById('bm-mm')?.focus(),300);
 }
@@ -2904,36 +2936,42 @@ async function submitBenchmarkResult(){
   const seconds=parseTimeInput(mm,ss);
   if(seconds<=0){if(msg)msg.textContent='Invalid time';return;}
 
+  // Get benchmark ID from overlay dataset (set by _openBmLogSheet)
+  const overlay=document.getElementById('bm-log-overlay');
+  const benchmarkId=overlay?.dataset?.benchmarkId||ATHLETE_BENCHMARK?.benchmark_id;
+  if(!benchmarkId){if(msg)msg.textContent='No benchmark selected';return;}
+
   if(msg)msg.textContent='Saving…';
 
   try{
     await sb.from('benchmark_results').insert({
       athlete_id:CU.id,
-      benchmark_id:ATHLETE_BENCHMARK.benchmark_id,
+      benchmark_id:benchmarkId,
       score_seconds:seconds,
       notes:notes.trim()||null,
     });
 
-    // Update level
-    const bm=BENCHMARKS.find(b=>b.id===ATHLETE_BENCHMARK.benchmark_id);
-    const pb=Math.min(seconds,window.ACTIVE_BENCHMARK?.pbSeconds||seconds);
-    const newLevel=getBenchmarkLevel(bm,pb);
+    // Update level for this specific benchmark
+    const bm=BENCHMARKS.find(b=>b.id===benchmarkId);
+    const existingPb=getBMPB(benchmarkId);
+    const newPb=existingPb?Math.min(seconds,existingPb):seconds;
+    const newLevel=getBenchmarkLevel(bm,newPb);
+    const oldLevel=window.ACTIVE_BENCHMARK?.level||0;
 
+    // Only update athlete_benchmarks row if one exists for this benchmark
     await sb.from('athlete_benchmarks')
-      .update({current_level:newLevel})
-      .eq('athlete_id',CU.id)
-      .eq('benchmark_id',ATHLETE_BENCHMARK.benchmark_id);
+      .upsert({athlete_id:CU.id,benchmark_id:benchmarkId,current_level:newLevel,is_active:ATHLETE_BENCHMARK?.benchmark_id===benchmarkId},{onConflict:'athlete_id,benchmark_id'});
 
     await loadBenchmarks();
-    document.getElementById('bm-log-overlay')?.classList.remove('open');
+    overlay?.classList.remove('open');
     rHome();
 
-    // Level up toast
-    const oldLevel=window.ACTIVE_BENCHMARK?.level||0;
-    if(newLevel>oldLevel){
+    if(newLevel>oldLevel&&benchmarkId===ATHLETE_BENCHMARK?.benchmark_id){
       toast(`Level ${newLevel} ${bm?.name} — Earned.`,'ok');
+    } else if(existingPb&&seconds<existingPb){
+      toast(`New PB — ${fmtSeconds(seconds)}!`,'ok');
     } else {
-      toast(`Result saved — ${fmtSeconds(seconds)}`,'ok');
+      toast(`${bm?.name} saved — ${fmtSeconds(seconds)}`,'ok');
     }
   }catch(e){
     if(msg)msg.textContent='Failed: '+e.message;
@@ -4064,8 +4102,8 @@ function rHome(){
   const strongest=assessed.length?assessed.reduce((a,b)=>b.lv>a.lv?b:a,assessed[0]):null;
   const weakest=assessed.length?assessed.reduce((a,b)=>b.lv<a.lv?b:a,assessed[0]):null;
 
-  // Active benchmark (stub - will be populated by benchmark system)
-  const activeBenchmark=window.ACTIVE_BENCHMARK||null;
+  // Active benchmark — used for Day 5 and log sheet context
+  const activeBenchmarkId=ATHLETE_BENCHMARK?.benchmark_id||null;
 
   const h=`<div class="home-fixed">
     <!-- Check-in strip -->
@@ -4091,16 +4129,40 @@ function rHome(){
             ${drawSpider()}
           </div>
         </div>
-        <!-- Slide 2: Benchmarks -->
+        <!-- Slide 2: Benchmarks — all 4 always visible -->
         <div class="home-radar-slide">
-          <div class="home-bench-slide">
-            <div class="home-bench-title">Benchmarks</div>
-            ${activeBenchmark?buildActiveBenchmarkSlide(activeBenchmark):`
-            <div class="home-bench-empty">
-              <div style="font-size:28px;margin-bottom:8px">◎</div>
-              <div style="font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--mt);margin-bottom:4px">NO ACTIVE BENCHMARK</div>
-              <div style="font-size:12px;color:var(--mt);margin-bottom:16px;text-align:center;max-width:200px">Select a benchmark to track your endurance progress</div>
-              <button onclick="openBenchmarkOnboarding()" style="padding:8px 20px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Choose Benchmark</button>
+          <div class="home-bench-slide" style="padding:12px 16px;overflow-y:auto;scrollbar-width:none;justify-content:flex-start">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0">
+              <div class="home-bench-title" style="margin-bottom:0">Benchmarks</div>
+              <button onclick="openBenchmarkOnboarding()" style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gm);background:transparent;border:1px solid rgba(0,229,255,0.3);border-radius:var(--r);padding:4px 8px;cursor:pointer">${ATHLETE_BENCHMARK?'Change focus':'Set focus'}</button>
+            </div>
+            ${BENCHMARKS.length?BENCHMARKS.map(b=>{
+              const pb=getBMPB(b.id);
+              const level=pb?getBenchmarkLevel(b,pb):0;
+              const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
+              const pct=Math.round((level/5)*100);
+              return`<div style="margin-bottom:10px;padding:10px 12px;background:var(--bg3);border:1px solid ${isActive?'rgba(0,255,148,0.3)':'var(--br)'};border-radius:var(--r);cursor:pointer"
+                onclick="openBenchmarkLogForId('${b.id}')">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <div style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--dk)">${b.name}</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    ${isActive?`<span style="font-size:8px;font-weight:700;font-family:var(--mono);color:var(--pass);letter-spacing:.06em">DAY 5</span>`:''}
+                    <span style="font-size:11px;font-weight:700;font-family:var(--mono);color:${pb?'var(--gm)':'var(--mt)'}">${pb?fmtSeconds(pb):'No PB'}</span>
+                  </div>
+                </div>
+                <div style="height:3px;background:var(--br);border-radius:1.5px;overflow:hidden;margin-bottom:4px">
+                  <div style="height:100%;width:${pct}%;background:${isActive?'var(--pass)':'var(--gm)'};border-radius:1.5px;transition:width .6s ease"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="display:flex;gap:3px">
+                    ${[1,2,3,4,5].map(l=>`<div style="width:12px;height:12px;border-radius:50%;background:${l<=level?(isActive?'var(--pass)':'var(--gm)'):'var(--br)'}"></div>`).join('')}
+                  </div>
+                  <span style="font-size:9px;font-family:var(--mono);color:var(--mt)">Tap to log</span>
+                </div>
+              </div>`;
+            }).join(''):
+            `<div class="home-bench-empty">
+              <div style="font-size:12px;color:var(--mt);text-align:center">Loading benchmarks…</div>
             </div>`}
           </div>
         </div>
