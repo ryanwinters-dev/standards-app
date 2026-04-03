@@ -319,8 +319,30 @@
     .upload-progress{height:4px;background:var(--br);border-radius:2px;margin-bottom:14px;overflow:hidden}
     .upload-progress-fill{height:100%;background:var(--gm);border-radius:2px;transition:width .3s ease}
 
-    /* ── PROFILE ── */
-    .ph{background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
+    /* ── PROFILE — fixed single screen ── */
+    .prof-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden;background:var(--bg)}
+    .prof-header{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-shrink:0;cursor:pointer}
+    /* Pattern grid — 4 cols × 2 rows, fills available space */
+    .prof-pat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:0 16px;flex:1;min-height:0;align-content:start}
+    .prof-pat-tile{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:8px 7px;cursor:pointer;transition:border-color .2s;position:relative;display:flex;flex-direction:column;justify-content:space-between}
+    .prof-pat-tile:hover{border-color:var(--gm)}
+    .prof-pat-name{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .prof-pat-lv{font-size:20px;font-weight:700;font-family:var(--mono);line-height:1.1}
+    .prof-pat-bar{height:2px;background:var(--br);border-radius:1px;margin-top:4px;overflow:hidden}
+    /* Bottom card */
+    .prof-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:16px 16px 0 0;padding:12px 14px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -8px 32px rgba(0,0,0,.5)}
+    .prof-card-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:10px}
+    .prof-stat-tile{text-align:center;padding:2px 0}
+    .prof-stat-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1}
+    .prof-stat-label{font-size:8px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px}
+    /* Action row */
+    .prof-action-row{display:flex;gap:6px}
+    .prof-action-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:all .2s;text-align:center;min-width:0}
+    .prof-action-tile:hover{border-color:var(--gm);background:rgba(0,229,255,0.04)}
+    .prof-action-tile:active{background:rgba(0,229,255,0.08)}
+    .prof-action-icon{font-size:16px;line-height:1}
+    .prof-action-label{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt)}
+    .prof-action-sub{font-size:8px;color:var(--gm);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
     .av{width:50px;height:50px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid var(--gm);color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;font-family:var(--mono);flex-shrink:0}
     .pn{font-size:16px;font-weight:700;font-family:var(--mono)}.ps{font-size:11px;color:var(--mt);margin-top:2px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
     .sc{margin-left:auto;background:rgba(0,229,255,0.08);color:var(--gm);padding:4px 10px;border:1px solid rgba(0,229,255,0.3);font-size:12px;font-weight:700;font-family:var(--mono);white-space:nowrap}
@@ -5490,75 +5512,186 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   profContext={scores,logs,sets,isCoach,pendingTests,athleteId,checkins};
 
   const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
-  let h='';
+  const isSelf=!isCoach;
+
+  // ── STATS for bottom card ──
+  const weekAgo=new Date(Date.now()-7*24*60*60*1000);
+  const setsThisWeek=(sets||[]).filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
+  const allDates=new Set((sets||[]).map(s=>s.session_date||s.logged_at?.split('T')[0]).filter(Boolean));
+  const sessionsTotal=allDates.size;
+  const assessed=PATS.filter(p=>(scores[p]||0)>0);
+  const strongest=assessed.length?assessed.reduce((a,b)=>(scores[b]||0)>(scores[a]||0)?b:a):null;
+  const latest=checkins&&checkins[0];
 
   // ── PATTERN TILES ──
-  h+=`<div class="sl">Movement Standards</div><div class="pg">`;
+  // Store logs for pattern page
   PATS.forEach(pid=>{
-    const lv=scores[pid]||0;
-    const col=LC[lv];
-    const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
-    const nextStd=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
-    const patLogs=logs.filter(l=>l.pattern_id===pid).sort((a,b)=>new Date(b.assessed_at)-new Date(a.assessed_at));
-    const pending=pendingTests.find(p=>p.pattern_id===pid);
-    const histOpen=!!openPatHist[pid];
-
-    // Store logs in lookup so onclick doesn't need JSON
-    patternPageLogs[pid]=patLogs;
-
-    h+=`<div class="pc${pending&&isCoach?' has-pending':''}" onclick="openPatternPage('${pid}','${athleteId||''}',${isCoach})">
-      <div class="pc-top">
-        <span class="pc-name">${PL[pid]}</span>
-        ${pending&&isCoach?`<span style="font-size:8px;color:var(--amber)">⏳</span>`:''}
-      </div>
-      <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:6px">
-        <span class="pc-level" style="color:${col}">${lv}</span>
-        <span class="pc-of5">/ 5</span>
-      </div>
-      <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
-    </div>`;
+    patternPageLogs[pid]=(logs||[]).filter(l=>l.pattern_id===pid).sort((a,b)=>new Date(b.assessed_at)-new Date(a.assessed_at));
   });
-  h+=`</div>`;
 
-  // ── WORKOUT CALENDAR ──
-  h+=buildProfileCalendar(sets);
+  const patGrid=`<div class="prof-pat-grid">
+    ${PATS.map(pid=>{
+      const lv=scores[pid]||0;
+      const col=LC[lv];
+      const pending=(pendingTests||[]).find(p=>p.pattern_id===pid);
+      return`<div class="prof-pat-tile" onclick="openPatternPage('${pid}','${athleteId}',${isCoach})">
+        <div class="prof-pat-name">${PL[pid]}</div>
+        <div class="prof-pat-lv" style="color:${col}">${lv}<span style="font-size:9px;color:var(--mt)">/5</span></div>
+        <div class="prof-pat-bar"><div style="width:${(lv/5)*100}%;height:100%;background:${col};border-radius:1px;transition:width .5s"></div></div>
+        ${pending&&isCoach?`<div style="position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--amber)"></div>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
 
-  // ── TRAINING SNAPSHOT (coach view uses athlete's sets/logs/AP) ──
-  if(isCoach){
-    h+=buildTrainingSnapshotForAthlete(scores,logs,sets,checkins);
-  }
+  // ── BOTTOM CARD ──
+  // 4 quick-access tiles that open overlays
+  const hasBenchmarks=BENCHMARKS&&BENCHMARKS.length>0;
+  const hasCheckins=checkins&&checkins.length>0;
+  const bm=window.ACTIVE_BENCHMARK;
 
-  // ── CHECK-IN TILES ──
-  if(checkins&&checkins.length){
-    h+=buildCheckinTiles(checkins,isCoach,athleteId);
-  }
+  const card=`<div class="prof-card">
+    <div class="prof-card-stats">
+      <div class="prof-stat-tile">
+        <div class="prof-stat-val" style="color:var(--gm)">${tot}</div>
+        <div class="prof-stat-label">Score</div>
+      </div>
+      <div class="prof-stat-tile">
+        <div class="prof-stat-val">${sessionsTotal}</div>
+        <div class="prof-stat-label">Sessions</div>
+      </div>
+      <div class="prof-stat-tile">
+        <div class="prof-stat-val" style="color:var(--pass)">${assessed.length}</div>
+        <div class="prof-stat-label">Assessed</div>
+      </div>
+      <div class="prof-stat-tile">
+        <div class="prof-stat-val">${setsThisWeek}</div>
+        <div class="prof-stat-label">Sets/wk</div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--br);margin:0 -14px 10px"></div>
+    <div class="prof-action-row">
+      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Training Log',()=>buildProfileCalendar(${JSON.stringify([])}))">
+        <div class="prof-action-icon">📅</div>
+        <div class="prof-action-label">Calendar</div>
+      </div>
+      ${hasBenchmarks?`<div class="prof-action-tile" onclick="openProfileOverlay('benchmarks','Benchmarks',buildBenchmarkProfilePage)">
+        <div class="prof-action-icon">🏁</div>
+        <div class="prof-action-label">Benchmarks</div>
+        ${bm&&isSelf?`<div class="prof-action-sub">${bm.name.replace(' Run','').replace('km ','k ')}</div>`:''}
+      </div>`:''}
+      ${hasCheckins?`<div class="prof-action-tile" onclick="openProfileOverlay('checkins','Wellness',buildCheckinProfilePage)">
+        <div class="prof-action-icon">❤</div>
+        <div class="prof-action-label">Wellness</div>
+        ${latest?.energy?`<div class="prof-action-sub">E${latest.energy}/10</div>`:''}
+      </div>`:''}
+      ${isSelf?`<div class="prof-action-tile" onclick="openSettings()">
+        <div class="prof-action-icon">⚙</div>
+        <div class="prof-action-label">Settings</div>
+      </div>`:''}
+    </div>
+  </div>`;
 
   // ── RENDER ──
   if(!isCoach){
-    const tierLabel=IS_COACH?'Coach':USER_TIER==='coached'?'Coached Athlete':'Athlete';
+    const tierLabel=IS_COACH?'Coach':USER_TIER==='coached'?'Coached':'Athlete';
     const tierCol=IS_COACH?'var(--gm)':USER_TIER==='coached'?'var(--gm)':'var(--mt)';
     const avatarHtml=USER_AVATAR_URL
       ?`<img src="${USER_AVATAR_URL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
       :gi(CU.user_metadata?.full_name||CU.email);
+
     document.getElementById('v-profile').innerHTML=
-      `<div class="ph" onclick="openSettings()" style="cursor:pointer">
-        <div class="av">${avatarHtml}</div>
-        <div style="flex:1">
-          <div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}</div>
-          <div class="ps" style="color:${tierCol}">${tierLabel} · [RADAR]</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
+      `<div class="prof-fixed">
+        <div class="prof-header" onclick="openSettings()" style="cursor:pointer">
+          <div class="av">${avatarHtml}</div>
+          <div style="flex:1;min-width:0">
+            <div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}</div>
+            <div class="ps" style="color:${tierCol}">${tierLabel} · [RADAR]</div>
+          </div>
           <div class="sc">${tot} / 40</div>
-          <span style="font-size:18px;color:var(--br)">›</span>
+          <span style="font-size:16px;color:var(--br);margin-left:6px">›</span>
         </div>
-      </div>`
-      +(IS_COACH?buildViewClientsTile():'')
-      +h;
+        ${IS_COACH?buildViewClientsTile():''}
+        ${patGrid}
+        ${card}
+      </div>`;
   } else {
-    // Coach mode — prepend to existing content (action tiles + banner already there)
     const existing=document.getElementById('cp-body');
-    if(existing)existing.innerHTML=(existing.innerHTML||'')+h;
+    if(existing){
+      const avatarInitial=`<div style="width:40px;height:40px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:var(--mono);color:var(--gm);flex-shrink:0">${gi(profContext.athleteId===CU?.id?CU.user_metadata?.full_name||CU.email:ALL_ATHLETES.find(a=>a.id===profContext.athleteId)?.name||'A')}</div>`;
+      existing.innerHTML=(existing.innerHTML||'')+
+        `<div class="prof-fixed" style="height:auto;overflow:visible">
+          ${patGrid}
+          ${card}
+        </div>`;
+    }
   }
+}
+
+// ── PROFILE OVERLAYS ──
+function openProfileOverlay(id,title,contentFn){
+  let overlay=document.getElementById('prof-overlay-'+id);
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='prof-overlay-'+id;
+    overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:160;display:flex;flex-direction:column;overflow:hidden';
+    const topbar=document.createElement('div');
+    topbar.style.cssText='background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0';
+    topbar.innerHTML=`<button class="back-btn" onclick="closeProfileOverlay('${id}')">← Back</button>
+      <span style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1">${title}</span>`;
+    const body=document.createElement('div');
+    body.id='prof-overlay-body-'+id;
+    body.style.cssText='flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none';
+    overlay.appendChild(topbar);
+    overlay.appendChild(body);
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display='flex';
+  const body=document.getElementById('prof-overlay-body-'+id);
+  if(body)body.innerHTML=contentFn();
+}
+
+function closeProfileOverlay(id){
+  const overlay=document.getElementById('prof-overlay-'+id);
+  if(overlay)overlay.style.display='none';
+}
+
+function buildBenchmarkProfilePage(){
+  if(!BENCHMARKS.length)return`<div class="empty"><div class="ei">🏁</div>No benchmarks yet.</div>`;
+  let h='';
+  BENCHMARKS.forEach(b=>{
+    const pb=getBMPB(b.id);
+    const level=pb?getBenchmarkLevel(b,pb):0;
+    const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
+    const results=(BENCHMARK_RESULTS||[]).filter(r=>r.benchmark_id===b.id).sort((a,x)=>new Date(a.submitted_at)-new Date(x.submitted_at));
+    h+=`<div style="background:var(--bg2);border:1px solid ${isActive?'rgba(0,255,148,0.3)':'var(--br)'};border-radius:var(--rl);padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk)">${b.name}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${isActive?`<span style="font-size:8px;font-weight:700;font-family:var(--mono);color:var(--pass);letter-spacing:.08em">ACTIVE</span>`:''}
+          <span style="font-size:14px;font-weight:700;font-family:var(--mono);color:${pb?'var(--gm)':'var(--mt)'}">${pb?fmtSeconds(pb):'No PB'}</span>
+        </div>
+      </div>
+      <div style="height:3px;background:var(--br);border-radius:1.5px;margin-bottom:8px;overflow:hidden">
+        <div style="height:100%;width:${Math.round((level/5)*100)}%;background:${isActive?'var(--pass)':'var(--gm)'};border-radius:1.5px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:${results.length?'10px':'0'}">
+        ${[1,2,3,4,5].map(l=>`<div style="font-size:9px;font-family:var(--mono);color:${l<=level?(isActive?'var(--pass)':'var(--gm)'):'var(--mt)'};text-align:center">L${l}</div>`).join('')}
+      </div>
+      ${results.length?`<div style="border-top:1px solid var(--br);padding-top:8px;display:flex;flex-direction:column;gap:4px">
+        ${results.slice(-5).reverse().map(r=>`<div style="display:flex;justify-content:space-between;font-size:12px">
+          <span style="color:var(--mt);font-family:var(--mono)">${new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+          <span style="font-weight:700;font-family:var(--mono);color:${r.score_seconds===Math.min(...results.map(x=>x.score_seconds))?'var(--gm)':'var(--dk)'}">${fmtSeconds(r.score_seconds)}</span>
+        </div>`).join('')}
+      </div>`:''}
+      <button onclick="openBenchmarkLogForId('${b.id}')" style="width:100%;margin-top:10px;padding:8px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);cursor:pointer;transition:all .2s" onmouseenter="this.style.borderColor='var(--gm)';this.style.color='var(--gm)'" onmouseleave="this.style.borderColor='var(--br)';this.style.color='var(--mt)'">Log result</button>
+    </div>`;
+  });
+  return h;
+}
+
+function buildCheckinProfilePage(){
+  return buildCheckinTiles(profContext.checkins,profContext.isCoach,profContext.athleteId)||
+    `<div class="empty"><div class="ei">❤</div>No check-ins yet.</div>`;
 }
 
 function buildCheckinTiles(checkins,isCoach,athleteId){
