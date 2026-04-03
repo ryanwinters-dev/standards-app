@@ -173,7 +173,7 @@
     .home-ci-label{font-size:8px;font-family:var(--mono);color:var(--mt);letter-spacing:.04em}
     /* Radar — fills remaining space */
     .home-radar-wrap{flex:1;position:relative;min-height:0;overflow:hidden}
-    .home-radar-slides{display:flex;width:200%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+    .home-radar-slides{display:flex;width:200%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1);touch-action:pan-y;user-select:none;-webkit-user-select:none;will-change:transform}
     .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px}
     .home-radar-inner{position:relative;width:min(calc(100% - 16px), calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom) - 180px));aspect-ratio:1;max-height:100%}
     .home-radar-inner svg{width:100%;height:100%}
@@ -4267,36 +4267,75 @@ function buildActiveBenchmarkSlide(bm){
 function initHomeSlides(){
   const wrap=document.getElementById('home-slides');
   if(!wrap)return;
-  let startX=0,isDragging=false,curSlide=0;
+
+  let startX=0,startY=0,curX=0,isDragging=false,curSlide=0,isHorizontal=null;
   const TOTAL=2;
-  const goTo=(n)=>{
+  const W=()=>wrap.parentElement.offsetWidth;
+
+  const setSlide=(n,animate=true)=>{
     curSlide=Math.max(0,Math.min(TOTAL-1,n));
+    wrap.style.transition=animate?'transform .35s cubic-bezier(.4,0,.2,1)':'none';
     wrap.style.transform=`translateX(-${curSlide*50}%)`;
     for(let i=0;i<TOTAL;i++){
       document.getElementById('dot-'+i)?.classList.toggle('active',i===curSlide);
     }
   };
-  wrap.addEventListener('touchstart',e=>{
-    startX=e.touches[0].clientX;
-    isDragging=true;
-  },{passive:true});
-  wrap.addEventListener('touchmove',e=>{
+
+  const onStart=(x,y)=>{
+    startX=x; startY=y; curX=x; isDragging=true; isHorizontal=null;
+    wrap.style.transition='none';
+  };
+
+  const onMove=(x,y)=>{
     if(!isDragging)return;
-    const dx=e.touches[0].clientX-startX;
+    const dx=x-startX, dy=y-startY;
+    // Determine direction on first significant movement
+    if(isHorizontal===null&&(Math.abs(dx)>4||Math.abs(dy)>4)){
+      isHorizontal=Math.abs(dx)>Math.abs(dy);
+    }
+    if(!isHorizontal)return; // let vertical scroll handle it
+    curX=x;
     const base=-curSlide*50;
-    const pct=base+(dx/(wrap.parentElement.offsetWidth))*50;
-    wrap.style.transform=`translateX(${pct}%)`;
-  },{passive:true});
-  wrap.addEventListener('touchend',e=>{
+    const pct=base+(dx/W())*50;
+    // Rubber-band at edges
+    const clamped=Math.max(-50,Math.min(0,pct));
+    wrap.style.transform=`translateX(${clamped}%)`;
+  };
+
+  const onEnd=(x)=>{
     if(!isDragging)return;
     isDragging=false;
-    const dx=e.changedTouches[0].clientX-startX;
-    if(Math.abs(dx)>50){
-      goTo(dx<0?curSlide+1:curSlide-1);
+    if(!isHorizontal){setSlide(curSlide);return;}
+    const dx=x-startX;
+    if(Math.abs(dx)>W()*0.2){
+      setSlide(dx<0?curSlide+1:curSlide-1);
     } else {
-      goTo(curSlide); // snap back
+      setSlide(curSlide);
     }
+    isHorizontal=null;
+  };
+
+  // Touch
+  wrap.addEventListener('touchstart',e=>{
+    const t=e.touches[0];
+    onStart(t.clientX,t.clientY);
   },{passive:true});
+
+  wrap.addEventListener('touchmove',e=>{
+    const t=e.touches[0];
+    onMove(t.clientX,t.clientY);
+    if(isHorizontal)e.preventDefault(); // stop page scroll when swiping
+  },{passive:false});
+
+  wrap.addEventListener('touchend',e=>{
+    onEnd(e.changedTouches[0].clientX);
+  },{passive:true});
+
+  // Mouse (desktop)
+  wrap.addEventListener('mousedown',e=>{onStart(e.clientX,e.clientY);});
+  wrap.addEventListener('mousemove',e=>{if(isDragging)onMove(e.clientX,e.clientY);});
+  wrap.addEventListener('mouseup',e=>{onEnd(e.clientX);});
+  wrap.addEventListener('mouseleave',e=>{if(isDragging)onEnd(e.clientX);});
 }
 function buildTrainingSnapshotForAthlete(scores,logs,sets,checkins){
   const now=new Date();
