@@ -179,9 +179,9 @@
     /* Radar — fills remaining space */
     .home-radar-wrap{flex:1;position:relative;min-height:0;overflow:hidden}
     .home-radar-slides{display:flex;width:200%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1);touch-action:pan-y;user-select:none;-webkit-user-select:none;will-change:transform}
-    .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px}
-    .home-radar-inner{position:relative;width:min(calc(100% - 16px), calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom) - 180px));aspect-ratio:1;max-height:100%}
-    .home-radar-inner svg{width:100%;height:100%}
+    .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px 0}
+    .home-radar-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:0 16px}
+    .home-radar-inner svg{width:100%;height:100%;max-width:100%;max-height:100%}
     .home-slide-dots{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
     .home-slide-dot{width:5px;height:5px;border-radius:50%;background:var(--br);transition:all .2s}
     .home-slide-dot.active{background:var(--gm);width:16px;border-radius:2.5px}
@@ -1454,6 +1454,7 @@
   <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0">
     <button class="back-btn" onclick="closePubProfile()">← Back</button>
     <span id="pub-profile-title" style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1"></span>
+    <button id="pub-profile-msg-btn" style="display:none;padding:5px 12px;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--gm);border-radius:var(--r);background:transparent;color:var(--gm);cursor:pointer">Message</button>
   </div>
   <div id="pub-profile-body" style="flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none"></div>
 </div>
@@ -3786,6 +3787,13 @@ async function openPubProfile(athleteId){
     const name=profRes.data?.full_name||profRes.data?.email?.split('@')[0]||'Athlete';
     titleEl.textContent=name;
 
+    // Wire message button in topbar
+    const msgBtn=document.getElementById('pub-profile-msg-btn');
+    if(msgBtn){
+      msgBtn.style.display='block';
+      msgBtn.onclick=()=>dmUser(athleteId,name);
+    }
+
     const scores={};
     (apRes.data||[]).forEach(r=>{scores[r.pattern_id]=r.current_level;});
     const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
@@ -3807,10 +3815,7 @@ async function openPubProfile(athleteId){
         <div class="pn">${name}</div>
         <div class="ps">Athlete · [RADAR]</div>
       </div>
-      <button onclick="dmUser('${athleteId}','${name.replace(/'/g,"\\'")}')"
-        style="padding:7px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--gm);border-radius:var(--r);background:transparent;color:var(--gm);cursor:pointer">
-        Message
-      </button>
+      <div class="sc">${tot} / 40</div>
     </div>
     <div class="spider-card" style="margin-bottom:14px">
       <div class="spider-card-top">
@@ -3846,6 +3851,8 @@ async function openPubProfile(athleteId){
 
 function closePubProfile(){
   document.getElementById('pub-profile').style.display='none';
+  const msgBtn=document.getElementById('pub-profile-msg-btn');
+  if(msgBtn)msgBtn.style.display='none';
 }
 
 async function signOut(){
@@ -4519,7 +4526,7 @@ function drawSpider(){
   }
 
   // Grid rings
-  let svg=`<svg viewBox="0 0 300 300" width="100%" style="display:block;margin:0 auto;max-height:260px">`;
+  let svg=`<svg viewBox="0 0 300 300" width="100%" height="100%" style="display:block">`;
   for(let l=1;l<=levels;l++){
     const pts=PATS.map((_,i)=>{const pt=point(i,l,levels);return`${pt.x},${pt.y}`}).join(' ');
     svg+=`<polygon points="${pts}" fill="none" stroke="${l===5?'#E0E0DC':'#f0f0ee'}" stroke-width="${l===5?1.5:.5}"/>`;
@@ -5425,37 +5432,12 @@ function rWorkout(){
         </div>
       </div></div>`;
     });
-    h+=`<div style="background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:16px;margin-top:4px">
-      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:10px">Log Result</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <div style="flex:1">
-          <div style="font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:5px">Min</div>
-          <input type="number" id="bm-mm-inline" min="0" max="999" placeholder="00" inputmode="numeric"
-            style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);text-align:center;outline:none;transition:border-color .2s"
-            onfocus="this.style.borderColor='var(--gm)'" onblur="this.style.borderColor='var(--br)'">
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:12px;font-size:22px;font-weight:700;font-family:var(--mono);color:var(--mt)">:</div>
-        <div style="flex:1">
-          <div style="font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:5px">Sec</div>
-          <input type="number" id="bm-ss-inline" min="0" max="59" placeholder="00" inputmode="numeric"
-            style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);text-align:center;outline:none;transition:border-color .2s"
-            onfocus="this.style.borderColor='var(--gm)'" onblur="this.style.borderColor='var(--br)'">
-        </div>
+    h+=`<div style="background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:14px;margin-top:4px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Got a time to log?</div>
+        <div style="font-size:12px;color:var(--mt);margin-top:2px">${window.ACTIVE_BENCHMARK?.name||'Benchmark'}</div>
       </div>
-      <div style="margin-bottom:12px">
-        <div style="font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:6px">Photo evidence</div>
-        <input type="file" id="bm-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleBmPhoto(this)">
-        <div onclick="document.getElementById('bm-photo-input').click()"
-          style="border:1px dashed var(--brm);border-radius:var(--r);padding:14px 16px;text-align:center;cursor:pointer;transition:border-color .2s"
-          onmouseenter="this.style.borderColor='var(--gm)'" onmouseleave="this.style.borderColor='var(--brm)'">
-          <div id="bm-photo-preview" style="font-size:11px;color:var(--mt);font-family:var(--mono)">📷 Tap to upload screenshot or photo</div>
-        </div>
-      </div>
-      <button onclick="submitBmInline()"
-        style="width:100%;padding:12px;background:var(--pass);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .2s">
-        Save result
-      </button>
-      <div id="bm-inline-msg" style="text-align:center;font-size:11px;font-family:var(--mono);margin-top:8px;min-height:14px;color:var(--mt)"></div>
+      <button onclick="openBenchmarkLog()" style="padding:8px 16px;background:var(--pass);color:var(--bg);border:none;border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Log result</button>
     </div>`;
     document.getElementById('v-workout').innerHTML=h;
     return;
@@ -5637,7 +5619,7 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
       <div class="prof-action-tile" onclick="openCoachWorkout()"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Log Workout</div></div>`;
   } else {
     actionTiles=`
-      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Training Log',()=>buildProfileCalendar(profContext.sets))"><div class="prof-action-icon">📅</div><div class="prof-action-label">Calendar</div></div>
+      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Training Log',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">Calendar</div></div>
       ${BENCHMARKS.length?`<div class="prof-action-tile" onclick="openProfileOverlay('benchmarks','Benchmarks',buildBenchmarkProfilePage)"><div class="prof-action-icon">🏁</div><div class="prof-action-label">Benchmarks</div></div>`:''}
       ${checkins&&checkins.length?`<div class="prof-action-tile" onclick="openProfileOverlay('checkins','Wellness',buildCheckinProfilePage)"><div class="prof-action-icon">❤</div><div class="prof-action-label">Wellness</div></div>`:''}
       <div class="prof-action-tile" onclick="openSettings()"><div class="prof-action-icon">⚙</div><div class="prof-action-label">Settings</div></div>`;
@@ -5654,7 +5636,9 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     <div class="prof-action-row">${actionTiles}</div>
   </div>`;
 
-  const body=`<div class="prof-fixed">${patGrid}${bmStrip}${card}</div>`;
+  const body=`<div class="prof-fixed" style="${isCoach?'height:auto;':''}">
+    ${patGrid}${bmStrip}${card}
+  </div>`;
 
   if(!isCoach){
     const tierLabel=IS_COACH?'Coach':USER_TIER==='coached'?'Coached':'Athlete';
@@ -5676,8 +5660,81 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
       +body;
   } else {
     const existing=document.getElementById('cp-body');
-    if(existing)existing.innerHTML=(existing.innerHTML||'')+body;
+    if(existing){
+      // Append profile body after the action tiles/banner already set by openClientPage
+      // Remove any previous profile body if re-rendering
+      const prev=existing.querySelector('.prof-fixed');
+      if(prev)prev.remove();
+      existing.insertAdjacentHTML('beforeend',body);
+    }
   }
+}
+
+// ── PROFILE OVERLAYS ──
+function openProfileOverlay(id,title,contentFn){
+  let overlay=document.getElementById('prof-overlay-'+id);
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='prof-overlay-'+id;
+    overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:160;display:flex;flex-direction:column;overflow:hidden';
+    const topbar=document.createElement('div');
+    topbar.style.cssText='background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0';
+    topbar.innerHTML=`<button class="back-btn" onclick="closeProfileOverlay('${id}')">← Back</button>
+      <span style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1">${title}</span>`;
+    const body=document.createElement('div');
+    body.id='prof-overlay-body-'+id;
+    body.style.cssText='flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;scrollbar-width:none';
+    overlay.appendChild(topbar);
+    overlay.appendChild(body);
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display='flex';
+  const body=document.getElementById('prof-overlay-body-'+id);
+  if(body)body.innerHTML=contentFn();
+}
+function closeProfileOverlay(id){
+  const overlay=document.getElementById('prof-overlay-'+id);
+  if(overlay)overlay.style.display='none';
+}
+function buildCalendarPage(){
+  return buildProfileCalendar(profContext.sets||[]);
+}
+function buildBenchmarkProfilePage(){
+  if(!BENCHMARKS.length)return`<div class="empty"><div class="ei">🏁</div>No benchmarks yet.</div>`;
+  let h='';
+  BENCHMARKS.forEach(b=>{
+    const pb=getBMPB(b.id);
+    const level=pb?getBenchmarkLevel(b,pb):0;
+    const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
+    const results=(BENCHMARK_RESULTS||[]).filter(r=>r.benchmark_id===b.id).sort((a,x)=>new Date(a.submitted_at)-new Date(x.submitted_at));
+    h+=`<div style="background:var(--bg2);border:1px solid ${isActive?'rgba(0,255,148,0.3)':'var(--br)'};border-radius:var(--rl);padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk)">${b.name}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${isActive?`<span style="font-size:8px;font-weight:700;font-family:var(--mono);color:var(--pass);letter-spacing:.08em">ACTIVE</span>`:''}
+          <span style="font-size:14px;font-weight:700;font-family:var(--mono);color:${pb?'var(--gm)':'var(--mt)'}">${pb?fmtSeconds(pb):'No PB'}</span>
+        </div>
+      </div>
+      <div style="height:3px;background:var(--br);border-radius:1.5px;margin-bottom:8px;overflow:hidden">
+        <div style="height:100%;width:${Math.round((level/5)*100)}%;background:${isActive?'var(--pass)':'var(--gm)'};border-radius:1.5px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:${results.length?'10px':'0'}">
+        ${[1,2,3,4,5].map(l=>`<div style="font-size:9px;font-family:var(--mono);color:${l<=level?(isActive?'var(--pass)':'var(--gm)'):'var(--mt)'};text-align:center">L${l}</div>`).join('')}
+      </div>
+      ${results.length?`<div style="border-top:1px solid var(--br);padding-top:8px;display:flex;flex-direction:column;gap:4px">
+        ${results.slice(-5).reverse().map(r=>`<div style="display:flex;justify-content:space-between;font-size:12px">
+          <span style="color:var(--mt);font-family:var(--mono)">${new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+          <span style="font-weight:700;font-family:var(--mono);color:${r.score_seconds===Math.min(...results.map(x=>x.score_seconds))?'var(--gm)':'var(--dk)'}">${fmtSeconds(r.score_seconds)}</span>
+        </div>`).join('')}
+      </div>`:''}
+      <button onclick="openBenchmarkLogForId('${b.id}')" style="width:100%;margin-top:10px;padding:8px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);cursor:pointer">Log result</button>
+    </div>`;
+  });
+  return h;
+}
+function buildCheckinProfilePage(){
+  return buildCheckinTiles(profContext.checkins,profContext.isCoach,profContext.athleteId)||
+    `<div class="empty"><div class="ei">❤</div>No check-ins yet.</div>`;
 }
 
 function buildCheckinTiles(checkins,isCoach,athleteId){
@@ -6189,8 +6246,8 @@ async function openClientPage(athleteId){
     banner=`<div style="background:rgba(255,179,64,0.08);border:1px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber);font-family:var(--mono)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting review</div>`;
   }
   document.getElementById('cp-body').innerHTML=actionTiles+banner;
-
   rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
+  document.getElementById('cp-body').scrollTop=0;
 }
 
 
@@ -6829,7 +6886,23 @@ function buildViewClientsTile(){
   </div>`;
 }
 
-function goToWorkout(){
+function goToWorkout(targetDay){
+  // If targetDay specified, jump to it; otherwise find next unlogged day
+  if(targetDay!==undefined){
+    setDay(targetDay);
+  } else {
+    // Find first day (0-3) that isn't fully logged
+    let nextDay=curDay;
+    for(let d=0;d<4;d++){
+      const day=buildDay(d);
+      const allLogged=day.circuits.every((circuit,ci)=>{
+        const ck=`d${d}c${ci}`;
+        return isCircuitLogged(ck,circuit.exercises,circuit.circuitSets);
+      });
+      if(!allLogged){nextDay=d;break;}
+    }
+    setDay(nextDay);
+  }
   const btn=document.querySelectorAll('.nav-tab')[1];
   showTab('workout',btn);
 }
