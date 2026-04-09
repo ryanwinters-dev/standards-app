@@ -412,6 +412,8 @@
     .circuit-tab{padding:8px 14px;border-radius:0;font-size:10px;font-weight:700;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;transition:all .2s;color:var(--mt);white-space:nowrap;flex-shrink:0}
     .circuit-tab.act{color:var(--gm);border-bottom-color:var(--gm)}
     .prof-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden}
+    .prof-radar-wrap{flex:0 0 auto;height:28vh;max-height:200px;min-height:130px;display:flex;align-items:center;justify-content:center;padding:4px 24px 0}
+    .prof-radar-wrap svg{width:100%;height:100%;max-width:240px}
     /* Pattern bars */
     .prof-bars-wrap{display:flex;gap:2px;padding:10px 16px 8px;flex:1;min-height:0;align-items:stretch}
     .prof-bars-col{display:flex;flex-direction:column;gap:2px;flex:1;justify-content:space-evenly}
@@ -467,7 +469,7 @@
     .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:14px}
 
     /* Pattern tile — compact 4-col design */
-    .pc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:8px 7px;cursor:pointer;transition:border-color .2s;position:relative;min-width:0;overflow:hidden}
+    .pc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:6px 6px;cursor:pointer;transition:border-color .2s;position:relative;min-width:0;overflow:hidden}
     .pc:hover{border-color:var(--brm)}.pc.act{border-color:var(--gm)}
     .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
     .pc-name{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono)}
@@ -6328,7 +6330,22 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     <div class="prof-action-row">${actionTiles}</div>
   </div>`;
 
+  // Radar — swap AP to this athlete's scores if viewing someone else
+  let profileRadar;
+  const needsSwap=isCoach||(athleteId&&athleteId!==CU?.id);
+  if(needsSwap){
+    const savedAP={...AP};
+    Object.keys(AP).forEach(k=>delete AP[k]);
+    Object.assign(AP,scores);
+    profileRadar=drawSpider();
+    Object.keys(AP).forEach(k=>delete AP[k]);
+    Object.assign(AP,savedAP);
+  } else {
+    profileRadar=drawSpider();
+  }
+
   const body=`<div class="prof-fixed" style="${isCoach?'height:auto;':''}">
+    <div class="prof-radar-wrap">${profileRadar}</div>
     ${patGrid}${bmStrip}${card}
   </div>`;
 
