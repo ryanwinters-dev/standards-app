@@ -5441,10 +5441,10 @@ function rWorkout(){
   // Build tab list
   const tabs=[];
   tabs.push({id:'warm',label:'Warm Up'});
-  const day=hasLvl?buildDay(curDay):null;
+  const day=(hasLvl&&curDay<4)?buildDay(curDay):null;
   if(day)day.circuits.forEach((c,i)=>tabs.push({id:`c${i}`,label:c.letter,circuit:c,ci:i}));
   if(bmDay5&&curDay===4)tabs.push({id:'bm',label:'Day 5'});
-  const accCircuits=ACCESSORY_CIRCUITS[curDay]||[];
+  const accCircuits=(curDay<4?ACCESSORY_CIRCUITS[curDay]:null)||[];
   accCircuits.forEach((ac,i)=>tabs.push({id:`acc${i}`,label:`+${ac.letter||String.fromCharCode(69+i)}`}));
 
   // Progress: how many circuits logged
@@ -5519,8 +5519,8 @@ function rWorkout(){
   if(!SESSION.active){
     h+=`<div class="circuit-page">
       <div class="session-start-screen">
-        <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Day ${curDay+1} · ${day?.circuits?.length||0} circuits · ${day?.circuits?.reduce((s,c)=>s+c.exercises.length,0)||0} exercises</div>
-        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:16px">${day?.circuits?.map(c=>c.name).join(' · ')||'Warm Up'}</div>
+        <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">${curDay===4?'Benchmark Day':`Day ${curDay+1} · ${day?.circuits?.length||0} circuits · ${day?.circuits?.reduce((s,c)=>s+c.exercises.length,0)||0} exercises`}</div>
+        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:16px">${curDay===4?(bmDay5?.name||'Benchmark Training'):day?.circuits?.map(c=>c.name).join(' · ')||'Warm Up'}</div>
         ${(window.MY_NOTES?.['general']||window.MY_NOTES?.[curDay])?`<div style="width:100%;max-width:400px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:var(--r);padding:12px 14px;margin-bottom:16px">
           <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:6px">Coach Note</div>
           ${window.MY_NOTES?.['general']?`<div style="font-size:13px;color:var(--md)">${window.MY_NOTES['general']}</div>`:''}
@@ -5846,7 +5846,7 @@ function startSession(){
   SESSION.active=true;
   SESSION.startTime=Date.now();
   SESSION.prs=[];
-  SESSION.activeTab='warm';
+  SESSION.activeTab=curDay===4?'bm':'warm';
   rWorkout();
 }
 
@@ -5856,7 +5856,13 @@ function setWorkoutTab(tabId){
   document.getElementById('v-workout').scrollTop=0;
 }
 
-function setDay(d){curDay=d;openCircuits={};SESSION.active=false;SESSION.activeTab='warm';rWorkout();rHome();}
+function setDay(d){
+  curDay=d;
+  openCircuits={};
+  SESSION.active=false;
+  SESSION.activeTab=d===4?'bm':'warm';
+  rWorkout();rHome();
+}
 
 // ── Set interaction ──
 function onSetChange(uid,ck,exKey,ci,allTimeBest){
