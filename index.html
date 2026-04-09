@@ -317,7 +317,7 @@
     .circuit-cta{position:fixed;bottom:calc(65px + env(safe-area-inset-bottom));left:0;right:0;padding:10px 16px;background:linear-gradient(to top, var(--bg) 60%, transparent);z-index:10}
     .circuit-cta-btn{width:100%;max-width:640px;margin:0 auto;display:block;padding:14px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
     .circuit-cta-btn:hover{opacity:.88}
-    .circuit-cta-btn.logged{background:var(--pass);cursor:default}
+    .circuit-cta-btn.logged{background:var(--pass);color:var(--bg)}
     .circuit-cta-btn.disabled{background:var(--bg3);color:var(--mt);border:1px solid var(--br);cursor:default}
     /* Rest timer display */
     .rest-timer-bar{padding:8px 16px;background:rgba(0,229,255,0.06);border-bottom:1px solid rgba(0,229,255,0.15);display:none;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -5591,8 +5591,9 @@ function buildMainCircuitPage(circuit,ci){
   });
 
   h+=`<div class="circuit-cta">
-    <button class="circuit-cta-btn${logged?' logged':''}" onclick="${logged?'':` logCircuit('${ck}')`}" ${logged?'disabled':''}>
-      ${logged?'✓ Circuit complete — tap next tab':'Log Circuit '+circuit.letter+' →'}
+    <button class="circuit-cta-btn${logged?' logged':''}"
+      onclick="${logged?`_advanceFromCircuit(${ci},buildDay(${curDay}))`:` logCircuit('${ck}')`}">
+      ${logged?'✓ Done — Next Circuit →':'Log Circuit '+circuit.letter+' →'}
     </button>
   </div>`;
   return h;
@@ -5916,6 +5917,8 @@ async function tickSet(uid,ck,exKey,setNum,ci,allTimeBest){
     if(!error){
       SETS.unshift({athlete_id:CU.id,exercise_id:exKey,set_number:s,reps_achieved:reps,load_kg:load,week_number:curWeek,session_date:today,logged_at:new Date().toISOString()});
       updateSessionProgress();
+      // Check if this completed the circuit
+      _checkCircuitComplete(ck);
     }
   });
 }
@@ -5987,13 +5990,50 @@ function markWuPhaseDone(wuKey,today){
 }
 
 // ── Log circuit (main) — now just records and advances tab ──
-async function logCircuit(ck){
-  const btn=document.querySelector(`.circuit-cta-btn`);
-  if(btn){btn.disabled=true;btn.textContent='Saving…';}
-  const msg=document.getElementById(`clm-${ck}`);
+// Called after each tick to see if circuit is now fully logged
+function _checkCircuitComplete(ck){
+  if(curDay>=4)return; // Day 5 handled separately
   const di=parseInt(ck[1]),ci=parseInt(ck[3]);
-  const circuit=buildDay(di).circuits[ci];
+  const day=buildDay(di);
+  const circuit=day?.circuits[ci];
+  if(!circuit)return;
+  if(!isCircuitLogged(ck,circuit.exercises,circuit.circuitSets))return;
+
+  toast(`✓ Circuit ${circuit.letter} complete`,'ok');
+
+  // Update the CTA button without full re-render
+  const ctaBtn=document.querySelector('.circuit-cta-btn');
+  if(ctaBtn&&!ctaBtn.classList.contains('logged')){
+    ctaBtn.classList.add('logged');
+    ctaBtn.textContent='✓ Done — next circuit →';
+    ctaBtn.disabled=false;
+    ctaBtn.onclick=()=>_advanceFromCircuit(ci,day);
+  }
+}
+
+function _advanceFromCircuit(ci,day){
+  const nextCi=ci+1;
+  if(nextCi<day.circuits.length){
+    setWorkoutTab(`c${nextCi}`);
+  } else {
+    // All main circuits done
+    updateSessionProgress();
+    checkSessionComplete();
+    rWorkout();
+  }
+}
+
+async function logCircuit(ck){
+  const btn=document.querySelector('.circuit-cta-btn');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+
+  // Parse ck format "d{day}c{circuit}"
+  const match=ck.match(/^d(\d+)c(\d+)$/);
+  if(!match)return;
+  const di=parseInt(match[1]),ci=parseInt(match[2]);
+  const circuit=buildDay(di)?.circuits[ci];
   if(!circuit){return;}
+
   const inserts=[];
   const today=new Date().toISOString().split('T')[0];
   circuit.exercises.forEach((item)=>{
@@ -6013,27 +6053,20 @@ async function logCircuit(ck){
     const{error}=await sb.from('workout_sets').insert(inserts);
     if(!error)SETS.unshift(...inserts.map(i=>({...i,logged_at:new Date().toISOString()})));
   }
+
   toast(`✓ Circuit ${circuit.letter} logged`,'ok');
   updateSessionProgress();
-
-  // Auto-advance to next tab
-  const day=buildDay(curDay);
-  const ci2=parseInt(ck[3])+1;
-  if(ci2<day.circuits.length){
-    setWorkoutTab(`c${ci2}`);
-  } else {
-    // Check if all done → session complete
-    checkSessionComplete();
-    rWorkout();
-  }
+  _advanceFromCircuit(ci,buildDay(di));
 }
 
 function checkSessionComplete(){
+  if(curDay>=4)return; // Day 5 has its own flow
   const day=buildDay(curDay);
-  const accCircuits=ACCESSORY_CIRCUITS[curDay]||[];
+  if(!day)return;
   const mainDone=day.circuits.every((c,i)=>isCircuitLogged(`d${curDay}c${i}`,c.exercises,c.circuitSets));
   if(mainDone){
-    setTimeout(()=>showSessionComplete(),400);
+    clearRestTimer();
+    setTimeout(()=>showSessionComplete(),500);
   }
 }
 
