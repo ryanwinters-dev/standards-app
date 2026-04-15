@@ -63,8 +63,8 @@
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:var(--red)}.msg.ok{color:var(--pass)}
     #app{display:none}
-    #v-home{overflow:hidden!important;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));max-height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
-    #v-profile{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));display:flex;flex-direction:column}
+    #v-home{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));max-height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
+    #v-profile{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
     #v-workout{position:fixed;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(65px + env(safe-area-inset-bottom));overflow:hidden;display:none;background:var(--bg)}
     #v-workout.active{display:flex!important;flex-direction:column;z-index:5}
     .topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:10px;justify-content:space-between;position:sticky;top:0;z-index:100}
@@ -96,8 +96,10 @@
     .log-sheet-tile-title{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--dk)}
     .log-sheet-tile-sub{font-size:12px;color:var(--mt);line-height:1.4}
     .main{padding:20px 16px 80px;max-width:640px;margin:0 auto;background:var(--bg)}
-    .view{display:none}.view.active{display:block}
+    .view{display:none!important}.view.active{display:block}
     #v-workout.active{display:flex!important;flex-direction:column}
+    #v-home.active{display:flex!important;flex-direction:column}
+    #v-profile.active{display:flex!important;flex-direction:column}
     .sl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gm);margin:18px 0 10px;font-family:var(--mono)}
     .sl:first-child{margin-top:0}
     @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
