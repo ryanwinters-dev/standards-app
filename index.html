@@ -762,7 +762,7 @@
     .ccc-pending-dot{font-size:11px;font-weight:600;color:var(--amber);background:#FFF8EC;padding:2px 7px;border-radius:99px;border:0.5px solid var(--amber)}
 
     /* Client profile page */
-    .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;flex-direction:column}
+    .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:165;flex-direction:column}
     .client-page.active{display:flex}
     .client-page-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:10px;flex-shrink:0;z-index:10}
     .client-page-name{font-size:14px;font-weight:700;font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -2058,7 +2058,7 @@ async function loadConversations(){
       .select('conversation_id,last_read_at').eq('user_id',CU.id);
     if(!parts?.length){convList=[];return;}
     const convIds=parts.map(p=>p.conversation_id);
-    const{data:convs}=await sb.from('conversations').select('*').in('id',convIds);
+    const{data:convs}=await sb.from('conversations').select('id,type,created_at').in('id',convIds);
     const{data:lastMsgs}=await sb.from('chat_messages')
       .select('conversation_id,body,created_at,sender_id')
       .in('conversation_id',convIds)
@@ -3930,11 +3930,31 @@ function closePubProfile(){
 }
 
 async function signOut(){
+  // Close any open overlays first
+  closeSettings();
+  document.getElementById('client-page')?.classList.remove('active');
+  document.getElementById('settings-page')?.classList.remove('active');
+  document.querySelectorAll('[id^="prof-overlay-"]').forEach(el=>el.style.display='none');
+
   await sb.auth.signOut();
-  CU=null;IS_COACH=false;
-  document.getElementById('auth-screen').style.display='flex';
+
+  // Reset all state
+  CU=null;IS_COACH=false;AP={};LOGS=[];SETS=[];CHECKINS=[];AAP=[];
+  ALL_ATHLETES=[];ALL_PENDING=[];ALL_CLIENT_SETS={};
+  BENCHMARKS=[];ATHLETE_BENCHMARK=null;BENCHMARK_RESULTS=[];
+  SESSION={active:false,startTime:null,prs:[],restTimer:null,restStart:null,activeTab:'warm'};
+  window.ACTIVE_BENCHMARK=null;
+
+  // Reset UI
   document.getElementById('app').style.display='none';
+  document.getElementById('landing').style.display='block';
   document.getElementById('am').textContent='';
+
+  // Clear rendered views so they're fresh on next login
+  ['home','workout','profile','leaderboard'].forEach(t=>{
+    const el=document.getElementById('v-'+t);
+    if(el)el.innerHTML='';
+  });
 }
 function showApp(user){
   CU=user;
@@ -3969,9 +3989,11 @@ function updateTopbarAvatar(){
 }
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(ev==='SIGNED_IN'&&sess?.user&&!CU){
-    // Only load on genuine first sign-in, not token refresh
+    if(_appLoading)return;
+    _appLoading=true;
     showApp(sess.user);
     await load();
+    _appLoading=false;
     checkOnboarding(sess.user);
   }
   else if(ev==='SIGNED_OUT'){
@@ -3987,7 +4009,8 @@ sb.auth.onAuthStateChange(async(ev,sess)=>{
     updateTopbarAvatar();
   }
 });
-(async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){showApp(session.user);await load();}else{document.getElementById('landing').style.display='block';}})();
+let _appLoading=false;
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(session?.user){if(_appLoading)return;_appLoading=true;showApp(session.user);await load();_appLoading=false;}else{document.getElementById('landing').style.display='block';}})();
 let lastLoad=0;
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'&&CU){
@@ -4055,7 +4078,7 @@ async function load(){
       q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
       q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
-      q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false})),
+      q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}).limit(500)),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).order('session',{ascending:true}).limit(60)),
       q(sb.from('profiles').select('id,full_name,is_public')),
     ]);
@@ -5163,7 +5186,7 @@ function buildWarmUp(dayIndex){
       </div>`;
     });
     h+=`<div style="padding:10px 14px;background:var(--bg2)">
-      <button style="width:100%;padding:8px;background:var(--gl);border:0.5px solid var(--gm);border-radius:8px;font-size:13px;font-weight:600;color:var(--gd);cursor:pointer;font-family:var(--fn)" onclick="markWarmUpDone('${wuKey}')">✓ Warm Up Complete</button>
+      <button style="width:100%;padding:8px;background:var(--gl);border:0.5px solid var(--gm);border-radius:8px;font-size:13px;font-weight:600;color:var(--gd);cursor:pointer;font-family:var(--fn)" onclick="markWuPhaseDone('${wuKey}',new Date().toISOString().split('T')[0])">✓ Warm Up Complete</button>
     </div>`;
   }
 
@@ -5265,7 +5288,7 @@ async function logAccCircuit(ck,dayIndex,ci){
     if(btn)btn.disabled=false;
     return;
   }
-  const{data}=await sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false});
+  const{data}=await sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}).limit(500);
   SETS=data||[];
   toast(`✓ ${inserts.length} sets logged`,'ok');
   rWorkout();
@@ -6893,9 +6916,13 @@ function rCoach(){
 }
 
 // ── CLIENT PROFILE PAGE ──
+let _clientPageOpening=false;
 async function openClientPage(athleteId){
+  if(_clientPageOpening)return;
+  _clientPageOpening=true;
+  try{
   const a=ALL_ATHLETES.find(x=>x.id===athleteId);
-  if(!a)return;
+  if(!a){_clientPageOpening=false;return;}
   const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
   document.getElementById('cp-name').textContent=a.name;
   const scoreEl=document.getElementById('cp-score');
@@ -6907,7 +6934,7 @@ async function openClientPage(athleteId){
     sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
     sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
     sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
-    sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}),
+    sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(500),
   ]);
   const clientPending=pendingRes.data||[];
   const allTests=allTestsRes.data||[];
@@ -6940,6 +6967,7 @@ async function openClientPage(athleteId){
   document.getElementById('cp-body').innerHTML=actionTiles+banner;
   rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
   document.getElementById('cp-body').scrollTop=0;
+  }finally{_clientPageOpening=false;}
 }
 
 
