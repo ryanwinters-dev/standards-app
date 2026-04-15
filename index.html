@@ -3997,10 +3997,18 @@ sb.auth.onAuthStateChange(async(ev,sess)=>{
     checkOnboarding(sess.user);
   }
   else if(ev==='SIGNED_OUT'){
-    CU=null;
+    CU=null;IS_COACH=false;
     AP={};LOGS=[];SETS=[];CHECKINS=[];AAP=[];
+    ALL_ATHLETES=[];ALL_PENDING=[];ALL_CLIENT_SETS={};
+    BENCHMARKS=[];ATHLETE_BENCHMARK=null;BENCHMARK_RESULTS=[];
+    SESSION={active:false,startTime:null,prs:[],restTimer:null,restStart:null,activeTab:'warm'};
+    window.ACTIVE_BENCHMARK=null;
     document.getElementById('app').style.display='none';
     document.getElementById('landing').style.display='block';
+    ['home','workout','profile','leaderboard'].forEach(t=>{
+      const el=document.getElementById('v-'+t);
+      if(el)el.innerHTML='';
+    });
   }
   // TOKEN_REFRESHED, USER_UPDATED etc — silently update CU but don't reload
   else if(ev==='USER_UPDATED'&&sess?.user&&CU){
@@ -6921,53 +6929,57 @@ async function openClientPage(athleteId){
   if(_clientPageOpening)return;
   _clientPageOpening=true;
   try{
-  const a=ALL_ATHLETES.find(x=>x.id===athleteId);
-  if(!a){_clientPageOpening=false;return;}
-  const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-  document.getElementById('cp-name').textContent=a.name;
-  const scoreEl=document.getElementById('cp-score');
-  if(scoreEl)scoreEl.textContent=`${total}/40`;
-  document.getElementById('cp-body').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
-  document.getElementById('client-page').classList.add('active');
+    const a=ALL_ATHLETES.find(x=>x.id===athleteId);
+    if(!a)return;
+    const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+    document.getElementById('cp-name').textContent=a.name;
+    const scoreEl=document.getElementById('cp-score');
+    if(scoreEl)scoreEl.textContent=`${total}/40`;
+    document.getElementById('cp-body').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
+    document.getElementById('client-page').classList.add('active');
 
-  const[pendingRes,allTestsRes,checkinsRes,setsRes]=await Promise.all([
-    sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
-    sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
-    sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
-    sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(500),
-  ]);
-  const clientPending=pendingRes.data||[];
-  const allTests=allTestsRes.data||[];
-  const clientCheckins=checkinsRes.data||[];
-  const clientSets=setsRes.data||[];
+    const[pendingRes,allTestsRes,checkinsRes,setsRes]=await Promise.all([
+      sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
+      sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
+      sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
+      sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(500),
+    ]);
+    const clientPending=pendingRes.data||[];
+    const allTests=allTestsRes.data||[];
+    const clientCheckins=checkinsRes.data||[];
+    const clientSets=setsRes.data||[];
 
-  openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
+    openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
 
-  // Action tiles
-  const actionTiles=`<div class="client-action-tiles">
-    <div class="client-action-tile" onclick="openWorkoutBuilder()">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      <span class="client-action-tile-label">Programme</span>
-    </div>
-    <div class="client-action-tile" onclick="openCoachTestModal()">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-      <span class="client-action-tile-label">Log Test</span>
-    </div>
-    <div class="client-action-tile" onclick="openCoachWorkout()" style="border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.04)">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M1 8h5M18 8h5M1 16h5M18 16h5"/></svg>
-      <span class="client-action-tile-label" style="color:var(--gm)">Log Workout</span>
-    </div>
-  </div>`;
+    const actionTiles=`<div class="client-action-tiles">
+      <div class="client-action-tile" onclick="openWorkoutBuilder()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="client-action-tile-label">Programme</span>
+      </div>
+      <div class="client-action-tile" onclick="openCoachTestModal()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span class="client-action-tile-label">Log Test</span>
+      </div>
+      <div class="client-action-tile" onclick="openCoachWorkout()" style="border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.04)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M1 8h5M18 8h5M1 16h5M18 16h5"/></svg>
+        <span class="client-action-tile-label" style="color:var(--gm)">Log Workout</span>
+      </div>
+    </div>`;
 
-  // Pending banner
-  let banner='';
-  if(clientPending.length>0){
-    banner=`<div style="background:rgba(255,179,64,0.08);border:1px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber);font-family:var(--mono)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting review</div>`;
+    let banner='';
+    if(clientPending.length>0){
+      banner=`<div style="background:rgba(255,179,64,0.08);border:1px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber);font-family:var(--mono)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting review</div>`;
+    }
+    document.getElementById('cp-body').innerHTML=actionTiles+banner;
+    rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
+    document.getElementById('cp-body').scrollTop=0;
+  }catch(err){
+    console.error('openClientPage error:',err);
+    const body=document.getElementById('cp-body');
+    if(body)body.innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}</div>`;
+  }finally{
+    _clientPageOpening=false;
   }
-  document.getElementById('cp-body').innerHTML=actionTiles+banner;
-  rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
-  document.getElementById('cp-body').scrollTop=0;
-  }finally{_clientPageOpening=false;}
 }
 
 
