@@ -364,11 +364,67 @@
     .sc-footer{padding:12px 20px 20px;border-top:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
     .sc-url{font-size:9px;color:var(--mt);font-family:var(--mono)}
     .sc-tagline{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;color:var(--mt)}
-    /* Exercise history panel */
+    /* ── EXERCISE HISTORY PANEL ── */
     .ex-history-panel{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column}
     .ex-history-panel.active{display:flex}
     .ex-history-topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0}
-    .ex-history-body{flex:1;overflow-y:auto;padding:16px;scrollbar-width:none}
+    .ex-history-body{flex:1;overflow-y:auto;scrollbar-width:none}
+    /* Tab strip */
+    .exh-tabs{display:flex;border-bottom:1px solid var(--br);flex-shrink:0;background:var(--bg)}
+    .exh-tab{flex:1;padding:10px 0;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .2s}
+    .exh-tab.act{color:var(--gm);border-bottom-color:var(--gm)}
+    /* Hero stats */
+    .exh-hero{padding:20px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .exh-hero-stat{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:14px}
+    .exh-hero-val{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
+    .exh-hero-label{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-top:4px}
+    .exh-hero-sub{font-size:11px;color:var(--mt);font-family:var(--mono);margin-top:2px}
+    /* Chart */
+    .exh-chart-wrap{padding:0 16px 16px}
+    .exh-chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .exh-chart-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)}
+    .exh-chart-legend{display:flex;gap:10px;align-items:center}
+    .exh-chart-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;font-family:var(--mono);color:var(--mt)}
+    .exh-chart-legend-dot{width:8px;height:8px;border-radius:50%}
+    .exh-chart{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:12px 12px 8px;position:relative}
+    /* Progress tab */
+    .exh-section{padding:0 16px 16px}
+    .exh-section-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px}
+    .exh-session-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);margin-bottom:4px}
+    .exh-session-date{font-size:11px;font-family:var(--mono);color:var(--mt);width:72px;flex-shrink:0}
+    .exh-session-sets{font-size:12px;font-family:var(--mono);color:var(--dk);flex:1}
+    .exh-session-peak{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--gm)}
+    /* Guide tab */
+    .exh-guide-cue{margin:0 16px 12px;padding:12px 14px;background:rgba(0,229,255,0.06);border-left:2px solid var(--gm);border-radius:0 var(--r) var(--r) 0;font-size:13px;font-style:italic;color:var(--gm);line-height:1.5}
+    .exh-criteria-row{display:flex;align-items:flex-start;gap:10px;padding:9px 16px;border-bottom:1px solid var(--br)}
+    .exh-criteria-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+    .exh-criteria-text{font-size:12px;color:var(--md);line-height:1.4}
+    /* Progression signal badge */
+    .prog-signal{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;padding:2px 7px;border-radius:var(--r)}
+    .prog-signal.up{background:rgba(0,255,148,0.12);color:var(--pass);border:1px solid rgba(0,255,148,0.3)}
+    .prog-signal.hold{background:rgba(255,255,255,0.06);color:var(--mt);border:1px solid var(--br)}
+    .prog-signal.down{background:rgba(255,68,68,0.1);color:var(--red);border:1px solid rgba(255,68,68,0.3)}
+    .prog-signal.test{background:rgba(0,229,255,0.12);color:var(--gm);border:1px solid rgba(0,229,255,0.3)}
+    /* RPE dial */
+    .rpe-dial-overlay{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center}
+    .rpe-dial{background:var(--bg2);border-radius:16px 16px 0 0;padding:16px 16px 32px;width:100%;max-width:640px;animation:slideUp .2s ease}
+    .rpe-dial-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mt);text-align:center;margin-bottom:14px}
+    .rpe-dial-btns{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+    .rpe-btn{padding:12px 0;border-radius:var(--r);border:1px solid var(--br);background:var(--bg3);font-size:14px;font-weight:700;font-family:var(--mono);color:var(--mt);cursor:pointer;transition:all .2s;text-align:center}
+    .rpe-btn:hover{border-color:var(--gm);color:var(--gm)}
+    .rpe-btn.skip{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mt)}
+    /* TEST_READY prompt */
+    .test-ready-card{margin:12px 16px 0;padding:14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.25);border-radius:var(--rl);display:flex;align-items:flex-start;gap:10px}
+    .test-ready-icon{font-size:20px;flex-shrink:0}
+    .test-ready-body{flex:1}
+    .test-ready-title{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--gm);margin-bottom:3px}
+    .test-ready-sub{font-size:11px;color:var(--mt);line-height:1.4;margin-bottom:8px}
+    .test-ready-btn{padding:6px 12px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+    /* Coach brain insight */
+    .coach-brain-tile{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px}
+    .coach-brain-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+    .coach-brain-text{font-size:12px;color:var(--md);line-height:1.4;flex:1}
+    .coach-brain-text strong{color:var(--dk);font-weight:700}
     /* Coaching cue */
     .cx-cue{font-size:11px;color:var(--gm);font-style:italic;margin:0 14px 10px;padding:8px 10px;background:rgba(0,229,255,0.05);border-left:2px solid var(--gm);border-radius:0 var(--r) var(--r) 0}
     .set-table{width:100%;border-collapse:collapse;margin-bottom:6px}
@@ -1771,7 +1827,77 @@ const LL=['var(--br)','rgba(0,229,255,0.25)','rgba(0,229,255,0.45)','rgba(0,229,
 const AVC=[{bg:'rgba(0,229,255,0.15)',fg:'#00E5FF'},{bg:'rgba(0,255,148,0.15)',fg:'#00FF94'},{bg:'rgba(255,179,64,0.15)',fg:'#FFB340'},{bg:'rgba(255,100,100,0.15)',fg:'#FF6464'},{bg:'rgba(150,120,255,0.15)',fg:'#9678FF'},{bg:'rgba(255,255,255,0.1)',fg:'rgba(255,255,255,0.6)'}];
 const RR={Control:{lo:8,hi:12},Unilateral:{lo:6,hi:8},Force:{lo:3,hi:5},Expression:{lo:5,hi:8}};
 const TM={Control:'3131',Unilateral:'3121',Force:'20X0',Expression:'10X0'};
-const REST={Main:'90s',Bridge:'60s',Limiter:'45s'};
+const REST={Main:'3min',Bridge:'90s',Limiter:'60s',Accessory:'45s'};
+const REST_SECS={Main:180,Bridge:90,Limiter:60,Accessory:45};
+
+// ── PROGRESSION ENGINE ──
+function getSetOutcome(reps,lo,hi,rpe){
+  if(reps<lo)return'missed';
+  if(rpe!=null&&rpe>=9&&reps>=lo)return reps>=hi?'hit':'grinded';
+  if(reps>=hi&&(rpe==null||rpe<=7))return'exceeded';
+  return'hit';
+}
+
+function getProgressionSignal(exId,intent,pid){
+  if(!exId)return{signal:'maintain',reason:''};
+  const rs=RR[intent]||RR.Control;
+  const wib=weekInBlock();
+  if(wib===4)return{signal:'deload',reason:'Deload week — reduced volume'};
+
+  // Get last 3 sessions worth of sets for this exercise
+  const byDate={};
+  SETS.filter(s=>s.exercise_id==exId).forEach(s=>{
+    const d=s.session_date||s.logged_at?.split('T')[0];
+    if(!d)return;
+    if(!byDate[d])byDate[d]=[];
+    byDate[d].push(s);
+  });
+  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).slice(0,3);
+  if(!dates.length)return{signal:'maintain',reason:'No history yet'};
+
+  // Score each session
+  const outcomes=dates.map(d=>{
+    const sets=byDate[d];
+    const scores=sets.map(s=>getSetOutcome(s.reps_achieved||0,rs.lo,rs.hi,s.rpe||null));
+    if(scores.every(o=>o==='exceeded'))return'exceeded';
+    if(scores.some(o=>o==='grinded'))return'grinded';
+    if(scores.filter(o=>o==='missed').length>=scores.length/2)return'missed';
+    return'hit';
+  });
+
+  const exceededCount=outcomes.filter(o=>o==='exceeded').length;
+  const grindedCount=outcomes.filter(o=>o==='grinded').length;
+  const missedCount=outcomes.filter(o=>o==='missed').length;
+
+  // TEST_READY: 3 consecutive exceeded on Main type
+  if(exceededCount>=3){
+    const lv=AP[pid]||0;
+    if(lv>0&&lv<5)return{signal:'test_ready',reason:`Consistently exceeding targets — ready to test Level ${lv+1}`};
+    return{signal:'progress',reason:'Consistently strong — add load'};
+  }
+  if(exceededCount>=2)return{signal:'progress',reason:'Strong sessions — increase load'};
+  if(grindedCount>=2)return{signal:'maintain',reason:'High effort — hold load, focus on quality'};
+  if(missedCount>=2)return{signal:'regress',reason:'Missed targets — reduce load 10%'};
+  return{signal:'maintain',reason:'On track — maintain load'};
+}
+
+function getProgressionLoad(exId,intent,pid){
+  if(!exId)return null;
+  const prev=SETS.filter(s=>s.exercise_id==exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+  if(!prev.length||!prev[0].load_kg)return null;
+  const lastLoad=prev[0].load_kg;
+  const sig=getProgressionSignal(exId,intent,pid);
+  const isLower=['HPush','VPush'].includes(pid)===false; // lower body gets bigger jumps
+  const increment=isLower?5:2.5;
+  if(sig.signal==='progress')return Math.round((lastLoad+increment)*2)/2;
+  if(sig.signal==='regress')return Math.round(lastLoad*0.9*2)/2;
+  if(sig.signal==='deload')return Math.round(lastLoad*0.6*2)/2;
+  return lastLoad;
+}
+
+function suggestedLoad(exId,intent,pid){
+  return getProgressionLoad(exId,intent,pid);
+}
 const CIRCUIT_TEMPLATES=[
   {id:'horiz',pats:['HPush','HPull'],name:'Horizontal'},
   {id:'vert',pats:['VPush','VPull'],name:'Vertical'},
@@ -5390,15 +5516,7 @@ function repStr(intent,sets,week){
   return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
 }
 
-function suggestedLoad(exId,intent){
-  if(!exId)return null;
-  const prev=SETS.filter(s=>s.exercise_id===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
-  if(!prev.length||!prev[0].load_kg||!prev[0].reps_achieved)return null;
-  const last=prev[0],range=RR[intent]||RR.Control;
-  let load=last.load_kg;
-  if(last.reps_achieved>=range.hi)load=Math.round(load*1.05*2)/2;
-  return load;
-}
+
 
 function buildDay(di){
   const setTargets=getSetTargets();
@@ -5716,22 +5834,35 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
   const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||PF[item.pid]);
   const typeClass=item.type==='Main'?'main':item.type==='Bridge'?'bridge':'limiter';
 
-  // Last session data
-  const prevSets=SETS.filter(s=>s.exercise_id===ex?.id&&s.week_number===curWeek-1).sort((a,b)=>a.set_number-b.set_number);
+  // Progression signal
+  const sig=ex?.id?getProgressionSignal(ex.id,intent,item.pid):{signal:'maintain',reason:''};
+  const sigArrow={progress:'↑',maintain:'→',regress:'↓',deload:'↓',test_ready:'🎯'}[sig.signal]||'→';
+  const sigClass={progress:'up',maintain:'hold',regress:'down',deload:'down',test_ready:'test'}[sig.signal]||'hold';
+
+  // Suggested load
+  const sugLoad=ex?.id?getProgressionLoad(ex.id,intent,item.pid):null;
+
+  // Last session data (previous week)
+  const prevSets=SETS.filter(s=>s.exercise_id==ex?.id&&s.week_number===curWeek-1).sort((a,b)=>a.set_number-b.set_number);
   const lastWeight=prevSets.length?Math.max(...prevSets.map(s=>s.load_kg||0)):null;
   const lastReps=prevSets.length?prevSets[0].reps_achieved:null;
-  const weeksAgo=prevSets.length?1:null;
 
   // All time best for PR detection
-  const allTimeBest=ex?.id?Math.max(0,...SETS.filter(s=>s.exercise_id===ex.id).map(s=>s.load_kg||0)):0;
+  const allTimeBest=ex?.id?Math.max(0,...SETS.filter(s=>s.exercise_id==ex.id).map(s=>s.load_kg||0)):0;
+
+  // TEST_READY prompt
+  const showTestReady=sig.signal==='test_ready'&&item.type==='Main';
 
   let h=`<div class="ex-card" id="ex-card-${ck}-${xi}">
-    <div class="ex-card-hdr" onclick="openExHistory('${ex?.id||''}','${exName.replace(/'/g,"\\'")}')">
-      <div class="ex-card-name">${exName} <span style="font-size:11px;color:var(--mt)">↗</span></div>
+    <div class="ex-card-hdr" onclick="openExHistory('${ex?.id||''}','${exName.replace(/'/g,"\\'")}','${item.pid||''}','${intent}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="ex-card-name">${exName} <span style="font-size:11px;color:var(--mt)">↗</span></div>
+        <span class="prog-signal ${sigClass}">${sigArrow} ${sig.signal==='test_ready'?'Level up?':sig.signal.toUpperCase()}</span>
+      </div>
       <div class="ex-card-meta">
         <span class="ex-tag ${typeClass}">${item.type}</span>
         <span style="font-size:10px;color:var(--mt);font-family:var(--mono)">${TM[intent]||'20X0'}</span>
-        <span style="font-size:10px;color:var(--mt);font-family:var(--mono)">Rest ${REST[item.type]||'60s'}</span>
+        <span style="font-size:10px;color:var(--mt);font-family:var(--mono)">${REST[item.type]||'60s'}</span>
         <span class="ex-prescription">${rs.str}</span>
       </div>
     </div>`;
@@ -5741,27 +5872,42 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
     h+=`<div class="cx-cue">"${ex.coaching_cue}"</div>`;
   }
 
-  // Last session strip
+  // TEST_READY prompt
+  if(showTestReady){
+    const lv=AP[item.pid]||0;
+    h+=`<div class="test-ready-card">
+      <div class="test-ready-icon">🎯</div>
+      <div class="test-ready-body">
+        <div class="test-ready-title">Ready to level up?</div>
+        <div class="test-ready-sub">${sig.reason}</div>
+        <button class="test-ready-btn" onclick="event.stopPropagation();openAssessmentForPattern('${item.pid}')">Schedule Level ${lv+1} test</button>
+      </div>
+    </div>`;
+  }
+
+  // Last session strip + progression hint
   if(lastWeight||lastReps){
-    const timeLabel=weeksAgo===1?'last week':`${weeksAgo}wk ago`;
-    h+=`<div class="last-session-strip" onclick="openExHistory('${ex?.id||''}','${exName.replace(/'/g,"\\'")}')">
-      <span class="last-session-text">Last session</span>
-      <span class="last-session-val">${lastReps?lastReps+' reps':''}${lastWeight&&lastReps?' · ':''}${lastWeight?lastWeight+'kg':''} <span style="color:var(--mt);font-weight:400">— ${timeLabel}</span></span>
+    h+=`<div class="last-session-strip" onclick="openExHistory('${ex?.id||''}','${exName.replace(/'/g,"\\'")}','${item.pid||''}','${intent}')">
+      <span class="last-session-text">Last week</span>
+      <span class="last-session-val">${lastReps?lastReps+' reps':''}${lastWeight&&lastReps?' · ':''}${lastWeight?lastWeight+'kg':''}
+        ${sugLoad&&sugLoad!==lastWeight?`<span style="color:var(--${sig.signal==='progress'?'pass':sig.signal==='regress'?'red':'mt'});margin-left:4px">→ ${sugLoad}kg</span>`:''}
+      </span>
     </div>`;
   } else if(ex?.id){
     h+=`<div class="last-session-strip" style="opacity:.5">
-      <span class="last-session-text">No previous data</span>
+      <span class="last-session-text">No history</span>
       <span class="last-session-val" style="color:var(--mt)">First time →</span>
     </div>`;
   }
 
   // Set rows
-  h+=`<div class="set-rows">`;
+  h+=`<div class="set-rows" id="setrows-${ck}-${xi}">`;
   for(let s=1;s<=totalSets;s++){
-    const prev=SETS.find(ws=>ws.exercise_id===ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
+    const prev=SETS.find(ws=>ws.exercise_id==ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
     const done=!!prev;
     const uid=`${ck}-${exKey}-${s}`;
-    const sugLoad=lastWeight||(ex?.id?suggestedLoad(ex.id,intent):null);
+    const fillLoad=done?prev.load_kg||'':(!done&&sugLoad?sugLoad:'');
+    const fillRpe=done&&prev.rpe?prev.rpe:null;
     h+=`<div class="set-row" id="set-row-${uid}">
       <span class="set-num">${s}</span>
       <input class="set-input${done?' done':''}" type="number" id="r-${uid}"
@@ -5770,12 +5916,13 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
         onchange="onSetChange('${uid}','${ck}','${exKey}','${ci}',${allTimeBest})">
       <span class="set-sep">×</span>
       <input class="set-input${done?' done':''}${!done&&sugLoad?' prefill':''}" type="number" id="l-${uid}"
-        placeholder="kg" value="${done?prev.load_kg||'':(!done&&sugLoad?sugLoad:'')}"
+        placeholder="kg" value="${fillLoad}"
         min="0" max="500" step="0.5" inputmode="decimal" ${done?'disabled':''}
         onchange="onSetChange('${uid}','${ck}','${exKey}','${ci}',${allTimeBest})"
         onfocus="if(this.classList.contains('prefill')){this.value='';this.classList.remove('prefill')}">
+      ${done&&fillRpe?`<span style="font-size:9px;font-family:var(--mono);color:var(--mt);flex-shrink:0">RPE ${fillRpe}</span>`:''}
       <button class="set-tick${done?' done':''}" id="tick-${uid}"
-        onclick="tickSet('${uid}','${ck}','${exKey}','${s}','${ci}',${allTimeBest})"
+        onclick="tickSet('${uid}','${ck}','${exKey}','${s}','${ci}',${allTimeBest},'${item.type||'Main'}')"
         ${done?'disabled':''}>
         ${done?'✓':'○'}
       </button>
@@ -5783,7 +5930,6 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
   }
   h+=`</div>`;
 
-  // Add set button
   h+=`<button class="set-add-btn" onclick="addSet('${ck}','${exKey}');rWorkout()">+ Add set</button>`;
   h+=`</div>`;
   return h;
@@ -5986,7 +6132,7 @@ function onSetChange(uid,ck,exKey,ci,allTimeBest){
   }
 }
 
-async function tickSet(uid,ck,exKey,setNum,ci,allTimeBest){
+async function tickSet(uid,ck,exKey,setNum,ci,allTimeBest,exType){
   const rEl=document.getElementById(`r-${uid}`);
   const lEl=document.getElementById(`l-${uid}`);
   if(!rEl)return;
@@ -5999,32 +6145,70 @@ async function tickSet(uid,ck,exKey,setNum,ci,allTimeBest){
   if(isPR){
     SESSION.prs.push({name:exKey,load,reps});
     toast(`🎯 New PB — ${load}kg!`,'ok');
-    setTimeout(()=>{const el=document.getElementById(`l-${uid}`);if(el){el.classList.add('pr');}},50);
+    setTimeout(()=>{const el=document.getElementById(`l-${uid}`);if(el)el.classList.add('pr');},50);
   }
 
-  // Start rest timer
-  startRestTimer();
-
-  // Mark visually
+  // Mark visually immediately
   rEl.disabled=true;
   if(lEl)lEl.disabled=true;
-  rEl.classList.add('done'); if(lEl)lEl.classList.add('done');
+  rEl.classList.add('done');if(lEl)lEl.classList.add('done');
   const tick=document.getElementById(`tick-${uid}`);
   if(tick){tick.classList.add('done');tick.textContent='✓';tick.disabled=true;}
 
-  // Save to DB in background
+  // Show in-session previous set reference on next set row
+  const nextSetNum=parseInt(setNum)+1;
+  const nextUid=`${ck}-${exKey}-${nextSetNum}`;
+  const nextRow=document.getElementById(`set-row-${nextUid}`);
+  if(nextRow){
+    const prevRef=document.createElement('div');
+    prevRef.style.cssText='font-size:10px;font-family:var(--mono);color:var(--mt);padding:0 0 4px 26px;line-height:1';
+    prevRef.textContent=`Set ${setNum}: ${reps} reps${load?' × '+load+'kg':''}`;
+    nextRow.parentNode.insertBefore(prevRef,nextRow);
+  }
+
+  // Start countdown rest timer
+  startRestTimer(REST_SECS[exType]||REST_SECS.Main);
+
+  // Show RPE dial
+  showRpeDial(uid,ck,exKey,setNum,ci,reps,load);
+}
+
+function showRpeDial(uid,ck,exKey,setNum,ci,reps,load){
+  // Remove any existing dial
+  document.getElementById('rpe-dial-overlay')?.remove();
+
+  const overlay=document.createElement('div');
+  overlay.id='rpe-dial-overlay';
+  overlay.className='rpe-dial-overlay';
+  overlay.innerHTML=`<div class="rpe-dial" onclick="event.stopPropagation()">
+    <div class="rpe-dial-title">How hard was that set?</div>
+    <div class="rpe-dial-btns">
+      ${[6,7,8,9,10].map(n=>`<button class="rpe-btn" onclick="saveRpe(${n},'${uid}','${exKey}','${setNum}','${ck}','${ci}',${reps},${load||null})">${n}</button>`).join('')}
+      <button class="rpe-btn skip" onclick="saveRpe(null,'${uid}','${exKey}','${setNum}','${ck}','${ci}',${reps},${load||null})">Skip</button>
+    </div>
+  </div>`;
+  // Close on backdrop tap
+  overlay.addEventListener('click',()=>saveRpe(null,uid,exKey,setNum,ck,ci,reps,load));
+  document.body.appendChild(overlay);
+}
+
+async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load){
+  // Remove dial
+  document.getElementById('rpe-dial-overlay')?.remove();
+
+  // Save to DB
   const today=new Date().toISOString().split('T')[0];
   const s=parseInt(setNum);
-  sb.from('workout_sets').insert({
+  const row={
     athlete_id:CU.id,exercise_id:exKey,pattern_id:null,
-    set_number:s,reps_achieved:reps,load_kg:load,
+    set_number:s,reps_achieved:reps,load_kg:load,rpe:rpe||null,
     week_number:curWeek,session_date:today,logged_at:new Date().toISOString(),
     reps_target_low:null,reps_target_high:null,
-  }).then(({error})=>{
+  };
+  sb.from('workout_sets').insert(row).then(({error})=>{
     if(!error){
-      SETS.unshift({athlete_id:CU.id,exercise_id:exKey,set_number:s,reps_achieved:reps,load_kg:load,week_number:curWeek,session_date:today,logged_at:new Date().toISOString()});
+      SETS.unshift(row);
       updateSessionProgress();
-      // Check if this completed the circuit
       _checkCircuitComplete(ck);
     }
   });
@@ -6065,13 +6249,15 @@ function updateSessionProgress(){
   fill.style.width=pct+'%';
 }
 
-// ── Rest timer ──
-function startRestTimer(){
+// ── Rest timer (countdown) ──
+function startRestTimer(targetSecs){
+  SESSION.restTarget=targetSecs||90;
   SESSION.restStart=Date.now();
   if(SESSION.restTimer)clearInterval(SESSION.restTimer);
-  SESSION.restTimer=setInterval(updateRestTimerDisplay,1000);
+  SESSION.restTimer=setInterval(updateRestTimerDisplay,500);
   const bar=document.getElementById('rest-timer-bar');
   if(bar)bar.classList.add('active');
+  updateRestTimerDisplay();
 }
 function updateRestTimerDisplay(){
   const bar=document.getElementById('rest-timer-bar');
@@ -6079,15 +6265,28 @@ function updateRestTimerDisplay(){
   if(!bar||!count)return;
   if(!SESSION.restStart){bar.classList.remove('active');return;}
   const elapsed=Math.floor((Date.now()-SESSION.restStart)/1000);
-  const m=Math.floor(elapsed/60),s=elapsed%60;
-  count.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+  const target=SESSION.restTarget||90;
+  const remaining=target-elapsed;
+  if(remaining<=0){
+    count.textContent='GO';
+    count.style.color='var(--pass)';
+    bar.style.background='rgba(0,255,148,0.08)';
+    // Auto-clear after 3s
+    if(!SESSION._goClear)SESSION._goClear=setTimeout(()=>{clearRestTimer();SESSION._goClear=null;},3000);
+  } else {
+    const m=Math.floor(remaining/60),s=remaining%60;
+    count.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+    count.style.color=remaining<=10?'var(--amber)':'var(--gm)';
+    bar.style.background='';
+  }
   bar.classList.add('active');
 }
 function clearRestTimer(){
   if(SESSION.restTimer)clearInterval(SESSION.restTimer);
-  SESSION.restTimer=null;SESSION.restStart=null;
+  SESSION.restTimer=null;SESSION.restStart=null;SESSION.restTarget=null;
+  if(SESSION._goClear){clearTimeout(SESSION._goClear);SESSION._goClear=null;}
   const bar=document.getElementById('rest-timer-bar');
-  if(bar)bar.classList.remove('active');
+  if(bar){bar.classList.remove('active');bar.style.background='';}
 }
 
 function markWuPhaseDone(wuKey,today){
@@ -6283,70 +6482,289 @@ async function saveSessionCard(){
 }
 
 // ── Exercise history panel ──
-function openExHistory(exId,exName){
-  if(!exId){toast('No history for this exercise yet','ok');return;}
+// Active tab for ex history
+let exHistoryTab='sets';
+
+function openExHistory(exId,exName,pid,intent){
   const panel=document.getElementById('ex-history-panel');
   if(!panel)return;
-  const body=document.getElementById('ex-history-body');
-  if(!body)return;
 
-  const exSets=SETS.filter(s=>s.exercise_id==exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
-  if(!exSets.length){toast('No history yet','ok');return;}
-
-  const allTimeBest=Math.max(...exSets.map(s=>s.load_kg||0));
-  const bestSet=exSets.find(s=>s.load_kg===allTimeBest);
-
-  // Group by session date
-  const byDate={};
-  exSets.forEach(s=>{
-    const d=s.session_date||s.logged_at?.split('T')[0];
-    if(!byDate[d])byDate[d]=[];
-    byDate[d].push(s);
-  });
-  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).slice(0,8);
-
-  // Simple bar chart — max weight per session
-  const bars=dates.map(d=>({date:d,max:Math.max(...byDate[d].map(s=>s.load_kg||0))})).reverse();
-  const chartMax=Math.max(...bars.map(b=>b.max))||1;
-
-  const chart=`<div style="display:flex;align-items:flex-end;gap:4px;height:60px;margin-bottom:4px">
-    ${bars.map(b=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-      <div style="width:100%;background:${b.max===chartMax?'var(--gm)':'var(--bg3)'};border-radius:2px 2px 0 0;height:${Math.round((b.max/chartMax)*56)+4}px;min-height:4px;transition:height .4s"></div>
-      <div style="font-size:7px;color:var(--mt);font-family:var(--mono)">${new Date(b.date+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}).replace(' ','')}</div>
-    </div>`).join('')}
-  </div>`;
-
-  body.innerHTML=`
-    <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:14px;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">All Time Best</div>
-      <div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--gm)">${allTimeBest}kg</div>
-      <div style="font-size:12px;color:var(--mt);margin-top:2px">${bestSet?.reps_achieved||'—'} reps · ${bestSet?.session_date||''}</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:14px;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:10px">Last ${bars.length} Sessions</div>
-      ${chart}
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--br)">
-        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Recent Sets</div>
-      </div>
-      ${dates.map(d=>{
-        const dSets=byDate[d].sort((a,b)=>a.set_number-b.set_number);
-        const label=new Date(d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-        const summary=dSets.map(s=>`${s.reps_achieved||'?'}@${s.load_kg||'?'}kg`).join(' · ');
-        return`<div style="padding:10px 14px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:12px;color:var(--mt);font-family:var(--mono)">${label}</span>
-          <span style="font-size:11px;font-family:var(--mono);color:var(--dk)">${summary}</span>
-        </div>`;
-      }).join('')}
-    </div>`;
+  // Store context for tab switching
+  panel._exId=exId;
+  panel._exName=exName;
+  panel._pid=pid||'';
+  panel._intent=intent||'Force';
 
   document.getElementById('ex-history-title').textContent=exName;
   panel.classList.add('active');
+  renderExHistoryTab(exHistoryTab);
+}
+
+function switchExTab(tab){
+  exHistoryTab=tab;
+  // Update tab styles
+  document.querySelectorAll('.exh-tab').forEach(t=>{
+    t.classList.toggle('act',t.dataset.tab===tab);
+  });
+  renderExHistoryTab(tab);
+}
+
+function renderExHistoryTab(tab){
+  const panel=document.getElementById('ex-history-panel');
+  const body=document.getElementById('ex-history-body');
+  if(!panel||!body)return;
+
+  const exId=panel._exId;
+  const pid=panel._pid;
+  const intent=panel._intent;
+
+  const allSets=SETS.filter(s=>s.exercise_id==exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+
+  // Group by date
+  const byDate={};
+  allSets.forEach(s=>{
+    const d=s.session_date||s.logged_at?.split('T')[0];
+    if(d){if(!byDate[d])byDate[d]=[];byDate[d].push(s);}
+  });
+  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+
+  if(tab==='sets'){
+    body.innerHTML=renderExHistorySets(allSets,byDate,dates,exId,pid,intent);
+  } else if(tab==='progress'){
+    body.innerHTML=renderExHistoryProgress(allSets,byDate,dates);
+  } else {
+    body.innerHTML=renderExHistoryGuide(panel._exName,exId,pid,intent);
+  }
+}
+
+function renderExHistorySets(allSets,byDate,dates,exId,pid,intent){
+  if(!allSets.length){
+    return`<div class="empty" style="padding-top:60px"><div class="ei">📊</div>No sets logged yet.<br>Start training to build your history.</div>`;
+  }
+
+  const allTimeBestLoad=Math.max(0,...allSets.map(s=>s.load_kg||0));
+  const bestSet=allSets.find(s=>s.load_kg===allTimeBestLoad);
+  const totalSessions=dates.length;
+  const totalSetsCount=allSets.length;
+
+  // Estimated 1RM (Epley formula)
+  const est1RM=bestSet&&bestSet.load_kg&&bestSet.reps_achieved>1
+    ?Math.round(bestSet.load_kg*(1+bestSet.reps_achieved/30))
+    :null;
+
+  // Progression signal
+  const sig=getProgressionSignal(exId,intent,pid);
+  const sigArrow={progress:'↑',maintain:'→',regress:'↓',deload:'↓',test_ready:'🎯'}[sig.signal]||'→';
+  const sigClass={progress:'up',maintain:'hold',regress:'down',deload:'down',test_ready:'test'}[sig.signal]||'hold';
+
+  // Today's sets
+  const today=new Date().toISOString().split('T')[0];
+  const todaySets=byDate[today]||[];
+
+  let h=`<div class="exh-hero">
+    <div class="exh-hero-stat" style="border-color:rgba(0,229,255,0.3)">
+      <div class="exh-hero-val" style="color:var(--gm)">${allTimeBestLoad||'—'}${allTimeBestLoad?'kg':''}</div>
+      <div class="exh-hero-label">All Time Best</div>
+      <div class="exh-hero-sub">${bestSet?.reps_achieved||'—'} reps · ${bestSet?.session_date?new Date(bestSet.session_date+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}):''}</div>
+    </div>
+    <div class="exh-hero-stat">
+      <div class="exh-hero-val">${est1RM||'—'}${est1RM?'kg':''}</div>
+      <div class="exh-hero-label">Est. 1RM</div>
+      <div class="exh-hero-sub">Epley formula</div>
+    </div>
+    <div class="exh-hero-stat">
+      <div class="exh-hero-val">${totalSessions}</div>
+      <div class="exh-hero-label">Sessions</div>
+      <div class="exh-hero-sub">${totalSetsCount} sets total</div>
+    </div>
+    <div class="exh-hero-stat">
+      <div style="margin-bottom:4px"><span class="prog-signal ${sigClass}">${sigArrow} ${sig.signal.replace('_',' ').toUpperCase()}</span></div>
+      <div class="exh-hero-label">Next session</div>
+      <div class="exh-hero-sub" style="font-size:10px">${sig.reason}</div>
+    </div>
+  </div>`;
+
+  // Weight trend chart (last 10 sessions)
+  const chartDates=dates.slice(0,10).reverse();
+  if(chartDates.length>=2){
+    const chartData=chartDates.map(d=>({
+      date:d,
+      maxLoad:Math.max(0,...byDate[d].map(s=>s.load_kg||0)),
+      totalReps:byDate[d].reduce((s,r)=>s+(r.reps_achieved||0),0),
+    }));
+    const maxLoad=Math.max(...chartData.map(d=>d.maxLoad))||1;
+    const minLoad=Math.min(...chartData.filter(d=>d.maxLoad>0).map(d=>d.maxLoad))||0;
+    const range=maxLoad-minLoad||1;
+    const W=100,H=64,padY=8;
+
+    // SVG line chart
+    const points=chartData.map((d,i)=>{
+      const x=(i/(chartData.length-1))*W;
+      const y=padY+((maxLoad-d.maxLoad)/range)*(H-padY*2);
+      return`${x},${y}`;
+    }).join(' ');
+
+    // Bar chart for reps
+    const maxReps=Math.max(...chartData.map(d=>d.totalReps))||1;
+
+    h+=`<div class="exh-chart-wrap">
+      <div class="exh-chart-hdr">
+        <span class="exh-chart-title">Weight trend — last ${chartData.length} sessions</span>
+        <div class="exh-chart-legend">
+          <div class="exh-chart-legend-item"><div class="exh-chart-legend-dot" style="background:var(--gm)"></div>Load</div>
+          <div class="exh-chart-legend-item"><div class="exh-chart-legend-dot" style="background:rgba(255,255,255,0.15)"></div>Volume</div>
+        </div>
+      </div>
+      <div class="exh-chart">
+        <svg viewBox="0 0 100 64" width="100%" height="80" preserveAspectRatio="none" style="display:block;overflow:visible">
+          <!-- Volume bars -->
+          ${chartData.map((d,i)=>{
+            const x=(i/(chartData.length-1))*W;
+            const barH=Math.max(2,(d.totalReps/maxReps)*(H-padY*2));
+            return`<rect x="${x-2.5}" y="${H-barH}" width="5" height="${barH}" fill="rgba(255,255,255,0.08)" rx="1"/>`;
+          }).join('')}
+          <!-- Trend line -->
+          <polyline points="${points}" fill="none" stroke="var(--gm)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <!-- Data points -->
+          ${chartData.map((d,i)=>{
+            const x=(i/(chartData.length-1))*W;
+            const y=padY+((maxLoad-d.maxLoad)/range)*(H-padY*2);
+            return`<circle cx="${x}" cy="${y}" r="2" fill="var(--gm)"/>`;
+          }).join('')}
+          <!-- Today marker -->
+          ${chartData[chartData.length-1]?.date===today?`<circle cx="${W}" cy="${padY+((maxLoad-chartData[chartData.length-1].maxLoad)/range)*(H-padY*2)}" r="4" fill="var(--gm)" stroke="var(--bg2)" stroke-width="1.5"/>`:''}
+        </svg>
+        <!-- X axis labels -->
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span style="font-size:8px;font-family:var(--mono);color:var(--mt)">${new Date(chartDates[0]+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+          <span style="font-size:8px;font-family:var(--mono);color:var(--mt)">${new Date(chartDates[chartDates.length-1]+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Today's sets if active session
+  if(todaySets.length){
+    h+=`<div class="exh-section">
+      <div class="exh-section-title">This session</div>
+      ${todaySets.sort((a,b)=>a.set_number-b.set_number).map(s=>`
+      <div class="exh-session-row">
+        <span class="exh-session-date">Set ${s.set_number}</span>
+        <span class="exh-session-sets">${s.reps_achieved||'—'} reps</span>
+        <span class="exh-session-peak">${s.load_kg||'—'}kg</span>
+        ${s.rpe?`<span style="font-size:10px;font-family:var(--mono);color:var(--mt)">RPE ${s.rpe}</span>`:''}
+      </div>`).join('')}
+    </div>`;
+  }
+
+  return h;
+}
+
+function renderExHistoryProgress(allSets,byDate,dates){
+  if(!dates.length){
+    return`<div class="empty" style="padding-top:60px"><div class="ei">📈</div>No training history yet.</div>`;
+  }
+
+  let h=`<div class="exh-section" style="padding-top:16px">
+    <div class="exh-section-title">Session history</div>`;
+
+  dates.forEach(d=>{
+    const dSets=byDate[d].sort((a,b)=>a.set_number-b.set_number);
+    const peakLoad=Math.max(0,...dSets.map(s=>s.load_kg||0));
+    const totalReps=dSets.reduce((sum,s)=>sum+(s.reps_achieved||0),0);
+    const label=new Date(d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'2-digit'});
+    const setStr=dSets.map(s=>`${s.reps_achieved||'?'}×${s.load_kg||'?'}kg${s.rpe?' @'+s.rpe:''}`).join(' · ');
+    const avgRpe=dSets.filter(s=>s.rpe).length?Math.round(dSets.filter(s=>s.rpe).reduce((sum,s)=>sum+s.rpe,0)/dSets.filter(s=>s.rpe).length):null;
+
+    h+=`<div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);margin-bottom:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--br)">
+        <span style="font-size:11px;font-family:var(--mono);color:var(--mt)">${label}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${avgRpe?`<span style="font-size:9px;font-family:var(--mono);color:var(--mt)">RPE ${avgRpe}</span>`:''}
+          <span style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--gm)">${peakLoad||'—'}kg</span>
+        </div>
+      </div>
+      <div style="padding:8px 12px;font-size:11px;font-family:var(--mono);color:var(--md);line-height:1.6">${setStr}</div>
+    </div>`;
+  });
+
+  h+=`</div>`;
+  return h;
+}
+
+function renderExHistoryGuide(exName,exId,pid,intent){
+  // Find the exercise in EX array
+  const ex=EX.find(e=>e.id==exId)||null;
+  const lv=AP[pid]||0;
+  const std=STD.find(s=>s.pattern_id===pid&&s.level===lv);
+  const nextStd=STD.find(s=>s.pattern_id===pid&&s.level===lv+1);
+
+  let h=`<div style="padding:16px 16px 8px">`;
+
+  // Pattern + Level badge
+  h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:6px 10px">
+      <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Pattern</div>
+      <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-top:1px">${PF[pid]||pid}</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:6px 10px">
+      <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Level</div>
+      <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:${LC[lv]||'var(--mt)'};margin-top:1px">${lv} / 5</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:6px 10px">
+      <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Scheme</div>
+      <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-top:1px">${TM[intent]||'20X0'}</div>
+    </div>
+  </div>`;
+
+  // Coaching cue
+  if(ex?.coaching_cue){
+    h+=`<div class="exh-guide-cue">"${ex.coaching_cue}"</div>`;
+  }
+
+  // Current level standard
+  if(std){
+    h+=`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Current standard — Level ${lv}</div>
+    <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden;margin-bottom:14px">
+      ${std.pass_criteria?`<div class="exh-criteria-row"><span class="exh-criteria-icon">✓</span><span class="exh-criteria-text"><strong>Pass criteria:</strong> ${std.pass_criteria}</span></div>`:''}
+      ${std.load_standard?`<div class="exh-criteria-row"><span class="exh-criteria-icon">⚖️</span><span class="exh-criteria-text"><strong>Load standard:</strong> ${std.load_standard}</span></div>`:''}
+      ${std.quality_focus?`<div class="exh-criteria-row"><span class="exh-criteria-icon">🎯</span><span class="exh-criteria-text"><strong>Quality focus:</strong> ${std.quality_focus}</span></div>`:''}
+      ${std.common_fails?`<div class="exh-criteria-row" style="border-bottom:none"><span class="exh-criteria-icon">⚠️</span><span class="exh-criteria-text" style="color:var(--amber)"><strong>Common fails:</strong> ${std.common_fails}</span></div>`:''}
+    </div>`;
+  }
+
+  // Next level preview
+  if(nextStd&&lv<5){
+    h+=`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Next level — Level ${lv+1}</div>
+    <div style="background:var(--bg2);border:1px solid rgba(0,229,255,0.2);border-radius:var(--rl);overflow:hidden;margin-bottom:14px">
+      <div style="padding:10px 12px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:700;font-family:var(--mono);color:var(--dk)">${nextStd.test_exercise||'Level '+(lv+1)}</span>
+      </div>
+      ${nextStd.pass_criteria?`<div class="exh-criteria-row"><span class="exh-criteria-icon">✓</span><span class="exh-criteria-text">${nextStd.pass_criteria}</span></div>`:''}
+      ${nextStd.load_standard?`<div class="exh-criteria-row" style="border-bottom:none"><span class="exh-criteria-icon">⚖️</span><span class="exh-criteria-text">${nextStd.load_standard}</span></div>`:''}
+    </div>`;
+  }
+
+  // Demo video
+  if(ex?.demo_url){
+    const embedUrl=ex.demo_url.replace('watch?v=','embed/').replace('youtu.be/','www.youtube.com/embed/');
+    h+=`<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:var(--rl);background:#000;margin-bottom:14px">
+      <iframe src="${embedUrl}?rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:var(--rl)" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+    </div>`;
+  }
+
+  h+=`</div>`;
+  return h;
 }
 
 function closeExHistory(){
   document.getElementById('ex-history-panel')?.classList.remove('active');
+  exHistoryTab='sets';
+}
+
+function openAssessmentForPattern(pid){
+  closeExHistory();
+  openAssessment(pid);
 }
 function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};extraSets={};rWorkout();rHome();}
 function addSet(ck,exKey){
@@ -7796,7 +8214,12 @@ function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().sli
 <div class="ex-history-panel" id="ex-history-panel">
   <div class="ex-history-topbar">
     <button class="back-btn" onclick="closeExHistory()">← Back</button>
-    <span id="ex-history-title" style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1"></span>
+    <span id="ex-history-title" style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+  </div>
+  <div class="exh-tabs">
+    <button class="exh-tab act" data-tab="sets" onclick="switchExTab('sets')">Sets</button>
+    <button class="exh-tab" data-tab="progress" onclick="switchExTab('progress')">Progress</button>
+    <button class="exh-tab" data-tab="guide" onclick="switchExTab('guide')">Guide</button>
   </div>
   <div class="ex-history-body" id="ex-history-body"></div>
 </div>
