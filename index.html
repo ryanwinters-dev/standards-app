@@ -2027,7 +2027,15 @@ function checkOnboarding(user){
   if(localStorage.getItem(OB_KEY))return; // already seen
   const name=user.user_metadata?.full_name||user.email||'';
   // Only show for athletes, not coaches
-  if(user.app_metadata?.role==='coach')return;
+  if(user.app_metadata?.role==='coach'){
+    localStorage.setItem(OB_KEY,'1'); // coaches never need onboarding
+    return;
+  }
+  // Auto-skip for returning users who already have assessment data
+  if(LOGS.length>0||Object.keys(AP).some(k=>AP[k]>0)||SETS.length>0){
+    localStorage.setItem(OB_KEY,'1');
+    return;
+  }
   initOnboarding(name);
 }
 
