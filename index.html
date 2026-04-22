@@ -1899,60 +1899,106 @@ function suggestedLoad(exId,intent,pid){
   return getProgressionLoad(exId,intent,pid);
 }
 // ── PROGRAMME ENGINE ──
-// Each circuit slot: {pid, intent, scheme}
-// scheme: 'heavy' = Force 3-5 reps | 'mod' = Control 8-12 | 'backoff' = Control 5-8
-// intent: 'bilateral' | 'unilateral' — drives exercise selection filter
+// Each slot: {pid, exType, intent, scheme}
+// exType: 'Main'|'Bridge'|'Limiter' — directly maps to exercises.type in DB
+// intent: 'bilateral'|'unilateral' — filters exercise selection
+// scheme: 'heavy'|'mod'|'backoff' — drives rep/set ranges
+//
+// DUPLICATE PREVENTION RULE:
+// When the same pattern appears multiple times in a day, each appearance
+// uses a different exType (Main → Bridge → Limiter/Unilateral)
+// e.g. Squat on D1: Main bilateral (Back Squat) → Bridge bilateral (Goblet Squat) → Main unilateral (Split Squat)
+// This guarantees no exercise ever repeats even with a sparse DB
+
 const CIRCUIT_TEMPLATES=[
-  // Day 1 — Push + Squat / Bilateral heavy
-  {id:'d1a', name:'Horizontal Strength', letter:'A',
-   slots:[{pid:'HPush',intent:'bilateral',scheme:'heavy'},{pid:'VPush',intent:'bilateral',scheme:'mod'}]},
-  {id:'d1b', name:'Squat Strength',      letter:'B',
-   slots:[{pid:'Squat',intent:'bilateral',scheme:'heavy'},{pid:'HPull',intent:'bilateral',scheme:'mod'}]},
-  {id:'d1c', name:'Squat Volume',        letter:'C',
-   slots:[{pid:'Squat',intent:'bilateral',scheme:'mod'}, {pid:'VPull',intent:'bilateral',scheme:'mod'}]},
-  {id:'d1d', name:'Unilateral & Carry',  letter:'D',
-   slots:[{pid:'Squat',intent:'unilateral',scheme:'mod'},{pid:'Carry',intent:'bilateral',scheme:'mod'}]},
-  // Day 2 — Pull + Hinge / Bilateral heavy
-  {id:'d2a', name:'Horizontal Pull Strength', letter:'A',
-   slots:[{pid:'HPull',intent:'bilateral',scheme:'heavy'},{pid:'VPull',intent:'bilateral',scheme:'mod'}]},
-  {id:'d2b', name:'Hinge Strength',      letter:'B',
-   slots:[{pid:'Hinge',intent:'bilateral',scheme:'heavy'},{pid:'VPush',intent:'bilateral',scheme:'mod'}]},
-  {id:'d2c', name:'Hinge Volume',        letter:'C',
-   slots:[{pid:'Hinge',intent:'bilateral',scheme:'mod'}, {pid:'HPush',intent:'bilateral',scheme:'mod'}]},
-  {id:'d2d', name:'Unilateral & Carry',  letter:'D',
-   slots:[{pid:'Hinge',intent:'unilateral',scheme:'mod'},{pid:'Carry',intent:'bilateral',scheme:'mod'}]},
-  // Day 3 — Push + Squat / Unilateral heavy
-  {id:'d3a', name:'Horizontal Unilateral', letter:'A',
-   slots:[{pid:'HPush',intent:'unilateral',scheme:'heavy'},{pid:'VPush',intent:'unilateral',scheme:'mod'}]},
-  {id:'d3b', name:'Squat Unilateral Strength', letter:'B',
-   slots:[{pid:'Squat',intent:'unilateral',scheme:'heavy'},{pid:'HPull',intent:'unilateral',scheme:'mod'}]},
-  {id:'d3c', name:'Squat Unilateral Volume',   letter:'C',
-   slots:[{pid:'Squat',intent:'unilateral',scheme:'mod'}, {pid:'VPull',intent:'unilateral',scheme:'mod'}]},
-  {id:'d3d', name:'Bilateral Backoff',   letter:'D',
-   slots:[{pid:'Squat',intent:'bilateral',scheme:'backoff'},{pid:'Core',intent:'bilateral',scheme:'mod'}]},
-  // Day 4 — Pull + Hinge / Unilateral heavy
-  {id:'d4a', name:'Pull Unilateral',     letter:'A',
-   slots:[{pid:'HPull',intent:'unilateral',scheme:'heavy'},{pid:'VPull',intent:'unilateral',scheme:'mod'}]},
-  {id:'d4b', name:'Hinge Unilateral Strength', letter:'B',
-   slots:[{pid:'Hinge',intent:'unilateral',scheme:'heavy'},{pid:'VPush',intent:'unilateral',scheme:'mod'}]},
-  {id:'d4c', name:'Hinge Unilateral Volume',   letter:'C',
-   slots:[{pid:'Hinge',intent:'unilateral',scheme:'mod'}, {pid:'HPush',intent:'unilateral',scheme:'mod'}]},
-  {id:'d4d', name:'Bilateral Backoff',   letter:'D',
-   slots:[{pid:'Hinge',intent:'bilateral',scheme:'backoff'},{pid:'Core',intent:'bilateral',scheme:'mod'}]},
+  // ── DAY 1: Push + Squat / Bilateral heavy ──
+  // HPush leads heavy. VPush secondary moderate. Squat progresses Main→Bridge→Unilateral
+  {id:'d1a',name:'Horizontal Strength',letter:'A',slots:[
+    {pid:'HPush',exType:'Main',   intent:'bilateral',  scheme:'heavy'},
+    {pid:'VPush',exType:'Bridge', intent:'bilateral',  scheme:'mod'},
+  ]},
+  {id:'d1b',name:'Squat Strength',letter:'B',slots:[
+    {pid:'Squat',exType:'Main',   intent:'bilateral',  scheme:'heavy'},
+    {pid:'HPull',exType:'Main',   intent:'bilateral',  scheme:'mod'},
+  ]},
+  {id:'d1c',name:'Squat Volume',letter:'C',slots:[
+    {pid:'Squat',exType:'Bridge', intent:'bilateral',  scheme:'mod'},
+    {pid:'VPull',exType:'Main',   intent:'bilateral',  scheme:'mod'},
+  ]},
+  {id:'d1d',name:'Unilateral & Carry',letter:'D',slots:[
+    {pid:'Squat',exType:'Main',   intent:'unilateral', scheme:'mod'},
+    {pid:'Carry',exType:'Main',   intent:'bilateral',  scheme:'mod'},
+  ]},
+
+  // ── DAY 2: Pull + Hinge / Bilateral heavy ──
+  // HPull leads heavy. VPull secondary moderate. Hinge progresses Main→Bridge→Unilateral
+  {id:'d2a',name:'Pull Strength',letter:'A',slots:[
+    {pid:'HPull',exType:'Main',   intent:'bilateral',  scheme:'heavy'},
+    {pid:'VPull',exType:'Bridge', intent:'bilateral',  scheme:'mod'},
+  ]},
+  {id:'d2b',name:'Hinge Strength',letter:'B',slots:[
+    {pid:'Hinge',exType:'Main',   intent:'bilateral',  scheme:'heavy'},
+    {pid:'VPush',exType:'Main',   intent:'bilateral',  scheme:'mod'},
+  ]},
+  {id:'d2c',name:'Hinge Volume',letter:'C',slots:[
+    {pid:'Hinge',exType:'Bridge', intent:'bilateral',  scheme:'mod'},
+    {pid:'HPush',exType:'Bridge', intent:'bilateral',  scheme:'mod'},
+  ]},
+  {id:'d2d',name:'Unilateral & Carry',letter:'D',slots:[
+    {pid:'Hinge',exType:'Main',   intent:'unilateral', scheme:'mod'},
+    {pid:'Carry',exType:'Main',   intent:'bilateral',  scheme:'mod'},
+  ]},
+
+  // ── DAY 3: Push + Squat / Unilateral heavy ──
+  // HPush unilateral leads heavy. Squat progresses Unilateral Main→Unilateral Bridge→Bilateral backoff
+  {id:'d3a',name:'Unilateral Push',letter:'A',slots:[
+    {pid:'HPush',exType:'Main',   intent:'unilateral', scheme:'heavy'},
+    {pid:'VPush',exType:'Main',   intent:'unilateral', scheme:'mod'},
+  ]},
+  {id:'d3b',name:'Squat Unilateral Strength',letter:'B',slots:[
+    {pid:'Squat',exType:'Main',   intent:'unilateral', scheme:'heavy'},
+    {pid:'HPull',exType:'Main',   intent:'unilateral', scheme:'mod'},
+  ]},
+  {id:'d3c',name:'Squat Unilateral Volume',letter:'C',slots:[
+    {pid:'Squat',exType:'Bridge', intent:'unilateral', scheme:'mod'},
+    {pid:'VPull',exType:'Main',   intent:'unilateral', scheme:'mod'},
+  ]},
+  {id:'d3d',name:'Bilateral Backoff',letter:'D',slots:[
+    {pid:'Squat',exType:'Limiter',intent:'bilateral',  scheme:'backoff'},
+    {pid:'Core', exType:'Main',   intent:'bilateral',  scheme:'mod'},
+  ]},
+
+  // ── DAY 4: Pull + Hinge / Unilateral heavy ──
+  // HPull unilateral leads heavy. Hinge progresses Unilateral Main→Unilateral Bridge→Bilateral backoff
+  {id:'d4a',name:'Unilateral Pull',letter:'A',slots:[
+    {pid:'HPull',exType:'Main',   intent:'unilateral', scheme:'heavy'},
+    {pid:'VPull',exType:'Main',   intent:'unilateral', scheme:'mod'},
+  ]},
+  {id:'d4b',name:'Hinge Unilateral Strength',letter:'B',slots:[
+    {pid:'Hinge',exType:'Main',   intent:'unilateral', scheme:'heavy'},
+    {pid:'VPush',exType:'Main',   intent:'unilateral', scheme:'mod'},
+  ]},
+  {id:'d4c',name:'Hinge Unilateral Volume',letter:'C',slots:[
+    {pid:'Hinge',exType:'Bridge', intent:'unilateral', scheme:'mod'},
+    {pid:'HPush',exType:'Main',   intent:'unilateral', scheme:'mod'},
+  ]},
+  {id:'d4d',name:'Bilateral Backoff',letter:'D',slots:[
+    {pid:'Hinge',exType:'Limiter',intent:'bilateral',  scheme:'backoff'},
+    {pid:'Core', exType:'Main',   intent:'bilateral',  scheme:'mod'},
+  ]},
 ];
 
 const DAY_PLAN=[
-  ['d1a','d1b','d1c','d1d'],  // D1: Push+Squat / Bilateral heavy
-  ['d2a','d2b','d2c','d2d'],  // D2: Pull+Hinge / Bilateral heavy
-  ['d3a','d3b','d3c','d3d'],  // D3: Push+Squat / Unilateral heavy
-  ['d4a','d4b','d4c','d4d'],  // D4: Pull+Hinge / Unilateral heavy
+  ['d1a','d1b','d1c','d1d'],
+  ['d2a','d2b','d2c','d2d'],
+  ['d3a','d3b','d3c','d3d'],
+  ['d4a','d4b','d4c','d4d'],
 ];
 
-// Rep scheme definitions
 const SCHEMES={
-  heavy:   {intent:'Force',       lo:3, hi:5,  sets:4, label:'Heavy'},
-  mod:     {intent:'Control',     lo:8, hi:12, sets:3, label:'Volume'},
-  backoff: {intent:'Control',     lo:5, hi:8,  sets:3, label:'Backoff'},
+  heavy:   {lo:3,hi:5, sets:4,label:'Heavy'},
+  mod:     {lo:8,hi:12,sets:3,label:'Volume'},
+  backoff: {lo:5,hi:8, sets:3,label:'Backoff'},
 };
 
 // ── AUTH ──
@@ -5506,68 +5552,51 @@ function getSetTargets(){
   return t;
 }
 
-// Get exercise for a slot — respects bilateral/unilateral intent and block rotation
-function getSlotExercise(pid, slotIntent, usedNames){
-  // Coach override takes priority
-  const overrideKey=`${pid}_${slotIntent==='unilateral'?'Unilateral':'Main'}`;
+// Select exercise for a slot — guaranteed no repeats within a session
+// Respects exType (Main/Bridge/Limiter), intent (bilateral/unilateral), and block rotation
+function getSlotExercise(pid, exType, slotIntent, usedNames){
+  // Coach override
+  const overrideKey=`${pid}_${exType}`;
   const overrideId=window.MY_OVERRIDES?.[overrideKey];
-  if(overrideId){const ov=EX.find(e=>e.id==overrideId);if(ov)return ov;}
+  if(overrideId){const ov=EX.find(e=>e.id==overrideId);if(ov&&!usedNames.has(ov.name))return ov;}
 
   const lv=AP[pid]||0;
   const block=blockNumber();
-
-  // Filter by intent: unilateral slots prefer Unilateral intent exercises
-  // bilateral slots prefer Force/Control — fall back to any if not enough variety
   const isUni=slotIntent==='unilateral';
-  const preferred=EX.filter(e=>
-    e.pattern_id===pid &&
-    e.level_focus===lv &&
-    (isUni ? e.intent==='Unilateral' : e.intent!=='Unilateral') &&
-    e.type==='Main'
-  );
-  const fallback=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type==='Main');
-  const pool=preferred.length?preferred:fallback;
 
-  if(!pool.length){
-    // Last resort — any exercise for this pattern at this level
-    const any=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv)
-      .find(e=>!usedNames.has(e.name));
-    return any||EX.find(e=>e.pattern_id===pid)||null;
+  // Build candidate pool — most specific first, progressively broaden
+  const pools=[
+    // 1. Exact match: right pattern, level, type, intent
+    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType&&(isUni?e.intent==='Unilateral':e.intent!=='Unilateral')),
+    // 2. Right pattern, level, type — ignore intent
+    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType),
+    // 3. Right pattern, level — any type, correct intent
+    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&(isUni?e.intent==='Unilateral':e.intent!=='Unilateral')),
+    // 4. Right pattern, level — any type any intent
+    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),
+    // 5. Adjacent level
+    EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1),
+    // 6. Any exercise for this pattern
+    EX.filter(e=>e.pattern_id===pid),
+  ];
+
+  for(const pool of pools){
+    if(!pool.length)continue;
+    // Try fresh (not used today) first, rotated by block
+    const fresh=pool.filter(e=>!usedNames.has(e.name));
+    if(fresh.length){
+      const idx=(block-1)%fresh.length;
+      return fresh[idx];
+    }
   }
-
-  // Rotate main exercise by block number
-  const blockIndex=(block-1)%pool.length;
-  const preferred2=pool[blockIndex];
-  if(!usedNames.has(preferred2.name))return preferred2;
-  // Try fresh one from pool
-  const fresh=pool.find(e=>!usedNames.has(e.name));
-  return fresh||preferred2;
+  return null;
 }
 
-// Keep getMainExercise and getExercise as thin wrappers for backwards compat
-function getMainExercise(pid,usedNames){
-  return getSlotExercise(pid,'bilateral',usedNames);
-}
-function getExercise(pid,type,usedNames){
-  const overrideId=window.MY_OVERRIDES?.[`${pid}_${type}`];
-  if(overrideId){const ov=EX.find(e=>e.id==overrideId);if(ov)return ov;}
-  const lv=AP[pid]||0;
-  const cands=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===type);
-  const fresh=cands.find(e=>!usedNames.has(e.name));
-  if(fresh)return fresh;
-  const anyFresh=EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv).find(e=>!usedNames.has(e.name));
-  if(anyFresh)return anyFresh;
-  for(const la of[lv+1,lv-1,lv+2]){
-    if(la<0||la>5)continue;
-    const adj=EX.filter(e=>e.pattern_id===pid&&e.level_focus===la).find(e=>!usedNames.has(e.name));
-    if(adj)return adj;
-  }
-  return cands[0]||EX.find(e=>e.pattern_id===pid&&e.level_focus===lv)||null;
-}
+// Keep backwards compat wrappers
+function getMainExercise(pid,usedNames){return getSlotExercise(pid,'Main','bilateral',usedNames);}
+function getExercise(pid,type,usedNames){return getSlotExercise(pid,type,'bilateral',usedNames);}
 
-// repStr — now accepts a scheme object directly or falls back to intent string
 function repStr(intentOrScheme,sets,week){
-  // If passed a scheme string ('heavy','mod','backoff') use SCHEMES
   if(SCHEMES[intentOrScheme]){
     const sc=SCHEMES[intentOrScheme];
     const wib=((week-1)%4)+1;
@@ -5577,7 +5606,6 @@ function repStr(intentOrScheme,sets,week){
     if(wib===4){s=Math.max(2,s-1);}
     return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
   }
-  // Legacy: intent string
   const r=RR[intentOrScheme]||RR.Control;
   const wib=((week-1)%4)+1;
   let lo=r.lo,hi=r.hi,s=sets;
@@ -5592,32 +5620,36 @@ function buildDay(di){
   const circuitMap={};
   CIRCUIT_TEMPLATES.forEach(c=>{circuitMap[c.id]=c});
 
-  // Build week-wide used set so no exercise name repeats across days 0..di
+  // Seed usedWeek with all exercises already assigned on days 0..di-1
+  // This prevents cross-day repeats
   const usedWeek=new Set();
   for(let d=0;d<di;d++){
     DAY_PLAN[d].forEach(cid=>{
       const tmpl=circuitMap[cid];if(!tmpl)return;
       tmpl.slots.forEach(slot=>{
-        const ex=getSlotExercise(slot.pid,slot.intent,usedWeek);
+        const ex=getSlotExercise(slot.pid,slot.exType,slot.intent,usedWeek);
         if(ex)usedWeek.add(ex.name);
       });
     });
   }
+
+  // usedToday tracks what's been assigned so far within this day
+  // Starts as a copy of usedWeek so within-day selection also avoids cross-day repeats
   const usedToday=new Set([...usedWeek]);
 
   const circuits=DAY_PLAN[di].map((cid,ci)=>{
     const tmpl=circuitMap[cid];if(!tmpl)return null;
-    const sc=SCHEMES[tmpl.slots[0]?.scheme]||SCHEMES.mod;
-    const circuitSets=sc.sets;
+    const circuitSets=SCHEMES[tmpl.slots[0]?.scheme]?.sets||3;
 
     const exercises=tmpl.slots.map(slot=>{
-      const ex=getSlotExercise(slot.pid,slot.intent,usedToday);
+      const ex=getSlotExercise(slot.pid,slot.exType,slot.intent,usedToday);
       if(ex)usedToday.add(ex.name);
       return{
         pid:slot.pid,
+        exType:slot.exType,
         intent:slot.intent,
         scheme:slot.scheme,
-        type:slot.intent==='unilateral'?'Main':'Main',
+        type:slot.exType,  // keep 'type' for backwards compat with buildExerciseCard
         ex,
         sets:circuitSets,
       };
