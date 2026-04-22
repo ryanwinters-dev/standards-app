@@ -472,64 +472,47 @@
     .circuit-tab{padding:8px 14px;border-radius:0;font-size:10px;font-weight:700;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;transition:all .2s;color:var(--mt);white-space:nowrap;flex-shrink:0}
     .circuit-tab.act{color:var(--gm);border-bottom-color:var(--gm)}
     .prof-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden}
-    /* Radar */
-    .prof-radar-wrap{flex:0 0 auto;height:26vh;max-height:190px;min-height:120px;display:flex;align-items:center;justify-content:center;padding:2px 28px 0}
-    .prof-radar-wrap svg{width:100%;height:100%;max-width:230px}
-    /* Pattern grid — fills remaining space between radar and card */
-    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:0 16px;flex:1;min-height:0;margin-bottom:0;align-content:stretch}
-    .pc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:5px 5px;cursor:pointer;transition:border-color .2s;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}
-    .pc:hover{border-color:var(--brm)}
-    .pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1px}
-    .pc-name{font-size:8px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pc-level{font-size:18px;font-weight:700;line-height:1;font-family:var(--mono)}
-    .pc-of5{font-size:9px;color:var(--mt);font-family:var(--mono)}
-    .pc-bar{height:2px;background:var(--br);border-radius:1px;margin-top:3px;overflow:hidden}
-    .pc-bar-fill{height:100%;border-radius:1px;transition:width .5s ease}
-    /* Benchmark strip */
-    .prof-bm-strip{display:flex;gap:2px;padding:4px 16px;flex-shrink:0}
-    .prof-bm-item{flex:1;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:5px 4px;cursor:pointer;transition:border-color .2s;text-align:center}
-    .prof-bm-item:hover{border-color:var(--gm)}
-    .prof-bm-item.active{border-color:rgba(0,255,148,0.3)}
-    .prof-bm-name{font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--mt);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .prof-bm-pb{font-size:11px;font-weight:700;font-family:var(--mono)}
-    /* Floating card */
-    .prof-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:16px 16px 0 0;padding:10px 14px calc(4px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -8px 32px rgba(0,0,0,.5)}
-    .prof-card-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:8px}
-    .prof-stat-tile{text-align:center}
-    .prof-stat-val{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
-    .prof-stat-label{font-size:7px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px}
-    .prof-action-row{display:flex;gap:5px}
-    .prof-action-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:7px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:all .2s;text-align:center;min-width:0}
-    .prof-action-tile:hover{border-color:var(--gm);background:rgba(0,229,255,0.04)}
-    .prof-action-tile:active{background:rgba(0,229,255,0.08)}
-    .prof-action-icon{font-size:14px;line-height:1}
-    .prof-action-label{font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt)}
     /* Profile header */
-    .av{width:44px;height:44px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid var(--gm);color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:var(--mono);flex-shrink:0}
-    .pn{font-size:15px;font-weight:700;font-family:var(--mono)}.ps{font-size:10px;color:var(--mt);margin-top:1px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
-    .sc{margin-left:auto;background:rgba(0,229,255,0.08);color:var(--gm);padding:3px 8px;border:1px solid rgba(0,229,255,0.3);font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;border-radius:var(--r)}
-    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:14px}
-
-    /* Pattern tile — compact 4-col design */
-    .pc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:6px 6px;cursor:pointer;transition:border-color .2s;position:relative;min-width:0;overflow:hidden}
-    .pc:hover{border-color:var(--brm)}.pc.act{border-color:var(--gm)}
-    .pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
-    .pc-name{font-size:9px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono)}
-    .pc-level{font-size:22px;font-weight:700;line-height:1;letter-spacing:-1px;font-family:var(--mono)}
-    .pc-of5{font-size:10px;color:var(--mt);font-weight:400;margin-left:1px}
-    .pc-bar{height:2px;background:var(--br);border-radius:1px;margin-top:5px;overflow:hidden}
-    .pc-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
-    .pc-test-btn{display:flex;align-items:center;justify-content:center;width:100%;margin-top:6px;padding:4px;background:var(--bg);border:0.5px solid var(--br);border-radius:5px;font-size:10px;font-weight:600;color:var(--md);cursor:pointer;font-family:var(--fn);transition:all .15s}
-    .pc-test-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
-    .pc-hist-btn{position:absolute;top:7px;right:7px;width:16px;height:16px;border-radius:50%;border:0.5px solid var(--br);background:var(--bg);cursor:pointer;font-size:9px;color:var(--mt);display:flex;align-items:center;justify-content:center;transition:all .15s}
-    .pc-hist-btn:hover{background:var(--gm);color:#fff;border-color:var(--gm)}
-    .pc-pending{margin-top:6px;padding:5px 6px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:5px}
-    .pc-pending-label{font-size:9px;font-weight:600;color:var(--amber);margin-bottom:3px}
-
-    /* Pattern test history dropdown */
-    .pat-hist{background:var(--bg);border-radius:6px;padding:6px 8px;margin-top:6px;font-size:11px}
-    .pat-hist-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:0.5px solid var(--br)}
-    .pat-hist-row:last-child{border-bottom:none}
+    .ph{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid var(--br);flex-shrink:0}
+    .av{width:40px;height:40px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.4);color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:var(--mono);flex-shrink:0;overflow:hidden}
+    .pn{font-size:15px;font-weight:700;font-family:var(--mono);color:var(--dk)}
+    .ps{font-size:10px;color:var(--mt);margin-top:1px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
+    .sc{background:rgba(0,229,255,0.08);color:var(--gm);padding:4px 10px;border:1px solid rgba(0,229,255,0.25);font-size:12px;font-weight:700;font-family:var(--mono);white-space:nowrap;border-radius:var(--r)}
+    /* Radar */
+    .prof-radar-wrap{flex:0 0 auto;height:28vh;max-height:200px;min-height:130px;display:flex;align-items:center;justify-content:center;padding:6px 20px 4px}
+    .prof-radar-wrap svg{width:100%;height:100%;max-width:220px}
+    /* Pattern grid — 4×2, fills remaining space */
+    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:0 12px;flex:1;min-height:0;align-content:stretch}
+    .pc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:8px 8px 6px;cursor:pointer;transition:border-color .2s;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column}
+    .pc:hover{border-color:var(--brm)}
+    .pc:active{border-color:var(--gm);background:rgba(0,229,255,0.04)}
+    .pc-name{font-size:8px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pc-level-row{display:flex;align-items:baseline;gap:2px;margin-bottom:auto}
+    .pc-level{font-size:22px;font-weight:700;line-height:1;font-family:var(--mono)}
+    .pc-of5{font-size:10px;color:var(--mt);font-family:var(--mono)}
+    .pc-bar{height:2px;background:var(--br);border-radius:1px;margin-top:6px;overflow:hidden;flex-shrink:0}
+    .pc-bar-fill{height:100%;border-radius:1px;transition:width .6s ease}
+    /* Benchmark strip */
+    .prof-bm-strip{display:flex;gap:3px;padding:4px 12px;flex-shrink:0}
+    .prof-bm-item{flex:1;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:6px 5px;cursor:pointer;transition:border-color .2s;text-align:center;min-width:0}
+    .prof-bm-item:active{border-color:var(--gm)}
+    .prof-bm-item.active{border-color:rgba(0,255,148,0.3);background:rgba(0,255,148,0.03)}
+    .prof-bm-name{font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mt);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .prof-bm-pb{font-size:12px;font-weight:700;font-family:var(--mono)}
+    /* Floating card */
+    .prof-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:16px 16px 0 0;padding:10px 14px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -8px 24px rgba(0,0,0,.6)}
+    .prof-card-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--br)}
+    .prof-stat-tile{text-align:center}
+    .prof-stat-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
+    .prof-stat-label{font-size:7px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px}
+    .prof-action-row{display:flex;gap:4px}
+    .prof-action-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:all .2s;text-align:center;min-width:0}
+    .prof-action-tile:active{border-color:var(--gm);background:rgba(0,229,255,0.06)}
+    .prof-action-icon{font-size:15px;line-height:1}
+    .prof-action-label{font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--mt)}
+    /* Pattern pending */
+    .pc-pending{margin-top:4px;padding:3px 5px;background:rgba(255,179,64,0.1);border:1px solid rgba(255,179,64,0.3);border-radius:3px}
+    .pc-pending-label{font-size:8px;font-weight:700;color:var(--amber);font-family:var(--mono)}
 
     /* Calendar — horizontal week scroll */
     .cal-wrap{background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px}
@@ -6926,18 +6909,17 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   const patGrid=`<div class="pg">
     ${PATS.map(pid=>{
       const lv=scores[pid]||0;
-      const col=LC[lv];
+      const col=LC[lv]||'var(--mt)';
       const pending=(pendingTests||[]).find(p=>p.pattern_id===pid);
-      return`<div class="pc${pending&&isCoach?' has-pending':''}" onclick="openPatternPage('${pid}','${athleteId}',${isCoach})">
-        <div class="pc-top">
-          <span class="pc-name">${PL[pid]}</span>
-          ${pending&&isCoach?`<span style="font-size:8px;color:var(--amber)">⏳</span>`:''}
-        </div>
-        <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:2px">
+      const pct=Math.round((lv/5)*100);
+      return`<div class="pc" onclick="openPatternPage('${pid}','${athleteId}',${isCoach})">
+        <div class="pc-name">${PL[pid]}</div>
+        <div class="pc-level-row">
           <span class="pc-level" style="color:${col}">${lv}</span>
-          <span class="pc-of5">/ 5</span>
+          <span class="pc-of5">/5</span>
         </div>
-        <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
+        ${pending&&isCoach?`<div class="pc-pending"><div class="pc-pending-label">⏳ Pending</div></div>`:''}
+        <div class="pc-bar"><div class="pc-bar-fill" style="width:${pct}%;background:${col}"></div></div>
       </div>`;
     }).join('')}
   </div>`;
