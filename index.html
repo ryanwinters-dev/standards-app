@@ -4240,23 +4240,30 @@ async function loadStaticData(){
       const{std,ex}=JSON.parse(cached);
       if(std?.length&&ex?.length){
         STD=std;EX=ex;
-        return; // served from cache — instant
+        return;
       }
     }
   }catch(e){console.warn('Cache read failed:',e);}
 
-  // Not cached or stale — fetch from Supabase
-  const[stdRes,exRes]=await Promise.all([
-    sb.from('standards').select('*').order('pattern_id').order('level'),
-    sb.from('exercises').select('*'),
-  ]);
-  STD=stdRes.data||[];
-  EX=exRes.data||[];
-
-  // Store in cache
+  // Not cached — fetch from Supabase
   try{
-    localStorage.setItem(CACHE_VERSION,JSON.stringify({std:STD,ex:EX}));
-  }catch(e){console.warn('Cache write failed:',e);}
+    const[stdRes,exRes]=await Promise.all([
+      sb.from('standards').select('*').order('pattern_id').order('level'),
+      sb.from('exercises').select('*'),
+    ]);
+    if(stdRes.error)console.warn('Standards fetch error:',stdRes.error.message);
+    if(exRes.error)console.warn('Exercises fetch error:',exRes.error.message);
+    STD=stdRes.data||[];
+    EX=exRes.data||[];
+    // Cache if we got something useful
+    if(STD.length||EX.length){
+      try{localStorage.setItem(CACHE_VERSION,JSON.stringify({std:STD,ex:EX}));}
+      catch(e){console.warn('Cache write failed:',e);}
+    }
+  }catch(e){
+    console.warn('loadStaticData fetch failed — continuing without static data:',e.message);
+    STD=STD||[];EX=EX||[];
+  }
 }
 
 // Call this from dev console to force refresh static data after exercise updates
@@ -4299,8 +4306,12 @@ async function load(){
     USER_SUB=null;USER_TIER='free';
     AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
 
-    // Render athlete views immediately
-    rHome();rWorkout();rProfile();rLB();
+    // Render athlete views — isolated so UI errors don't kill load
+    const safeRender=(fn,name)=>{try{fn();}catch(e){console.error(`${name} render error:`,e);}};
+    safeRender(rHome,'rHome');
+    safeRender(rWorkout,'rWorkout');
+    safeRender(rProfile,'rProfile');
+    safeRender(rLB,'rLB');
 
     // Load overrides and notes for athlete workout
     loadAthleteOverrides().then(()=>rWorkout());
@@ -4355,7 +4366,12 @@ async function load(){
     }
   }catch(err){
     console.error('Load error:',err);
-    document.getElementById('v-home').innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}<br><br><button class="btn btn-dk" onclick="load()" style="margin-top:8px">Retry</button></div>`;
+    document.getElementById('v-home').innerHTML=`<div class="empty"><div class="ei">⚠️</div>
+      <div style="font-size:14px;font-weight:700;color:var(--dk);margin-bottom:6px">Load failed</div>
+      <div style="font-size:12px;color:var(--mt);margin-bottom:4px">${err.message||'Unknown error'}</div>
+      <div style="font-size:11px;color:var(--mt);margin-bottom:16px">Check your connection and try again</div>
+      <button class="btn btn-dk" onclick="load()" style="margin-top:8px">Retry</button>
+    </div>`;
   }
 }
 
