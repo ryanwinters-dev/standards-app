@@ -109,8 +109,7 @@
     .btn:hover{opacity:.8}.btn:disabled{opacity:.3;cursor:not-allowed}
     .msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
     .msg.err{color:var(--red)}.msg.ok{color:var(--pass)}
-    #app{display:none}
-    #v-home{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));max-height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
+        #v-home{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));max-height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
     #v-profile{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
     #v-workout{position:fixed;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(65px + env(safe-area-inset-bottom));overflow:hidden;display:none;background:var(--bg)}
     #v-workout.active{display:flex!important;flex-direction:column;z-index:5}
@@ -126,7 +125,7 @@
     *{scrollbar-width:none}
 
     /* ── APP SHELL ── */
-    #app{display:none;position:fixed;inset:0;display:flex;flex-direction:column;max-width:480px;margin:0 auto;overflow:hidden}
+    #app{display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden}
     #app.visible{display:flex}
 
     /* ── TOPBAR ── */
@@ -198,9 +197,6 @@
     .topbar-av{width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,0.1);border:1.5px solid rgba(0,229,255,0.3);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color .2s;flex-shrink:0}
     .topbar-av:hover{border-color:var(--gm)}
     .topbar-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-    .nav-tabs{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--bg2);border-top:1px solid var(--br);padding:0;padding-bottom:max(env(safe-area-inset-bottom), 8px)}
-    .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 6px;font-size:9px;font-weight:700;border:none;background:transparent;cursor:pointer;color:var(--mt);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;transition:color .2s;position:relative;min-width:0}
-    .nav-tab .nav-icon{font-size:20px;line-height:1;display:block}
     .nav-tab .nav-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center}
     .nav-tab.active{color:var(--gm)}
     .nav-tab.active .nav-icon{filter:drop-shadow(0 0 4px rgba(0,229,255,0.4))}
@@ -216,8 +212,7 @@
     .log-sheet-tile-icon{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center}
     .log-sheet-tile-title{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--dk)}
     .log-sheet-tile-sub{font-size:12px;color:var(--mt);line-height:1.4}
-    .main{padding:20px 16px 80px;max-width:640px;margin:0 auto;background:var(--bg)}
-    .view{display:none!important}.view.active{display:block}
+        .view{display:none!important}.view.active{display:block}
     #v-workout.active{display:flex!important;flex-direction:column}
     #v-home.active{display:flex!important;flex-direction:column}
     #v-profile.active{display:flex!important;flex-direction:column}
@@ -1697,16 +1692,22 @@
   <div class="topbar">
     <div class="tl"><span class="bracket">[</span>RADAR<span class="bracket">]</span></div>
     <div class="topbar-r">
-      <!-- Chat bubble -->
       <button class="topbar-chat" onclick="openMessagesOverlay()" aria-label="Messages">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         <span class="topbar-chat-badge" id="msg-badge"></span>
       </button>
-      <!-- Avatar → settings -->
       <div class="topbar-av" id="topbar-av" onclick="openSettings()"></div>
     </div>
   </div>
-  <div class="nav-tabs" id="nav-tabs">
+  <div class="main">
+    <div id="v-home" class="view active"></div>
+    <div id="v-workout" class="view"></div>
+    <div id="v-profile" class="view"></div>
+    <div id="v-leaderboard" class="view"></div>
+    <div id="v-messages" class="view" style="display:none"></div>
+    <div id="v-coach" style="display:none;padding:16px;overflow-y:auto;width:100%"></div>
+  </div>
+  <nav class="nav-dock" id="nav-tabs">
     <button class="nav-tab active" onclick="showTab('home',this)">
       <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
       <span class="nav-label">Home</span>
@@ -1715,7 +1716,7 @@
       <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M1 8h5M18 8h5M1 16h5M18 16h5"/></svg></span>
       <span class="nav-label">Train</span>
     </button>
-    <button class="nav-tab nav-tab-plus" onclick="openLogSheet()">
+    <button class="nav-tab" onclick="openLogSheet()">
       <span class="nav-icon">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
           <circle cx="14" cy="14" r="14" fill="#00E5FF"/>
@@ -1733,16 +1734,7 @@
       <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
       <span class="nav-label">Profile</span>
     </button>
-
-  </div>
-  <div class="main">
-    <div id="v-home" class="view active"></div>
-    <div id="v-workout" class="view"></div>
-    <div id="v-profile" class="view"></div>
-    <div id="v-leaderboard" class="view"></div>
-    <div id="v-messages" class="view" style="display:none"></div>
-    <div id="v-coach" style="display:none;padding:16px;padding-bottom:80px;max-width:640px;margin:0 auto;width:100%"></div>
-  </div>
+  </nav>
 </div>
 
 <!-- ONBOARDING -->
@@ -4388,7 +4380,7 @@ function showApp(user){
   USER_AVATAR_URL=user.user_metadata?.avatar_url||null;
   document.getElementById('landing').style.display='none';
   document.getElementById('auth-modal').classList.remove('open');
-  document.getElementById('app').style.display='block';
+  document.getElementById('app').style.display='flex';
   // Populate avatar in topbar
   updateTopbarAvatar();
   // Set home as active (index 0)
