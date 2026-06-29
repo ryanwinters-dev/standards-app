@@ -25,24 +25,71 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      /* RADAR Backgrounds */
-      --bg:#080808;--bg2:#0F0F0F;--bg3:#161616;
-      /* RADAR Text */
-      --dk:#FFFFFF;--md:rgba(255,255,255,0.70);--mt:rgba(255,255,255,0.45);
-      /* RADAR Borders */
-      --br:rgba(255,255,255,0.08);--brm:rgba(255,255,255,0.15);
-      /* RADAR Accent */
-      --gm:#00E5FF;--gd:#00E5FF;--gl:rgba(0,229,255,0.10);
-      /* RADAR Pass state */
-      --pass:#00FF94;--pass-dim:rgba(0,255,148,0.10);
-      /* Card surface (legacy --cd) */
-      --cd:#0F0F0F;
-      /* Fonts */
-      --fn:'DM Sans',sans-serif;--mono:'Space Mono',monospace;
-      /* Status colours */
-      --red:#FF4444;--amber:#FFB340;
-      /* Radius — keep tight per brand */
-      --r:4px;--rl:8px;
+      /* ── BACKGROUNDS ── */
+      --bg:#080808;
+      --bg2:#0F0F0F;
+      --bg3:#161616;
+      --bg4:#1C1C1C;
+
+      /* ── TEXT ── */
+      --dk:#F0F0F0;
+      --md:rgba(240,240,240,0.65);
+      --mt:rgba(240,240,240,0.38);
+      --ms:rgba(240,240,240,0.22);
+
+      /* ── BORDERS ── */
+      --br:rgba(255,255,255,0.07);
+      --brm:rgba(255,255,255,0.12);
+      --brl:rgba(255,255,255,0.18);
+
+      /* ── BRAND ACCENT — use sparingly ── */
+      --gm:#00E5FF;
+      --gd:#00B8CC;
+      --gl:rgba(0,229,255,0.08);
+      --gml:rgba(0,229,255,0.15);
+
+      /* ── SEMANTIC COLOURS ── */
+      --pass:#00C896;
+      --pass-dim:rgba(0,200,150,0.10);
+      --pass-border:rgba(0,200,150,0.25);
+      --warn:#F59E0B;
+      --warn-dim:rgba(245,158,11,0.10);
+      --warn-border:rgba(245,158,11,0.25);
+      --red:#F04444;
+      --red-dim:rgba(240,68,68,0.10);
+      --red-border:rgba(240,68,68,0.25);
+      --purple:rgba(139,92,246,0.80);
+      --purple-dim:rgba(139,92,246,0.10);
+      --purple-border:rgba(139,92,246,0.25);
+
+      /* ── TYPOGRAPHY ── */
+      --fn:'DM Sans',sans-serif;
+      --mono:'Space Mono',monospace;
+
+      /* ── SPACING SCALE (4px base) ── */
+      --s1:4px;
+      --s2:8px;
+      --s3:12px;
+      --s4:16px;
+      --s5:20px;
+      --s6:24px;
+      --s8:32px;
+      --s10:40px;
+      --s12:48px;
+
+      /* ── RADIUS ── */
+      --r:6px;
+      --rl:12px;
+      --rx:20px;
+
+      /* ── SHADOWS ── */
+      --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+      --shadow-md:0 4px 16px rgba(0,0,0,.5);
+      --shadow-lg:0 8px 32px rgba(0,0,0,.7);
+      --shadow-up:0 -8px 32px rgba(0,0,0,.6);
+
+      /* ── LEGACY COMPAT ── */
+      --cd:#0F0F0F;--amber:#F59E0B;--pass:#00C896;
     }
     body{font-family:var(--fn);background:var(--bg);color:var(--dk);min-height:100vh;-webkit-font-smoothing:antialiased}
     #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -67,8 +114,82 @@
     #v-profile{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
     #v-workout{position:fixed;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(65px + env(safe-area-inset-bottom));overflow:hidden;display:none;background:var(--bg)}
     #v-workout.active{display:flex!important;flex-direction:column;z-index:5}
-    .topbar{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:10px;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .tl{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}.tl .bracket{color:var(--gm)}
+    /* ── GLOBAL RESET ── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html{font-size:16px;-webkit-text-size-adjust:100%}
+    body{background:var(--bg);color:var(--dk);font-family:var(--fn);overflow:hidden;height:100dvh;width:100vw}
+    input[type=number]{-moz-appearance:textfield}
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+    button{font-family:var(--fn);cursor:pointer}
+    ::-webkit-scrollbar{display:none}
+    *{scrollbar-width:none}
+
+    /* ── APP SHELL ── */
+    #app{display:none;position:fixed;inset:0;display:flex;flex-direction:column;max-width:480px;margin:0 auto;overflow:hidden}
+    #app.visible{display:flex}
+
+    /* ── TOPBAR ── */
+    .topbar{
+      flex-shrink:0;
+      background:var(--bg);
+      border-bottom:1px solid var(--br);
+      padding:0 var(--s4);
+      padding-top:env(safe-area-inset-top);
+      height:calc(52px + env(safe-area-inset-top));
+      display:flex;align-items:flex-end;padding-bottom:10px;
+      justify-content:space-between;
+      position:relative;z-index:100;
+    }
+    .tl{font-size:15px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;color:var(--dk)}
+    .tl span{color:var(--gm)}
+    .tr{display:flex;align-items:center;gap:var(--s2)}
+    .topbar-icon-btn{width:32px;height:32px;border-radius:50%;background:var(--bg2);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+    .topbar-icon-btn:active{background:var(--bg3);border-color:var(--brm)}
+
+    /* ── MAIN VIEWS CONTAINER ── */
+    .main{flex:1;overflow:hidden;position:relative;background:var(--bg)}
+    .view{display:none!important;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+    .view.active{display:flex!important;flex-direction:column}
+    #v-workout.active{display:flex!important;flex-direction:column;overflow:hidden}
+    #v-home.active,#v-profile.active{display:flex!important;flex-direction:column;overflow:hidden}
+    #v-leaderboard.active{display:flex!important;flex-direction:column}
+
+    /* ── NAV DOCK ── */
+    .nav-dock{
+      flex-shrink:0;
+      background:var(--bg);
+      border-top:1px solid var(--br);
+      padding-bottom:env(safe-area-inset-bottom);
+      display:flex;
+      height:calc(58px + env(safe-area-inset-bottom));
+      position:relative;z-index:100;
+    }
+    .nav-tab{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:3px;background:transparent;border:none;color:var(--mt);
+      font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;
+      text-transform:uppercase;transition:color .2s;padding-bottom:2px;
+    }
+    .nav-tab svg,.nav-tab .nav-icon{font-size:18px;line-height:1;transition:transform .2s}
+    .nav-tab.active{color:var(--gm)}
+    .nav-tab.active .nav-icon{transform:translateY(-1px)}
+
+    /* ── SHARED COMPONENTS ── */
+    .back-btn{font-size:13px;color:var(--mt);background:none;border:none;font-family:var(--fn);padding:4px 0;display:flex;align-items:center;gap:4px;transition:color .15s}
+    .back-btn:active{color:var(--dk)}
+    .btn{padding:12px 20px;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--fn);border:none;transition:all .15s;cursor:pointer}
+    .btn-gm{background:var(--gm);color:#000;font-weight:700}
+    .btn-gm:active{opacity:.85}
+    .btn-dk{background:var(--bg3);color:var(--dk);border:1px solid var(--brm)}
+    .btn-dk:active{background:var(--bg4)}
+    .btn-full{width:100%}
+    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:48px 24px;text-align:center;gap:12px;color:var(--mt)}
+    .ei{font-size:36px;margin-bottom:4px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}.tl .bracket{color:var(--gm)}
     .topbar-r{display:flex;align-items:center;gap:12px}
     .topbar-chat{width:34px;height:34px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;color:var(--mt);transition:color .2s}
     .topbar-chat:hover{color:var(--gm)}
@@ -168,36 +289,109 @@
     .ei{font-size:32px;margin-bottom:8px}
 
     /* ── HOME SCREEN — fixed single screen ── */
-    .home-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden;background:var(--bg)}
-    /* Check-in strip — AM/PM */
-    .home-checkin-strip{padding:10px 16px 6px;flex-shrink:0;border-bottom:1px solid var(--br)}
-    .home-ci-row{display:flex;align-items:center;gap:8px}
-    .home-ci-session-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);cursor:pointer;transition:all .2s;flex-shrink:0;min-width:52px;justify-content:center}
-    .home-ci-session-btn.done{background:rgba(0,255,148,0.1);border-color:rgba(0,255,148,0.4)}
-    .home-ci-session-btn.done-pm{background:rgba(150,120,255,0.1);border-color:rgba(150,120,255,0.4)}
-    .home-ci-btn-label{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--mt)}
-    .home-ci-session-btn.done .home-ci-btn-label{color:var(--pass)}
-    .home-ci-session-btn.done-pm .home-ci-btn-label{color:rgba(150,120,255,0.9)}
-    .home-ci-dots{display:flex;gap:3px;flex:1;align-items:center}
-    .home-ci-pip{flex:1;height:3px;border-radius:1.5px;background:var(--br);transition:background .3s}
-    .home-ci-pip.done{background:var(--pass)}
-    .home-ci-pip.done-pm{background:rgba(150,120,255,0.7)}
-    .home-ci-pip.today{background:var(--gm);opacity:.4}
-    /* Radar — fills remaining space */
-    .home-radar-wrap{flex:1;position:relative;min-height:0;overflow:hidden}
-    .home-radar-slides{display:flex;width:200%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1);touch-action:pan-y;user-select:none;-webkit-user-select:none;will-change:transform}
-    .home-radar-slide{width:50%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px 0}
-    .home-radar-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:0 16px}
-    .home-radar-inner svg{width:100%;height:100%;max-width:100%;max-height:100%}
-    .home-slide-dots{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
-    .home-slide-dot{width:5px;height:5px;border-radius:50%;background:var(--br);transition:all .2s}
-    .home-slide-dot.active{background:var(--gm);width:16px;border-radius:2.5px}
-    /* Benchmark slide */
-    .home-bench-slide{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:16px 20px}
-    .home-bench-title{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:12px}
-    .home-bench-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;gap:10px}
-    /* Bottom card — no scroll, fixed height */
-    .home-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:16px 16px 0 0;padding:14px 16px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -8px 32px rgba(0,0,0,.5)}
+    /* ══════════════════════════════════════
+       HOME — DASHBOARD
+    ══════════════════════════════════════ */
+    #v-home{background:var(--bg)}
+    .home-shell{display:flex;flex-direction:column;height:100%;overflow:hidden}
+
+    /* Header */
+    .home-hdr{flex-shrink:0;padding:var(--s4) var(--s4) var(--s3);display:flex;align-items:center;justify-content:space-between}
+    .home-greeting{font-size:22px;font-weight:700;color:var(--dk);letter-spacing:-.02em;line-height:1.1}
+    .home-greeting-sub{font-size:13px;color:var(--mt);margin-top:2px;font-family:var(--fn)}
+    .home-streak-badge{display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--warn-dim);border:1px solid var(--warn-border);border-radius:var(--rx);flex-shrink:0}
+    .home-streak-num{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--warn)}
+    .home-streak-icon{font-size:14px}
+
+    /* Scrollable content area */
+    .home-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 var(--s4) calc(var(--s6) + env(safe-area-inset-bottom))}
+    .home-scroll::-webkit-scrollbar{display:none}
+
+    /* Next focus — primary action card */
+    .home-focus-card{
+      background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);
+      border:1px solid var(--brm);border-radius:var(--rl);
+      padding:var(--s4) var(--s5);margin-bottom:var(--s3);
+      cursor:pointer;transition:all .2s;overflow:hidden;position:relative;
+      animation:fadeIn .3s ease;
+    }
+    .home-focus-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,var(--gm),transparent);
+      border-radius:var(--rl) var(--rl) 0 0;
+    }
+    .home-focus-card:active{border-color:var(--gm);background:rgba(0,229,255,0.04)}
+    .home-focus-eyebrow{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gm);margin-bottom:var(--s2)}
+    .home-focus-title{font-size:20px;font-weight:700;color:var(--dk);letter-spacing:-.01em;margin-bottom:var(--s1)}
+    .home-focus-sub{font-size:13px;color:var(--mt)}
+    .home-focus-meta{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s3)}
+    .home-focus-tag{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px}
+    .home-focus-tag.heavy{background:rgba(240,68,68,0.12);color:var(--red);border:1px solid var(--red-border)}
+    .home-focus-tag.mod{background:var(--gl);color:var(--gm);border:1px solid var(--gml)}
+    .home-focus-cta{margin-left:auto;font-size:12px;font-weight:700;font-family:var(--mono);color:var(--gm);display:flex;align-items:center;gap:4px}
+
+    /* Stats row — horizontal scroll */
+    .home-stats-row{display:flex;gap:var(--s2);margin-bottom:var(--s3);overflow-x:auto;padding-bottom:2px}
+    .home-stats-row::-webkit-scrollbar{display:none}
+    .home-stat-card{flex-shrink:0;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3) var(--s4);min-width:88px;transition:border-color .2s}
+    .home-stat-card:active{border-color:var(--brm)}
+    .home-stat-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1;margin-bottom:4px}
+    .home-stat-label{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)}
+
+    /* Check-in section */
+    .home-section-label{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mt);margin-bottom:var(--s2)}
+    .home-ci-card{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3) var(--s4);margin-bottom:var(--s3)}
+    .home-ci-row{display:flex;align-items:center;gap:var(--s3);padding:var(--s2) 0}
+    .home-ci-row+.home-ci-row{border-top:1px solid var(--br)}
+    .home-ci-btn{display:flex;align-items:center;gap:var(--s2);padding:6px 12px;border-radius:var(--r);border:1px solid var(--br);background:var(--bg3);transition:all .2s;flex-shrink:0;min-width:64px;justify-content:center;cursor:pointer}
+    .home-ci-btn.done-am{background:var(--pass-dim);border-color:var(--pass-border)}
+    .home-ci-btn.done-pm{background:var(--purple-dim);border-color:var(--purple-border)}
+    .home-ci-btn-icon{font-size:12px}
+    .home-ci-btn-label{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;color:var(--mt)}
+    .home-ci-btn.done-am .home-ci-btn-label{color:var(--pass)}
+    .home-ci-btn.done-pm .home-ci-btn-label{color:var(--purple)}
+    .home-ci-pips{display:flex;gap:3px;flex:1;align-items:center}
+    .home-ci-pip{flex:1;height:3px;border-radius:2px;background:var(--br);transition:background .3s}
+    .home-ci-pip.am{background:var(--pass)}
+    .home-ci-pip.pm{background:var(--purple)}
+    .home-ci-pip.today-empty{background:var(--brm);animation:pulse 2s ease infinite}
+    .home-ci-status{font-size:10px;font-family:var(--mono);color:var(--mt);flex-shrink:0;letter-spacing:.04em}
+
+    /* Radar + benchmark slides */
+    .home-viz-wrap{position:relative;margin-bottom:var(--s3);border-radius:var(--rl);overflow:hidden;background:var(--bg2);border:1px solid var(--br)}
+    .home-viz-slides{display:flex;width:200%;transition:transform .35s cubic-bezier(.4,0,.2,1);touch-action:pan-y;user-select:none;will-change:transform}
+    .home-viz-slide{width:50%;display:flex;flex-direction:column;min-height:220px}
+    .home-radar-slide-inner{flex:1;display:flex;align-items:center;justify-content:center;padding:var(--s3)}
+    .home-radar-slide-inner svg{width:100%;height:auto;max-height:180px;max-width:200px}
+    .home-radar-score-row{display:flex;align-items:center;justify-content:space-between;padding:var(--s3) var(--s4);border-top:1px solid var(--br);flex-shrink:0}
+    .home-radar-score-label{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)}
+    .home-radar-score-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--gm)}
+    .home-bench-slide-inner{flex:1;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s2);overflow-y:auto}
+    .home-bench-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s1)}
+    .home-bench-row{display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s3);border-radius:var(--r);background:var(--bg3);border:1px solid var(--br);cursor:pointer;transition:all .2s}
+    .home-bench-row.active{border-color:var(--pass-border);background:var(--pass-dim)}
+    .home-bench-row:active{border-color:var(--gm)}
+    .home-bench-name{font-size:12px;font-weight:600;color:var(--dk);flex:1}
+    .home-bench-pb{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--gm)}
+    .home-bench-pb.no-pb{color:var(--mt)}
+    .home-bench-levels{display:flex;gap:3px;align-items:center}
+    .home-bench-dot{width:6px;height:6px;border-radius:50%;background:var(--br)}
+    .home-bench-dot.filled{background:var(--pass)}
+    .home-bench-dot.active-filled{background:var(--gm)}
+    .home-bench-day5-badge{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--pass);border:1px solid var(--pass-border);padding:2px 5px;border-radius:99px}
+    .home-viz-dots{display:flex;gap:5px;justify-content:center;padding:var(--s2) 0;border-top:1px solid var(--br)}
+    .home-viz-dot{width:5px;height:5px;border-radius:50%;background:var(--br);transition:all .25s}
+    .home-viz-dot.active{background:var(--gm);width:16px;border-radius:2.5px}
+
+    /* Insight cards — 2 col grid */
+    .home-insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-bottom:var(--s3)}
+    .home-insight-card{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3) var(--s4);cursor:pointer;transition:all .2s}
+    .home-insight-card:active{border-color:var(--brm)}
+    .home-insight-card.action{border-color:var(--gml);background:var(--gl);cursor:pointer}
+    .home-insight-card.action:active{border-color:var(--gm)}
+    .home-insight-eyebrow{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:var(--s1)}
+    .home-insight-val{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1;margin-bottom:2px}
+    .home-insight-sub{font-size:11px;color:var(--mt)} rgba(0,0,0,.5)}
     .home-snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:10px}
     .home-snap-tile{text-align:center;padding:2px 0}
     .home-snap-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1}
@@ -471,42 +665,74 @@
     .circuit-tab-strip::-webkit-scrollbar{display:none}
     .circuit-tab{padding:8px 14px;border-radius:0;font-size:10px;font-weight:700;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;transition:all .2s;color:var(--mt);white-space:nowrap;flex-shrink:0}
     .circuit-tab.act{color:var(--gm);border-bottom-color:var(--gm)}
-    .prof-fixed{display:flex;flex-direction:column;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));overflow:hidden}
-    /* Profile header */
-    .ph{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid var(--br);flex-shrink:0}
-    .av{width:40px;height:40px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.4);color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:var(--mono);flex-shrink:0;overflow:hidden}
-    .pn{font-size:15px;font-weight:700;font-family:var(--mono);color:var(--dk)}
-    .ps{font-size:10px;color:var(--mt);margin-top:1px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
-    .sc{background:rgba(0,229,255,0.08);color:var(--gm);padding:4px 10px;border:1px solid rgba(0,229,255,0.25);font-size:12px;font-weight:700;font-family:var(--mono);white-space:nowrap;border-radius:var(--r)}
-    /* Radar */
-    .prof-radar-wrap{flex:0 0 auto;height:28vh;max-height:200px;min-height:130px;display:flex;align-items:center;justify-content:center;padding:6px 20px 4px}
-    .prof-radar-wrap svg{width:100%;height:100%;max-width:220px}
-    /* Pattern grid — 4×2, fills remaining space */
-    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:0 12px;flex:1;min-height:0;align-content:stretch}
-    .pc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:8px 8px 6px;cursor:pointer;transition:border-color .2s;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column}
-    .pc:hover{border-color:var(--brm)}
-    .pc:active{border-color:var(--gm);background:rgba(0,229,255,0.04)}
-    .pc-name{font-size:8px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pc-level-row{display:flex;align-items:baseline;gap:2px;margin-bottom:auto}
-    .pc-level{font-size:22px;font-weight:700;line-height:1;font-family:var(--mono)}
-    .pc-of5{font-size:10px;color:var(--mt);font-family:var(--mono)}
-    .pc-bar{height:2px;background:var(--br);border-radius:1px;margin-top:6px;overflow:hidden;flex-shrink:0}
+    /* ══════════════════════════════════════
+       PROFILE — FITNESS PASSPORT
+    ══════════════════════════════════════ */
+    #v-profile{background:var(--bg)}
+    .prof-shell{display:flex;flex-direction:column;height:100%;overflow:hidden}
+
+    /* Identity header */
+    .prof-hdr{flex-shrink:0;padding:var(--s4) var(--s4) var(--s3);display:flex;align-items:center;gap:var(--s3)}
+    .prof-av{width:48px;height:48px;border-radius:50%;background:var(--gl);border:1.5px solid var(--gml);color:var(--gm);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;font-family:var(--mono);flex-shrink:0;overflow:hidden}
+    .prof-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .prof-name{font-size:18px;font-weight:700;color:var(--dk);letter-spacing:-.01em}
+    .prof-tier{font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-top:1px}
+    .prof-score-badge{margin-left:auto;flex-shrink:0;text-align:right}
+    .prof-score-num{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--gm);line-height:1}
+    .prof-score-label{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)}
+
+    /* Radar section — compact with expand option */
+    .prof-radar-section{flex-shrink:0;padding:0 var(--s4) var(--s3)}
+    .prof-radar-card{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden;transition:all .3s}
+    .prof-radar-compact{display:flex;align-items:center;padding:var(--s3) var(--s4);gap:var(--s4);cursor:pointer}
+    .prof-radar-compact-svg{flex-shrink:0;width:72px;height:72px}
+    .prof-radar-compact-svg svg{width:100%;height:100%}
+    .prof-radar-compact-info{flex:1;min-width:0}
+    .prof-radar-compact-title{font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:var(--s2)}
+    .prof-radar-bars{display:flex;flex-direction:column;gap:4px}
+    .prof-radar-bar-row{display:flex;align-items:center;gap:var(--s2)}
+    .prof-radar-bar-label{font-size:8px;font-family:var(--mono);color:var(--mt);width:32px;flex-shrink:0}
+    .prof-radar-bar-track{flex:1;height:3px;background:var(--br);border-radius:2px;overflow:hidden}
+    .prof-radar-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+    .prof-radar-bar-val{font-size:9px;font-weight:700;font-family:var(--mono);width:14px;text-align:right;flex-shrink:0}
+    .prof-radar-expand-btn{display:flex;align-items:center;justify-content:center;padding:var(--s2);border-top:1px solid var(--br);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);cursor:pointer;transition:all .2s}
+    .prof-radar-expand-btn:active{background:var(--bg3);color:var(--dk)}
+    .prof-radar-expanded{display:none;padding:var(--s4);border-top:1px solid var(--br)}
+    .prof-radar-expanded.open{display:flex;align-items:center;justify-content:center}
+    .prof-radar-expanded svg{width:100%;max-width:220px;height:auto}
+
+    /* Pattern grid */
+    .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1);padding:0 var(--s4);flex:1;min-height:0;align-content:stretch}
+    .pc{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:var(--s2) var(--s2) 6px;cursor:pointer;transition:all .18s;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column}
+    .pc:active{border-color:var(--gm);background:var(--gl)}
+    .pc-name{font-size:7.5px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:var(--s1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pc-level-row{display:flex;align-items:baseline;gap:1px;margin-bottom:auto}
+    .pc-level{font-size:20px;font-weight:700;line-height:1;font-family:var(--mono)}
+    .pc-of5{font-size:9px;color:var(--mt);font-family:var(--mono)}
+    .pc-bar{height:2px;background:var(--br);border-radius:1px;margin-top:var(--s1);overflow:hidden;flex-shrink:0}
     .pc-bar-fill{height:100%;border-radius:1px;transition:width .6s ease}
+    .pc-pending{margin-top:3px;padding:2px 4px;background:var(--warn-dim);border:1px solid var(--warn-border);border-radius:3px}
+    .pc-pending-label{font-size:7px;font-weight:700;color:var(--warn);font-family:var(--mono)}
+
     /* Benchmark strip */
-    .prof-bm-strip{display:flex;gap:3px;padding:4px 12px;flex-shrink:0}
-    .prof-bm-item{flex:1;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:6px 5px;cursor:pointer;transition:border-color .2s;text-align:center;min-width:0}
+    .prof-bm-strip{display:flex;gap:var(--s1);padding:var(--s2) var(--s4);flex-shrink:0}
+    .prof-bm-item{flex:1;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:5px 4px;cursor:pointer;transition:all .2s;text-align:center;min-width:0}
     .prof-bm-item:active{border-color:var(--gm)}
-    .prof-bm-item.active{border-color:rgba(0,255,148,0.3);background:rgba(0,255,148,0.03)}
+    .prof-bm-item.active{border-color:var(--pass-border);background:var(--pass-dim)}
     .prof-bm-name{font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mt);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .prof-bm-pb{font-size:12px;font-weight:700;font-family:var(--mono)}
-    /* Floating card */
-    .prof-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:16px 16px 0 0;padding:10px 14px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:0 -8px 24px rgba(0,0,0,.6)}
-    .prof-card-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--br)}
+
+    /* Bottom card */
+    .prof-card{background:var(--bg2);border-top:1px solid var(--brm);border-radius:var(--rl) var(--rl) 0 0;padding:var(--s3) var(--s4) calc(var(--s2) + env(safe-area-inset-bottom));flex-shrink:0;box-shadow:var(--shadow-up)}
+    .prof-card-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:var(--s3);padding-bottom:var(--s3);border-bottom:1px solid var(--br)}
     .prof-stat-tile{text-align:center}
     .prof-stat-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
     .prof-stat-label{font-size:7px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px}
-    .prof-action-row{display:flex;gap:4px}
-    .prof-action-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:all .2s;text-align:center;min-width:0}
+    .prof-action-row{display:flex;gap:var(--s1)}
+    .prof-action-tile{flex:1;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all .18s;text-align:center;min-width:0}
+    .prof-action-tile:active{border-color:var(--gm);background:var(--gl)}
+    .prof-action-icon{font-size:16px;line-height:1}
+    .prof-action-label{font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--mt)}th:0}
     .prof-action-tile:active{border-color:var(--gm);background:rgba(0,229,255,0.06)}
     .prof-action-icon{font-size:15px;line-height:1}
     .prof-action-label{font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--mt)}
@@ -4468,156 +4694,213 @@ function rHome(){
   const todayStr=today.toISOString().split('T')[0];
   const tot=PATS.reduce((s,p)=>s+(AP[p]||0),0);
 
-  // 7-day AM/PM state
+  // 7-day check-in state
   const days7=[];
   for(let i=6;i>=0;i--){
     const d=new Date(today);d.setDate(d.getDate()-i);
     const ds=d.toISOString().split('T')[0];
     const amDone=CHECKINS.some(c=>c.checkin_date===ds&&c.session==='am');
     const pmDone=CHECKINS.some(c=>c.checkin_date===ds&&c.session==='pm');
-    days7.push({d,ds,amDone,pmDone,isToday:i===0});
+    days7.push({ds,amDone,pmDone,isToday:i===0});
   }
   const todayAM=days7[6].amDone;
   const todayPM=days7[6].pmDone;
 
-  // Streak — consecutive days with any check-in
+  // Streak
   let streak=0;
   for(let i=6;i>=0;i--){
     if(days7[i].amDone||days7[i].pmDone)streak++;
     else if(i<6)break;
   }
 
-  // Momentum stats
-  const weekAgo=new Date(today-7*24*60*60*1000);
+  // Stats
+  const weekAgo=new Date(today-7*864e5);
   const setsThisWeek=SETS.filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
   const allDates=new Set(SETS.map(s=>s.session_date||s.logged_at?.split('T')[0]).filter(Boolean));
-  const levels=PATS.map(p=>({p,lv:AP[p]||0}));
-  const assessed=levels.filter(x=>x.lv>0);
-  const strongest=assessed.length?assessed.reduce((a,b)=>b.lv>a.lv?b:a,assessed[0]):null;
-  const weakest=assessed.length?assessed.reduce((a,b)=>b.lv<a.lv?b:a,assessed[0]):null;
+  const assessed=PATS.filter(p=>(AP[p]||0)>0);
+  const levels=PATS.map(p=>({p,lv:AP[p]||0})).filter(x=>x.lv>0);
+  const strongest=levels.length?levels.reduce((a,b)=>b.lv>a.lv?b:a):null;
+  const weakest=levels.length?levels.reduce((a,b)=>b.lv<a.lv?b:a):null;
   const bmDay5=getBenchmarkDay5();
 
-  const h=`<div class="home-fixed">
+  // Next focus logic
+  const day=buildDay(curDay);
+  const dayNames=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'];
+  const schemeNames=['Bilateral Heavy','Bilateral Heavy','Unilateral Focus','Unilateral Focus'];
 
-    <!-- Greeting + AM/PM check-in strip -->
-    <div class="home-checkin-strip">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div>
-          <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk)">${greet}, ${nm}</div>
-          <div style="font-size:11px;color:var(--mt);margin-top:1px">${tot}/40 · ${assessed.length} patterns assessed</div>
-        </div>
-        ${streak>0?`<div style="display:flex;align-items:center;gap:4px;background:rgba(255,179,64,0.12);border:1px solid rgba(255,179,64,0.3);padding:3px 8px;border-radius:var(--r)">
-          <span style="font-size:12px">🔥</span>
-          <span style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--amber)">${streak}</span>
-        </div>`:''}
+  // Determine primary focus CTA
+  let focusTitle,focusSub,focusEyebrow,focusTag,focusTagClass,focusAction;
+  const needsAM=!todayAM;
+  const needsPM=!todayPM&&hour>=17;
+
+  if(needsAM&&hour<17){
+    focusEyebrow='Morning Check-In';
+    focusTitle='Log your AM data';
+    focusSub='Weight · Sleep · Resting HR · Energy';
+    focusTag='2 min';focusTagClass='mod';
+    focusAction=`openCIModal('am')`;
+  } else if(needsPM){
+    focusEyebrow='Evening Check-In';
+    focusTitle='Log your PM data';
+    focusSub='Calories · Steps · Stress · Recovery';
+    focusTag='2 min';focusTagClass='mod';
+    focusAction=`openCIModal('pm')`;
+  } else if(bmDay5&&curDay===4){
+    focusEyebrow='Day 5 · Benchmark';
+    focusTitle=bmDay5.name;
+    focusSub=ATHLETE_BENCHMARK?`Current PB · ${window.ACTIVE_BENCHMARK?.pb||'No time set'}`:'Set your benchmark focus';
+    focusTag='Race day';focusTagClass='heavy';
+    focusAction='goToWorkout()';
+  } else {
+    focusEyebrow=`Day ${curDay+1} · ${dayNames[curDay]||'Training'}`;
+    focusTitle='Ready to train';
+    focusSub=schemeNames[curDay]||'';
+    focusTag='Start';focusTagClass='mod';
+    focusAction='goToWorkout()';
+  }
+
+  // Build benchmark rows for viz slide 2
+  const bmRows=BENCHMARKS.map(b=>{
+    const pb=getBMPB(b.id);
+    const level=pb?getBenchmarkLevel(b,pb):0;
+    const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
+    const dots=[1,2,3,4,5].map(l=>`<div class="home-bench-dot${l<=level?(isActive?'':'filled'):(isActive&&l<=level?'active-filled':'')}${l<=level&&isActive?' active-filled':''}"></div>`).join('');
+    return`<div class="home-bench-row${isActive?' active':''}" onclick="openBenchmarkLogForId('${b.id}')">
+      <div class="home-bench-name">${b.name}</div>
+      ${isActive?`<span class="home-bench-day5-badge">D5</span>`:''}
+      <div class="home-bench-levels">${dots}</div>
+      <div class="home-bench-pb${pb?'':' no-pb'}">${pb?fmtSeconds(pb):'—'}</div>
+    </div>`;
+  }).join('');
+
+  const h=`<div class="home-shell">
+
+    <!-- Header -->
+    <div class="home-hdr">
+      <div>
+        <div class="home-greeting">${greet}, ${nm}.</div>
+        <div class="home-greeting-sub">${tot}/40 · ${assessed.length} patterns assessed</div>
       </div>
-      <div class="home-ci-row">
-        <button class="home-ci-session-btn${todayAM?' done':''}" onclick="openCIModal('am')">
-          <span>☀</span>
-          <span class="home-ci-btn-label">${todayAM?'✓':'AM'}</span>
-        </button>
-        <div class="home-ci-dots">
-          ${days7.map(day=>`<div class="home-ci-pip${day.amDone?' done':day.isToday&&!day.amDone?' today':''}"></div>`).join('')}
-        </div>
-      </div>
-      <div class="home-ci-row" style="margin-top:4px">
-        <button class="home-ci-session-btn${todayPM?' done-pm':''}" onclick="openCIModal('pm')">
-          <span>🌙</span>
-          <span class="home-ci-btn-label">${todayPM?'✓':'PM'}</span>
-        </button>
-        <div class="home-ci-dots">
-          ${days7.map(day=>`<div class="home-ci-pip${day.pmDone?' done-pm':day.isToday&&!day.pmDone?' today':''}"></div>`).join('')}
-        </div>
-      </div>
+      ${streak>0?`<div class="home-streak-badge">
+        <span class="home-streak-icon">🔥</span>
+        <span class="home-streak-num">${streak}</span>
+      </div>`:''}
     </div>
 
-    <!-- Swipeable radar / benchmarks -->
-    <div class="home-radar-wrap">
-      <div class="home-radar-slides" id="home-slides">
-        <div class="home-radar-slide">
-          <div class="home-radar-inner">${drawSpider()}</div>
+    <!-- Scrollable content -->
+    <div class="home-scroll">
+
+      <!-- Primary focus card -->
+      <div class="home-focus-card" onclick="${focusAction}">
+        <div class="home-focus-eyebrow">${focusEyebrow}</div>
+        <div class="home-focus-title">${focusTitle}</div>
+        ${focusSub?`<div class="home-focus-sub">${focusSub}</div>`:''}
+        <div class="home-focus-meta">
+          <span class="home-focus-tag ${focusTagClass}">${focusTag}</span>
+          <span class="home-focus-cta">Go <span style="font-size:14px">→</span></span>
         </div>
-        <div class="home-radar-slide">
-          <div class="home-bench-slide" style="padding:10px 16px;overflow-y:auto;scrollbar-width:none;justify-content:flex-start">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0">
-              <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt)">Benchmarks</div>
-              <button onclick="openBenchmarkOnboarding()" style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gm);background:transparent;border:1px solid rgba(0,229,255,0.3);border-radius:var(--r);padding:4px 8px;cursor:pointer">${ATHLETE_BENCHMARK?'Change':'Set focus'}</button>
+      </div>
+
+      <!-- Stats row — horizontal scroll -->
+      <div class="home-stats-row">
+        <div class="home-stat-card">
+          <div class="home-stat-val" style="color:var(--gm)">${tot}</div>
+          <div class="home-stat-label">Score</div>
+        </div>
+        <div class="home-stat-card">
+          <div class="home-stat-val">${allDates.size}</div>
+          <div class="home-stat-label">Sessions</div>
+        </div>
+        <div class="home-stat-card">
+          <div class="home-stat-val" style="color:var(--pass)">${setsThisWeek}</div>
+          <div class="home-stat-label">Sets/wk</div>
+        </div>
+        <div class="home-stat-card">
+          <div class="home-stat-val" style="color:${streak>3?'var(--warn)':'var(--dk)'}">${streak}</div>
+          <div class="home-stat-label">Streak</div>
+        </div>
+        <div class="home-stat-card">
+          <div class="home-stat-val">${assessed.length}<span style="font-size:12px;color:var(--mt)">/8</span></div>
+          <div class="home-stat-label">Assessed</div>
+        </div>
+      </div>
+
+      <!-- Check-in card -->
+      <div class="home-section-label">Daily Check-In</div>
+      <div class="home-ci-card">
+        <!-- AM row -->
+        <div class="home-ci-row">
+          <button class="home-ci-btn${todayAM?' done-am':''}" onclick="openCIModal('am')">
+            <span class="home-ci-btn-icon">☀</span>
+            <span class="home-ci-btn-label">${todayAM?'✓ AM':'AM'}</span>
+          </button>
+          <div class="home-ci-pips">
+            ${days7.map(day=>`<div class="home-ci-pip${day.amDone?' am':day.isToday?' today-empty':''}"></div>`).join('')}
+          </div>
+          <span class="home-ci-status">${todayAM?'Done':'Pending'}</span>
+        </div>
+        <!-- PM row -->
+        <div class="home-ci-row">
+          <button class="home-ci-btn${todayPM?' done-pm':''}" onclick="openCIModal('pm')">
+            <span class="home-ci-btn-icon">🌙</span>
+            <span class="home-ci-btn-label">${todayPM?'✓ PM':'PM'}</span>
+          </button>
+          <div class="home-ci-pips">
+            ${days7.map(day=>`<div class="home-ci-pip${day.pmDone?' pm':day.isToday&&hour>=17?' today-empty':''}"></div>`).join('')}
+          </div>
+          <span class="home-ci-status">${todayPM?'Done':hour>=17?'Pending':'Later'}</span>
+        </div>
+      </div>
+
+      <!-- Radar + Benchmarks swipeable -->
+      <div class="home-section-label">Movement Radar</div>
+      <div class="home-viz-wrap">
+        <div class="home-viz-slides" id="home-slides">
+          <!-- Slide 1: Radar -->
+          <div class="home-viz-slide">
+            <div class="home-radar-slide-inner">${drawSpider()}</div>
+            <div class="home-radar-score-row">
+              <span class="home-radar-score-label">Movement Score</span>
+              <span class="home-radar-score-val">${tot} / 40</span>
             </div>
-            ${BENCHMARKS.length?BENCHMARKS.map(b=>{
-              const pb=getBMPB(b.id);
-              const level=pb?getBenchmarkLevel(b,pb):0;
-              const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
-              return`<div style="margin-bottom:8px;padding:10px 12px;background:var(--bg2);border:1px solid ${isActive?'rgba(0,255,148,0.3)':'var(--br)'};border-radius:var(--r);cursor:pointer;transition:border-color .2s" onclick="openBenchmarkLogForId('${b.id}')">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-                  <span style="font-size:12px;font-weight:700;font-family:var(--mono);color:var(--dk)">${b.name}</span>
-                  <div style="display:flex;align-items:center;gap:6px">
-                    ${isActive?`<span style="font-size:8px;font-weight:700;font-family:var(--mono);color:var(--pass);letter-spacing:.06em">DAY 5</span>`:''}
-                    <span style="font-size:12px;font-weight:700;font-family:var(--mono);color:${pb?'var(--gm)':'var(--mt)'}">${pb?fmtSeconds(pb):'—'}</span>
-                  </div>
-                </div>
-                <div style="height:2px;background:var(--br);border-radius:1px;overflow:hidden;margin-bottom:5px">
-                  <div style="height:100%;width:${Math.round((level/5)*100)}%;background:${isActive?'var(--pass)':'var(--gm)'};border-radius:1px;transition:width .6s"></div>
-                </div>
-                <div style="display:flex;gap:4px">
-                  ${[1,2,3,4,5].map(l=>`<div style="width:10px;height:10px;border-radius:50%;background:${l<=level?(isActive?'var(--pass)':'var(--gm)'):'var(--br)'}"></div>`).join('')}
-                </div>
-              </div>`;
-            }).join(''):`<div class="home-bench-empty">
-              <div style="font-size:12px;color:var(--mt);text-align:center;margin-bottom:12px">No benchmark selected</div>
-              <button onclick="openBenchmarkOnboarding()" style="padding:8px 18px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Set focus</button>
-            </div>`}
+          </div>
+          <!-- Slide 2: Benchmarks -->
+          <div class="home-viz-slide">
+            <div class="home-bench-slide-inner">
+              <div class="home-bench-hdr">
+                <span class="home-section-label" style="margin-bottom:0">Benchmarks</span>
+                <button onclick="openBenchmarkOnboarding()" style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gm);background:transparent;border:none;cursor:pointer">${ATHLETE_BENCHMARK?'Change':'Set focus'}</button>
+              </div>
+              ${BENCHMARKS.length?bmRows:`<div style="text-align:center;padding:24px 0;color:var(--mt);font-size:13px">No benchmarks yet</div>`}
+            </div>
           </div>
         </div>
+        <div class="home-viz-dots">
+          <div class="home-viz-dot active" id="dot-0"></div>
+          <div class="home-viz-dot" id="dot-1"></div>
+        </div>
       </div>
-      <div class="home-slide-dots">
-        <div class="home-slide-dot active" id="dot-0"></div>
-        <div class="home-slide-dot" id="dot-1"></div>
-      </div>
-    </div>
 
-    <!-- Floating card -->
-    <div class="home-card">
-      <div class="home-snap-grid">
-        <div class="home-snap-tile">
-          <div class="home-snap-val">${allDates.size}</div>
-          <div class="home-snap-label">Sessions</div>
+      <!-- Insight cards -->
+      <div class="home-section-label">Insights</div>
+      <div class="home-insights-grid">
+        <div class="home-insight-card">
+          <div class="home-insight-eyebrow">Strongest</div>
+          <div class="home-insight-val" style="color:var(--pass)">${strongest?PL[strongest.p]:'—'}</div>
+          <div class="home-insight-sub">${strongest?`Level ${strongest.lv}`:'Not assessed'}</div>
         </div>
-        <div class="home-snap-tile">
-          <div class="home-snap-val" style="color:var(--gm)">${tot}</div>
-          <div class="home-snap-label">Score</div>
+        <div class="home-insight-card">
+          <div class="home-insight-eyebrow">Weakest</div>
+          <div class="home-insight-val" style="color:var(--red)">${weakest?PL[weakest.p]:'—'}</div>
+          <div class="home-insight-sub">${weakest?`Level ${weakest.lv}`:'Not assessed'}</div>
         </div>
-        <div class="home-snap-tile">
-          <div class="home-snap-val">${streak}</div>
-          <div class="home-snap-label">Streak</div>
-        </div>
-        <div class="home-snap-tile">
-          <div class="home-snap-val" style="color:var(--pass)">${setsThisWeek}</div>
-          <div class="home-snap-label">Sets/wk</div>
-        </div>
-      </div>
-      <div style="height:1px;background:var(--br);margin:0 -16px 10px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <div class="home-insight-tile">
-          <div class="home-insight-label">Strongest</div>
-          <div class="home-insight-val">${strongest?PL[strongest.p]:'—'}</div>
-          <div class="home-insight-sub">${strongest?`Level ${strongest.lv}`:'No data'}</div>
-        </div>
-        <div class="home-insight-tile">
-          <div class="home-insight-label">Weakest</div>
-          <div class="home-insight-val">${weakest?PL[weakest.p]:'—'}</div>
-          <div class="home-insight-sub">${weakest?`Level ${weakest.lv}`:'No data'}</div>
-        </div>
-        <div class="home-insight-tile" onclick="goToWorkout()" style="cursor:pointer">
-          <div class="home-insight-label">Next Session</div>
-          <div class="home-insight-val">Day ${curDay+1}${bmDay5?' · D5':''}</div>
-          <div class="home-insight-sub" style="color:var(--gm)">Tap to train →</div>
-        </div>
-        <div class="home-insight-tile">
-          <div class="home-insight-label">Assessed</div>
-          <div class="home-insight-val">${assessed.length}<span style="font-size:10px;color:var(--mt)">/8</span></div>
-          <div class="home-insight-sub">${assessed.length===8?'All patterns':'patterns'}</div>
+        <div class="home-insight-card action" onclick="goToWorkout()" style="grid-column:span 2">
+          <div class="home-insight-eyebrow">Next session</div>
+          <div class="home-insight-val">Day ${curDay+1} <span style="font-size:13px;color:var(--mt);font-weight:400">· ${dayNames[curDay]||''}</span></div>
+          <div class="home-insight-sub" style="color:var(--gm)">Tap to start →</div>
         </div>
       </div>
+
     </div>
   </div>`;
 
@@ -6909,76 +7192,19 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   profContext={scores,logs,sets,isCoach,pendingTests,athleteId,checkins};
 
   const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
-  const isSelf=!isCoach;
 
   PATS.forEach(pid=>{
     patternPageLogs[pid]=(logs||[]).filter(l=>l.pattern_id===pid)
       .sort((a,b)=>new Date(b.assessed_at)-new Date(a.assessed_at));
   });
 
-  const weekAgo=new Date(Date.now()-7*24*60*60*1000);
+  // Stats
+  const weekAgo=new Date(Date.now()-7*864e5);
   const setsThisWeek=(sets||[]).filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
   const allDates=new Set((sets||[]).map(s=>s.session_date||s.logged_at?.split('T')[0]).filter(Boolean));
   const assessedCount=PATS.filter(p=>(scores[p]||0)>0).length;
 
-  // 8 pattern tiles
-  const patGrid=`<div class="pg">
-    ${PATS.map(pid=>{
-      const lv=scores[pid]||0;
-      const col=LC[lv]||'var(--mt)';
-      const pending=(pendingTests||[]).find(p=>p.pattern_id===pid);
-      const pct=Math.round((lv/5)*100);
-      return`<div class="pc" onclick="openPatternPage('${pid}','${athleteId}',${isCoach})">
-        <div class="pc-name">${PL[pid]}</div>
-        <div class="pc-level-row">
-          <span class="pc-level" style="color:${col}">${lv}</span>
-          <span class="pc-of5">/5</span>
-        </div>
-        ${pending&&isCoach?`<div class="pc-pending"><div class="pc-pending-label">⏳ Pending</div></div>`:''}
-        <div class="pc-bar"><div class="pc-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-      </div>`;
-    }).join('')}
-  </div>`;
-
-  // Benchmark PB strip
-  const bmStrip=BENCHMARKS.length?`<div class="prof-bm-strip">
-    ${BENCHMARKS.map(b=>{
-      const pb=getBMPB(b.id);
-      const level=pb?getBenchmarkLevel(b,pb):0;
-      const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
-      return`<div style="flex:1;background:var(--bg2);border:1px solid ${isActive?'rgba(0,255,148,0.3)':'var(--br)'};border-radius:var(--r);padding:6px;cursor:pointer;text-align:center;transition:border-color .2s" onclick="openBenchmarkLogForId('${b.id}')">
-        <div style="font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--mt);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.name.replace(' Run','').replace('km ','k ').replace('m SkiErg','m Ski')}</div>
-        <div style="font-size:12px;font-weight:700;font-family:var(--mono);color:${pb?(isActive?'var(--pass)':'var(--gm)'):'var(--mt)'}">${pb?fmtSeconds(pb):'—'}</div>
-      </div>`;
-    }).join('')}
-  </div>`:'';
-
-  // Context-aware action tiles
-  let actionTiles='';
-  if(isCoach){
-    actionTiles=`
-      <div class="prof-action-tile" onclick="openCoachTestModal()"><div class="prof-action-icon">✓</div><div class="prof-action-label">Log Test</div></div>
-      <div class="prof-action-tile" onclick="openCoachWorkout()"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Log Workout</div></div>`;
-  } else {
-    actionTiles=`
-      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Training Log',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">Calendar</div></div>
-      ${BENCHMARKS.length?`<div class="prof-action-tile" onclick="openProfileOverlay('benchmarks','Benchmarks',buildBenchmarkProfilePage)"><div class="prof-action-icon">🏁</div><div class="prof-action-label">Benchmarks</div></div>`:''}
-      ${checkins&&checkins.length?`<div class="prof-action-tile" onclick="openProfileOverlay('checkins','Wellness',buildCheckinProfilePage)"><div class="prof-action-icon">❤</div><div class="prof-action-label">Wellness</div></div>`:''}
-      <div class="prof-action-tile" onclick="openSettings()"><div class="prof-action-icon">⚙</div><div class="prof-action-label">Settings</div></div>`;
-  }
-
-  const card=`<div class="prof-card">
-    <div class="prof-card-stats">
-      <div class="prof-stat-tile"><div class="prof-stat-val" style="color:var(--gm)">${tot}</div><div class="prof-stat-label">Score</div></div>
-      <div class="prof-stat-tile"><div class="prof-stat-val">${allDates.size}</div><div class="prof-stat-label">Sessions</div></div>
-      <div class="prof-stat-tile"><div class="prof-stat-val" style="color:var(--pass)">${assessedCount}</div><div class="prof-stat-label">Assessed</div></div>
-      <div class="prof-stat-tile"><div class="prof-stat-val">${setsThisWeek}</div><div class="prof-stat-label">Sets/wk</div></div>
-    </div>
-    <div style="height:1px;background:var(--br);margin:0 -14px 10px"></div>
-    <div class="prof-action-row">${actionTiles}</div>
-  </div>`;
-
-  // Radar — swap AP to this athlete's scores if viewing someone else
+  // Radar — swap AP if viewing someone else
   let profileRadar;
   const needsSwap=isCoach||(athleteId&&athleteId!==CU?.id);
   if(needsSwap){
@@ -6992,39 +7218,135 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     profileRadar=drawSpider();
   }
 
-  const body=`<div class="prof-fixed" style="${isCoach?'height:auto;':''}">
-    <div class="prof-radar-wrap">${profileRadar}</div>
-    ${patGrid}${bmStrip}${card}
+  // Compact radar bars for the collapsed view
+  const radarBars=PATS.map(pid=>{
+    const lv=scores[pid]||0;
+    const col=LC[lv]||'var(--mt)';
+    const pct=Math.round((lv/5)*100);
+    return`<div class="prof-radar-bar-row">
+      <span class="prof-radar-bar-label">${PL[pid]}</span>
+      <div class="prof-radar-bar-track"><div class="prof-radar-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <span class="prof-radar-bar-val" style="color:${col}">${lv}</span>
+    </div>`;
+  }).join('');
+
+  // Pattern tiles
+  const patGrid=`<div class="pg">
+    ${PATS.map(pid=>{
+      const lv=scores[pid]||0;
+      const col=LC[lv]||'var(--mt)';
+      const pending=(pendingTests||[]).find(p=>p.pattern_id===pid);
+      return`<div class="pc" onclick="openPatternPage('${pid}','${athleteId}',${isCoach})">
+        <div class="pc-name">${PL[pid]}</div>
+        <div class="pc-level-row">
+          <span class="pc-level" style="color:${col}">${lv}</span>
+          <span class="pc-of5">/5</span>
+        </div>
+        ${pending&&isCoach?`<div class="pc-pending"><div class="pc-pending-label">⏳ Pending</div></div>`:''}
+        <div class="pc-bar"><div class="pc-bar-fill" style="width:${Math.round((lv/5)*100)}%;background:${col}"></div></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // Benchmark strip
+  const bmStrip=BENCHMARKS.length?`<div class="prof-bm-strip">
+    ${BENCHMARKS.map(b=>{
+      const pb=getBMPB(b.id);
+      const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
+      return`<div class="prof-bm-item${isActive?' active':''}" onclick="openBenchmarkLogForId('${b.id}')">
+        <div class="prof-bm-name">${b.name.replace(' Run','').replace('km ','k ').replace('m SkiErg','m Ski').replace('km BikeErg','k Bike')}</div>
+        <div class="prof-bm-pb" style="color:${pb?(isActive?'var(--pass)':'var(--gm)'):'var(--mt)'}">${pb?fmtSeconds(pb):'—'}</div>
+      </div>`;
+    }).join('')}
+  </div>`:'';
+
+  // Action tiles
+  let actionTiles='';
+  if(isCoach){
+    actionTiles=`
+      <div class="prof-action-tile" onclick="openCoachTestModal()"><div class="prof-action-icon">✓</div><div class="prof-action-label">Log Test</div></div>
+      <div class="prof-action-tile" onclick="openCoachWorkout()"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Workout</div></div>`;
+  } else {
+    actionTiles=`
+      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Training Log',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">Calendar</div></div>
+      ${BENCHMARKS.length?`<div class="prof-action-tile" onclick="openProfileOverlay('benchmarks','Benchmarks',buildBenchmarkProfilePage)"><div class="prof-action-icon">🏁</div><div class="prof-action-label">Benchmarks</div></div>`:''}
+      ${checkins&&checkins.length?`<div class="prof-action-tile" onclick="openProfileOverlay('checkins','Wellness',buildCheckinProfilePage)"><div class="prof-action-icon">❤</div><div class="prof-action-label">Wellness</div></div>`:''}
+      <div class="prof-action-tile" onclick="openSettings()"><div class="prof-action-icon">⚙</div><div class="prof-action-label">Settings</div></div>`;
+  }
+
+  const body=`<div class="prof-shell" style="${isCoach?'height:auto;overflow-y:auto;':''}">
+
+    ${!isCoach?`<!-- Radar section — compact with expand -->
+    <div class="prof-radar-section">
+      <div class="prof-radar-card">
+        <div class="prof-radar-compact" onclick="toggleProfileRadar()">
+          <div class="prof-radar-compact-svg">${profileRadar}</div>
+          <div class="prof-radar-compact-info">
+            <div class="prof-radar-compact-title">Movement Score — ${tot}/40</div>
+            <div class="prof-radar-bars">${radarBars}</div>
+          </div>
+        </div>
+        <div class="prof-radar-expand-btn" onclick="toggleProfileRadar()" id="radar-expand-btn">
+          <span id="radar-expand-label">Expand radar ↓</span>
+        </div>
+        <div class="prof-radar-expanded" id="prof-radar-expanded">${profileRadar}</div>
+      </div>
+    </div>`:''}
+
+    <!-- Pattern tiles -->
+    ${patGrid}
+
+    <!-- Benchmark strip -->
+    ${bmStrip}
+
+    <!-- Bottom card -->
+    <div class="prof-card">
+      <div class="prof-card-stats">
+        <div class="prof-stat-tile"><div class="prof-stat-val" style="color:var(--gm)">${tot}</div><div class="prof-stat-label">Score</div></div>
+        <div class="prof-stat-tile"><div class="prof-stat-val">${allDates.size}</div><div class="prof-stat-label">Sessions</div></div>
+        <div class="prof-stat-tile"><div class="prof-stat-val" style="color:var(--pass)">${assessedCount}</div><div class="prof-stat-label">Assessed</div></div>
+        <div class="prof-stat-tile"><div class="prof-stat-val">${setsThisWeek}</div><div class="prof-stat-label">Sets/wk</div></div>
+      </div>
+      <div class="prof-action-row">${actionTiles}</div>
+    </div>
   </div>`;
 
   if(!isCoach){
-    const tierLabel=IS_COACH?'Coach':USER_TIER==='coached'?'Coached':'Athlete';
+    const tierLabel=IS_COACH?'Coach':USER_TIER==='coached'?'Coached Athlete':'Athlete';
     const tierCol=IS_COACH?'var(--gm)':USER_TIER==='coached'?'var(--gm)':'var(--mt)';
     const avatarHtml=USER_AVATAR_URL
-      ?`<img src="${USER_AVATAR_URL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+      ?`<img src="${USER_AVATAR_URL}">`
       :gi(CU.user_metadata?.full_name||CU.email);
     document.getElementById('v-profile').innerHTML=
-      `<div class="ph" onclick="openSettings()" style="cursor:pointer;padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid var(--br)">
-        <div class="av">${avatarHtml}</div>
+      `<div class="prof-hdr" onclick="openSettings()" style="cursor:pointer">
+        <div class="prof-av">${avatarHtml}</div>
         <div style="flex:1;min-width:0">
-          <div class="pn">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}</div>
-          <div class="ps" style="color:${tierCol}">${tierLabel} · [RADAR]</div>
+          <div class="prof-name">${(CU.user_metadata?.full_name||CU.email).split(' ')[0]}</div>
+          <div class="prof-tier" style="color:${tierCol}">${tierLabel} · [RADAR]</div>
         </div>
-        <div class="sc">${tot} / 40</div>
-        <span style="font-size:14px;color:var(--br);margin-left:4px">›</span>
+        <div class="prof-score-badge">
+          <div class="prof-score-num">${tot}</div>
+          <div class="prof-score-label">/ 40</div>
+        </div>
       </div>`
       +(IS_COACH?buildViewClientsTile():'')
       +body;
   } else {
     const existing=document.getElementById('cp-body');
     if(existing){
-      // Append profile body after the action tiles/banner already set by openClientPage
-      // Remove any previous profile body if re-rendering
-      const prev=existing.querySelector('.prof-fixed');
+      const prev=existing.querySelector('.prof-shell');
       if(prev)prev.remove();
       existing.insertAdjacentHTML('beforeend',body);
     }
   }
+}
+
+function toggleProfileRadar(){
+  const expanded=document.getElementById('prof-radar-expanded');
+  const label=document.getElementById('radar-expand-label');
+  if(!expanded)return;
+  const isOpen=expanded.classList.toggle('open');
+  if(label)label.textContent=isOpen?'Collapse ↑':'Expand radar ↓';
 }
 
 // ── PROFILE OVERLAYS ──
