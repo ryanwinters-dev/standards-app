@@ -5947,19 +5947,28 @@ function getSlotExercise(pid, exType, slotIntent, usedNames){
   const block=blockNumber();
   const isUni=slotIntent==='unilateral';
 
-  // Build candidate pool — most specific first, progressively broaden
+  // Build candidate pool — INTENT IS PRESERVED through the level cascade.
+  // A unilateral slot exhausts every unilateral option (at level, adjacent
+  // levels, any level) before it is allowed to fall back to bilateral.
+  // Rationale: levels 1–2 are bilateral by design, so low-level athletes'
+  // unilateral slots correctly serve the next level's unilateral variation.
+  const intentMatch=e=>isUni?e.intent==='Unilateral':e.intent!=='Unilateral';
   const pools=[
-    // 1. Exact match: right pattern, level, type, intent
-    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType&&(isUni?e.intent==='Unilateral':e.intent!=='Unilateral')),
-    // 2. Right pattern, level, type — ignore intent
+    // 1. Exact: pattern, level, type, intent
+    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType&&intentMatch(e)),
+    // 2. Pattern, level, intent — any type
+    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&intentMatch(e)),
+    // 3. Pattern, adjacent level (±1), type, intent
+    EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1&&e.type===exType&&intentMatch(e)),
+    // 4. Pattern, adjacent level (±1), intent — any type
+    EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1&&intentMatch(e)),
+    // 5. Pattern, any level, intent — sorted by level proximity
+    EX.filter(e=>e.pattern_id===pid&&intentMatch(e)).sort((a,b)=>Math.abs((a.level_focus||0)-lv)-Math.abs((b.level_focus||0)-lv)),
+    // 6. Intent abandoned: pattern + level + type
     EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType),
-    // 3. Right pattern, level — any type, correct intent
-    EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&(isUni?e.intent==='Unilateral':e.intent!=='Unilateral')),
-    // 4. Right pattern, level — any type any intent
+    // 7. Pattern + level, anything
     EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),
-    // 5. Adjacent level
-    EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1),
-    // 6. Any exercise for this pattern
+    // 8. Last resort: anything for this pattern
     EX.filter(e=>e.pattern_id===pid),
   ];
 
@@ -6027,12 +6036,16 @@ function buildDay(di){
     const exercises=tmpl.slots.map(slot=>{
       const ex=getSlotExercise(slot.pid,slot.exType,slot.intent,usedToday);
       if(ex)usedToday.add(ex.name);
+      // intent reflects the exercise ACTUALLY selected, not the slot request —
+      // the UI (L/R rows, badges) must always render from truth
+      const actualIntent=ex?.intent==='Unilateral'?'unilateral':'bilateral';
       return{
         pid:slot.pid,
         exType:slot.exType,
-        intent:slot.intent,
+        intent:actualIntent,
+        slotIntent:slot.intent,
         scheme:slot.scheme,
-        type:slot.exType,  // keep 'type' for backwards compat with buildExerciseCard
+        type:slot.exType,
         ex,
         sets:circuitSets,
       };
