@@ -495,6 +495,10 @@
     .set-rows{padding:0 14px 4px;display:flex;flex-direction:column;gap:6px}
     .set-row{display:flex;align-items:center;gap:8px}
     .set-num{width:18px;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--mt);text-align:center;flex-shrink:0}
+    .set-num-side{width:30px;display:inline-flex;align-items:center;justify-content:center;gap:2px}
+    .set-side{font-size:8px;font-weight:700;font-family:var(--mono);padding:1px 3px;border-radius:3px;line-height:1}
+    .set-side.sl{background:var(--gl);color:var(--gm);border:1px solid var(--gml)}
+    .set-side.sr{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border)}
     .set-input{flex:1;padding:9px 8px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:15px;font-weight:700;font-family:var(--mono);color:var(--dk);text-align:center;outline:none;transition:border-color .2s;-moz-appearance:textfield}
     .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none}
     .set-input:focus{border-color:var(--gm)}
@@ -2098,6 +2102,52 @@ function getProgressionLoad(exId,intent,pid){
 
 function suggestedLoad(exId,intent,pid){
   return getProgressionLoad(exId,intent,pid);
+}
+
+// ── ASYMMETRY ENGINE ──
+// Compares L vs R output on unilateral work over the last 28 days.
+// Output per side = avg(load × reps). Asymmetry % = (strong − weak) / strong.
+function getPatternAsymmetry(pid){
+  const cutoff=new Date(Date.now()-28*864e5);
+  const exIds=new Set(EX.filter(e=>e.pattern_id===pid).map(e=>e.id));
+  const uniSets=SETS.filter(s=>s.side&&exIds.has(s.exercise_id)&&new Date(s.logged_at||s.session_date)>=cutoff);
+  if(!uniSets.length)return null;
+
+  const byEx={};
+  uniSets.forEach(s=>{
+    if(!byEx[s.exercise_id])byEx[s.exercise_id]={L:[],R:[]};
+    const out=(s.load_kg||0)*(s.reps_achieved||0)||(s.reps_achieved||0); // bodyweight falls back to reps
+    if(out>0)byEx[s.exercise_id][s.side].push(out);
+  });
+
+  const asyms=[];
+  Object.values(byEx).forEach(({L,R})=>{
+    if(!L.length||!R.length)return;
+    const avgL=L.reduce((a,b)=>a+b,0)/L.length;
+    const avgR=R.reduce((a,b)=>a+b,0)/R.length;
+    const strong=Math.max(avgL,avgR),weak=Math.min(avgL,avgR);
+    if(strong>0)asyms.push({pct:((strong-weak)/strong)*100,weakSide:avgL<avgR?'L':'R'});
+  });
+  if(!asyms.length)return null;
+
+  const avgPct=asyms.reduce((a,b)=>a+b.pct,0)/asyms.length;
+  const weakCounts={L:0,R:0};
+  asyms.forEach(a=>weakCounts[a.weakSide]++);
+  return{pct:Math.round(avgPct*10)/10,weakSide:weakCounts.L>=weakCounts.R?'L':'R',samples:uniSets.length};
+}
+
+// Overall symmetry score: 100 − mean asymmetry across patterns with data.
+// ≥90 balanced (green) · 80–90 monitor (amber) · <80 flag (red)
+function getSymmetryScore(){
+  const results=PATS.map(p=>({pid:p,a:getPatternAsymmetry(p)})).filter(r=>r.a);
+  if(!results.length)return null;
+  const avgAsym=results.reduce((s,r)=>s+r.a.pct,0)/results.length;
+  const worst=results.reduce((a,b)=>b.a.pct>a.a.pct?b:a);
+  return{
+    score:Math.max(0,Math.round(100-avgAsym)),
+    worst:{pid:worst.pid,pct:Math.round(worst.a.pct),weakSide:worst.a.weakSide},
+    patterns:results.length,
+  };
 }
 // ── PROGRAMME ENGINE ──
 // Each slot: {pid, exType, intent, scheme}
@@ -3918,6 +3968,34 @@ function closeCoachDashboard(){
 function openSettings(){
   renderSettings();
   document.getElementById('settings-page').classList.add('active');
+  loadResearchConsent();
+}
+
+// ── RESEARCH CONSENT ──
+let RESEARCH_CONSENT=null;
+async function loadResearchConsent(){
+  try{
+    const{data}=await sb.from('profiles').select('research_consent').eq('id',CU.id).single();
+    RESEARCH_CONSENT=data?.research_consent??null;
+  }catch(e){RESEARCH_CONSENT=null;}
+  paintResearchToggle();
+}
+function paintResearchToggle(){
+  const btn=document.getElementById('research-toggle');
+  if(!btn)return;
+  const on=RESEARCH_CONSENT===true;
+  btn.textContent=on?'ON':'OFF';
+  btn.style.background=on?'var(--pass-dim)':'var(--bg3)';
+  btn.style.borderColor=on?'var(--pass-border)':'var(--br)';
+  btn.style.color=on?'var(--pass)':'var(--mt)';
+}
+async function toggleResearchConsent(){
+  const next=RESEARCH_CONSENT!==true;
+  RESEARCH_CONSENT=next;
+  paintResearchToggle();
+  const{error}=await sb.from('profiles').update({research_consent:next}).eq('id',CU.id);
+  if(error){RESEARCH_CONSENT=!next;paintResearchToggle();toast('Could not save — try again','err');}
+  else toast(next?'Thank you — you\'re contributing to movement research':'Opted out of research','ok');
 }
 
 function closeSettings(){
@@ -3954,6 +4032,20 @@ function renderSettings(){
         <input class="settings-inline-input" id="s-name" type="text" value="${name}" placeholder="Your name"/>
         <button class="settings-save-btn green" style="margin-top:8px" onclick="saveName()">Save name</button>
         <div class="settings-msg" id="s-name-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data & Research -->
+  <div class="settings-section">
+    <div class="settings-section-label">Data &amp; Research</div>
+    <div class="settings-group">
+      <div class="settings-inline-edit" style="display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1">
+          <div class="settings-inline-label">Contribute to movement research</div>
+          <div style="font-size:11px;color:var(--mt);line-height:1.5;margin-top:4px">Share your training data anonymously to help build the world's first movement-capability dataset. No names, no emails — just levels, loads, and progression. You can opt out at any time.</div>
+        </div>
+        <button id="research-toggle" onclick="toggleResearchConsent()" style="flex-shrink:0;min-width:52px;padding:6px 10px;border-radius:99px;border:1px solid var(--br);background:var(--bg3);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;color:var(--mt);cursor:pointer;transition:all .2s">…</button>
       </div>
     </div>
   </div>
@@ -4886,6 +4978,23 @@ function rHome(){
           <div class="home-insight-val" style="color:var(--red)">${weakest?PL[weakest.p]:'—'}</div>
           <div class="home-insight-sub">${weakest?`Level ${weakest.lv}`:'Not assessed'}</div>
         </div>
+        ${(()=>{
+          const sym=getSymmetryScore();
+          if(!sym)return`<div class="home-insight-card" style="grid-column:span 2">
+            <div class="home-insight-eyebrow">Symmetry</div>
+            <div class="home-insight-val" style="color:var(--mt)">—</div>
+            <div class="home-insight-sub">Log unilateral sets left and right to unlock</div>
+          </div>`;
+          const col=sym.score>=90?'var(--pass)':sym.score>=80?'var(--warn)':'var(--red)';
+          const msg=sym.score>=90
+            ?'Balanced across sides'
+            :`${PL[sym.worst.pid]} ${sym.worst.weakSide==='L'?'left':'right'} lagging ${sym.worst.pct}%`;
+          return`<div class="home-insight-card" style="grid-column:span 2">
+            <div class="home-insight-eyebrow">Symmetry · ${sym.patterns} pattern${sym.patterns>1?'s':''} tracked</div>
+            <div class="home-insight-val" style="color:${col}">${sym.score}<span style="font-size:12px;color:var(--mt)">/100</span></div>
+            <div class="home-insight-sub" style="${sym.score<90?`color:${col}`:''}">${msg}</div>
+          </div>`;
+        })()}
         <div class="home-insight-card action" onclick="goToWorkout()" style="grid-column:span 2">
           <div class="home-insight-eyebrow">Next session</div>
           <div class="home-insight-val">Day ${curDay+1} <span style="font-size:13px;color:var(--mt);font-weight:400">· ${dayNames[curDay]||''}</span></div>
@@ -6284,33 +6393,37 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
     </div>`;
   }
 
-  // Set rows
+  // Set rows — unilateral slots log Left and Right independently
+  const isUni=item.intent==='unilateral';
+  const sides=isUni?['L','R']:[''];
   h+=`<div class="set-rows" id="setrows-${ck}-${xi}">`;
   for(let s=1;s<=totalSets;s++){
-    const prev=SETS.find(ws=>ws.exercise_id==ex?.id&&ws.set_number===s&&ws.week_number===curWeek);
-    const done=!!prev;
-    const uid=`${ck}-${exKey}-${s}`;
-    const fillLoad=done?prev.load_kg||'':(!done&&sugLoad?sugLoad:'');
-    const fillRpe=done&&prev.rpe?prev.rpe:null;
-    h+=`<div class="set-row" id="set-row-${uid}">
-      <span class="set-num">${s}</span>
-      <input class="set-input${done?' done':''}" type="number" id="r-${uid}"
-        placeholder="${rs.lo}–${rs.hi}" value="${done?prev.reps_achieved:''}"
-        min="1" max="50" inputmode="numeric" ${done?'disabled':''}
-        onchange="onSetChange('${uid}','${ck}','${exKey}','${ci}',${allTimeBest})">
-      <span class="set-sep">×</span>
-      <input class="set-input${done?' done':''}${!done&&sugLoad?' prefill':''}" type="number" id="l-${uid}"
-        placeholder="kg" value="${fillLoad}"
-        min="0" max="500" step="0.5" inputmode="decimal" ${done?'disabled':''}
-        onchange="onSetChange('${uid}','${ck}','${exKey}','${ci}',${allTimeBest})"
-        onfocus="if(this.classList.contains('prefill')){this.value='';this.classList.remove('prefill')}">
-      ${done&&fillRpe?`<span style="font-size:9px;font-family:var(--mono);color:var(--mt);flex-shrink:0">RPE ${fillRpe}</span>`:''}
-      <button class="set-tick${done?' done':''}" id="tick-${uid}"
-        onclick="tickSet('${uid}','${ck}','${exKey}','${s}','${ci}',${allTimeBest},'${item.type||'Main'}')"
-        ${done?'disabled':''}>
-        ${done?'✓':'○'}
-      </button>
-    </div>`;
+    for(const side of sides){
+      const prev=SETS.find(ws=>ws.exercise_id==ex?.id&&ws.set_number===s&&ws.week_number===curWeek&&(isUni?ws.side===side:!ws.side));
+      const done=!!prev;
+      const uid=`${ck}-${exKey}-${s}${side}`;
+      const fillLoad=done?prev.load_kg||'':(!done&&sugLoad?sugLoad:'');
+      const fillRpe=done&&prev.rpe?prev.rpe:null;
+      h+=`<div class="set-row" id="set-row-${uid}">
+        <span class="set-num${side?' set-num-side':''}">${s}${side?`<span class="set-side ${side==='L'?'sl':'sr'}">${side}</span>`:''}</span>
+        <input class="set-input${done?' done':''}" type="number" id="r-${uid}"
+          placeholder="${rs.lo}–${rs.hi}" value="${done?prev.reps_achieved:''}"
+          min="1" max="50" inputmode="numeric" ${done?'disabled':''}
+          onchange="onSetChange('${uid}','${ck}','${exKey}','${ci}',${allTimeBest})">
+        <span class="set-sep">×</span>
+        <input class="set-input${done?' done':''}${!done&&sugLoad?' prefill':''}" type="number" id="l-${uid}"
+          placeholder="kg" value="${fillLoad}"
+          min="0" max="500" step="0.5" inputmode="decimal" ${done?'disabled':''}
+          onchange="onSetChange('${uid}','${ck}','${exKey}','${ci}',${allTimeBest})"
+          onfocus="if(this.classList.contains('prefill')){this.value='';this.classList.remove('prefill')}">
+        ${done&&fillRpe?`<span style="font-size:9px;font-family:var(--mono);color:var(--mt);flex-shrink:0">RPE ${fillRpe}</span>`:''}
+        <button class="set-tick${done?' done':''}" id="tick-${uid}"
+          onclick="tickSet('${uid}','${ck}','${exKey}','${s}','${ci}',${allTimeBest},'${item.type||'Main'}','${side}')"
+          ${done?'disabled':''}>
+          ${done?'✓':'○'}
+        </button>
+      </div>`;
+    }
   }
   h+=`</div>`;
 
@@ -6516,7 +6629,8 @@ function onSetChange(uid,ck,exKey,ci,allTimeBest){
   }
 }
 
-async function tickSet(uid,ck,exKey,setNum,ci,allTimeBest,exType){
+async function tickSet(uid,ck,exKey,setNum,ci,allTimeBest,exType,side){
+  side=side||'';
   const rEl=document.getElementById(`r-${uid}`);
   const lEl=document.getElementById(`l-${uid}`);
   if(!rEl)return;
@@ -6539,53 +6653,51 @@ async function tickSet(uid,ck,exKey,setNum,ci,allTimeBest,exType){
   const tick=document.getElementById(`tick-${uid}`);
   if(tick){tick.classList.add('done');tick.textContent='✓';tick.disabled=true;}
 
-  // Show in-session previous set reference on next set row
-  const nextSetNum=parseInt(setNum)+1;
-  const nextUid=`${ck}-${exKey}-${nextSetNum}`;
+  // In-session previous set reference (next row, same side ordering)
+  const nextUid=side==='L'?`${uid.slice(0,-1)}R`:`${ck}-${exKey}-${parseInt(setNum)+1}${side?'L':''}`;
   const nextRow=document.getElementById(`set-row-${nextUid}`);
   if(nextRow){
     const prevRef=document.createElement('div');
     prevRef.style.cssText='font-size:10px;font-family:var(--mono);color:var(--mt);padding:0 0 4px 26px;line-height:1';
-    prevRef.textContent=`Set ${setNum}: ${reps} reps${load?' × '+load+'kg':''}`;
+    prevRef.textContent=`Set ${setNum}${side?' '+side:''}: ${reps} reps${load?' × '+load+'kg':''}`;
     nextRow.parentNode.insertBefore(prevRef,nextRow);
   }
 
-  // Start countdown rest timer
-  startRestTimer(REST_SECS[exType]||REST_SECS.Main);
+  // Rest timer — half rest between L/R of same set, full rest otherwise
+  const fullRest=REST_SECS[exType]||REST_SECS.Main;
+  startRestTimer(side==='L'?Math.round(fullRest/2):fullRest);
 
-  // Show RPE dial
-  showRpeDial(uid,ck,exKey,setNum,ci,reps,load);
+  // RPE dial
+  showRpeDial(uid,ck,exKey,setNum,ci,reps,load,side);
 }
 
-function showRpeDial(uid,ck,exKey,setNum,ci,reps,load){
-  // Remove any existing dial
+function showRpeDial(uid,ck,exKey,setNum,ci,reps,load,side){
+  side=side||'';
   document.getElementById('rpe-dial-overlay')?.remove();
 
   const overlay=document.createElement('div');
   overlay.id='rpe-dial-overlay';
   overlay.className='rpe-dial-overlay';
   overlay.innerHTML=`<div class="rpe-dial" onclick="event.stopPropagation()">
-    <div class="rpe-dial-title">How hard was that set?</div>
+    <div class="rpe-dial-title">How hard was that set?${side?` <span style="color:var(--gm)">(${side==='L'?'Left':'Right'})</span>`:''}</div>
     <div class="rpe-dial-btns">
-      ${[6,7,8,9,10].map(n=>`<button class="rpe-btn" onclick="saveRpe(${n},'${uid}','${exKey}','${setNum}','${ck}','${ci}',${reps},${load||null})">${n}</button>`).join('')}
-      <button class="rpe-btn skip" onclick="saveRpe(null,'${uid}','${exKey}','${setNum}','${ck}','${ci}',${reps},${load||null})">Skip</button>
+      ${[6,7,8,9,10].map(n=>`<button class="rpe-btn" onclick="saveRpe(${n},'${uid}','${exKey}','${setNum}','${ck}','${ci}',${reps},${load||null},'${side}')">${n}</button>`).join('')}
+      <button class="rpe-btn skip" onclick="saveRpe(null,'${uid}','${exKey}','${setNum}','${ck}','${ci}',${reps},${load||null},'${side}')">Skip</button>
     </div>
   </div>`;
-  // Close on backdrop tap
-  overlay.addEventListener('click',()=>saveRpe(null,uid,exKey,setNum,ck,ci,reps,load));
+  overlay.addEventListener('click',()=>saveRpe(null,uid,exKey,setNum,ck,ci,reps,load,side));
   document.body.appendChild(overlay);
 }
 
-async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load){
-  // Remove dial
+async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
   document.getElementById('rpe-dial-overlay')?.remove();
 
-  // Save to DB
   const today=new Date().toISOString().split('T')[0];
   const s=parseInt(setNum);
   const row={
     athlete_id:CU.id,exercise_id:exKey,pattern_id:null,
     set_number:s,reps_achieved:reps,load_kg:load,rpe:rpe||null,
+    side:side||null,
     week_number:curWeek,session_date:today,logged_at:new Date().toISOString(),
     reps_target_low:null,reps_target_high:null,
   };
