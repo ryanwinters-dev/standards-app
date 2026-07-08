@@ -481,10 +481,26 @@
     .ex-card-hdr{padding:14px 14px 10px;cursor:pointer}
     .ex-card-name{font-size:15px;font-weight:700;color:var(--dk);margin-bottom:4px}
     .ex-card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .ex-tag{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px}
+    .ex-tag{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:2px 0;border-radius:2px;width:54px;text-align:center;flex-shrink:0}
     .ex-tag.main{background:rgba(0,229,255,0.12);color:var(--gm)}
     .ex-tag.bridge{background:rgba(255,179,64,0.12);color:var(--amber)}
     .ex-tag.limiter{background:rgba(255,255,255,0.06);color:var(--mt)}
+    /* ── SESSION PREVIEW ── */
+    .preview-shell{display:flex;flex-direction:column;height:100%;overflow:hidden;padding:0 var(--s4)}
+    .preview-scroll{flex:1;overflow-y:auto;min-height:0;padding-bottom:var(--s2)}
+    .preview-stat{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:10px 4px;text-align:center}
+    .preview-stat-val{font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1}
+    .preview-stat-label{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:3px}
+    .preview-circuit{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);margin-bottom:var(--s2);overflow:hidden}
+    .preview-circuit-hdr{display:flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s3);border-bottom:1px solid var(--br);background:var(--bg3)}
+    .preview-circuit-letter{width:18px;height:18px;border-radius:50%;background:var(--gl);border:1px solid var(--gml);color:var(--gm);font-size:9px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .preview-circuit-name{flex:1;font-size:11px;font-weight:700;font-family:var(--mono);color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .preview-circuit-scheme{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;flex-shrink:0}
+    .preview-ex-row{display:flex;align-items:center;gap:var(--s2);padding:7px var(--s3)}
+    .preview-ex-row+.preview-ex-row{border-top:1px solid var(--br)}
+    .preview-ex-name{flex:1;font-size:13px;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .preview-ex-uni{font-size:8px;font-weight:700;font-family:var(--mono);color:var(--gm);border:1px solid var(--gml);padding:1px 4px;border-radius:3px;flex-shrink:0}
+    .preview-ex-pattern{font-size:9px;font-family:var(--mono);color:var(--mt);width:44px;text-align:right;flex-shrink:0}
     .ex-prescription{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk)}
     /* Last session strip */
     .last-session-strip{margin:0 14px 10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .2s}
@@ -6126,17 +6142,20 @@ function rWorkout(){
       </div>
     </div>
     <div class="day-sub-tabs">
-      ${[0,1,2,3].map(d=>`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}</button>`).join('')}
+      ${[0,1,2,3].map(d=>`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}${getSessionDone(curWeek,d)?`<span style="color:var(--pass);margin-left:3px">✓</span>`:''}</button>`).join('')}
       ${bmDay5?`<button class="day-sub-tab${curDay===4?' act':''}" onclick="setDay(4)" style="color:var(--pass);${curDay===4?'border-bottom-color:var(--pass)':''}">Day 5</button>`:''}
     </div>
     ${SESSION.active?`
     <div class="session-progress-bar">
       <div class="session-progress-fill" id="session-prog-fill" style="width:${pct}%"></div>
     </div>
-    <div class="rest-timer-bar" id="rest-timer-bar">
-      <span class="rest-timer-label">Rest</span>
-      <span class="rest-timer-count" id="rest-timer-count">0:00</span>
-      <button onclick="clearRestTimer()" style="font-size:10px;font-family:var(--mono);color:var(--mt);background:none;border:none;cursor:pointer">Done</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="rest-timer-bar" id="rest-timer-bar" style="flex:1">
+        <span class="rest-timer-label">Rest</span>
+        <span class="rest-timer-count" id="rest-timer-count">0:00</span>
+        <button onclick="clearRestTimer()" style="font-size:10px;font-family:var(--mono);color:var(--mt);background:none;border:none;cursor:pointer">Done</button>
+      </div>
+      <button onclick="finishSession(true)" style="flex-shrink:0;padding:5px 10px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);cursor:pointer">End</button>
     </div>`:''}
     <div class="circuit-tab-strip">
       ${tabs.map(t=>`<button class="circuit-tab${activeTab===t.id?' act':''}" onclick="setWorkoutTab('${t.id}')">${t.label}</button>`).join('')}
@@ -6158,99 +6177,76 @@ function rWorkout(){
     return;
   }
 
-  // Session not started — show aesthetic preview
+  // Session not started — preview or completed state
   if(!SESSION.active){
-    // Build exercise preview list from today's circuits
-    const previewExercises=[];
-    if(day){
-      day.circuits.forEach(c=>{
-        c.exercises.forEach(item=>{
-          if(item.ex?.name)previewExercises.push({name:item.ex.name,type:item.type,pattern:PL[item.pid]||item.pid,letter:c.letter});
-        });
-      });
+    const doneRec=getSessionDone(curWeek,curDay);
+    const wib2=weekInBlock();
+    const blockLabel=['','Base','Build','Overreach','Deload'][wib2]||'';
+    const dayName=curDay===4?'Benchmark Day':['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][curDay]||`Day ${curDay+1}`;
+    const dayBias=curDay===4?(bmDay5?.name||'Benchmark Training'):['Bilateral Heavy','Bilateral Heavy','Unilateral Focus','Unilateral Focus'][curDay]||'';
+
+    // ── COMPLETED STATE ──
+    if(doneRec){
+      h+=`<div class="preview-shell">
+        <div class="preview-scroll" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--pass-dim);border:1.5px solid var(--pass-border);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--pass);margin-bottom:var(--s4)">✓</div>
+          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--pass);margin-bottom:var(--s1)">Session Complete</div>
+          <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1;margin-bottom:var(--s1)">${dayName}</div>
+          <div style="font-size:12px;color:var(--mt);font-family:var(--mono);margin-bottom:var(--s5)">${new Date(doneRec.date+'T12:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1);width:100%;max-width:340px;margin-bottom:var(--s5)">
+            <div class="preview-stat"><div class="preview-stat-val">${doneRec.sets}</div><div class="preview-stat-label">Sets</div></div>
+            <div class="preview-stat"><div class="preview-stat-val">${doneRec.mins}m</div><div class="preview-stat-label">Time</div></div>
+            <div class="preview-stat"><div class="preview-stat-val">${doneRec.vol>999?Math.round(doneRec.vol/1000)+'k':doneRec.vol||'—'}</div><div class="preview-stat-label">Volume</div></div>
+            <div class="preview-stat"><div class="preview-stat-val" style="color:${doneRec.prs?'var(--gm)':'var(--dk)'}">${doneRec.prs||0}</div><div class="preview-stat-label">PBs</div></div>
+          </div>
+          <button onclick="reopenSession()" style="padding:10px 18px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);cursor:pointer">Train again</button>
+        </div>
+      </div></div>`;
+      document.getElementById('v-workout').innerHTML=h;
+      return;
     }
 
-    // Last session stats
-    const lastSessionDate=SETS.length?SETS[0].session_date:null;
-    const lastSets=lastSessionDate?SETS.filter(s=>s.session_date===lastSessionDate):[];
-    const lastVol=lastSets.reduce((sum,s)=>sum+((s.reps_achieved||0)*(s.load_kg||0)),0);
+    // ── PREVIEW STATE — circuit-grouped, fills the screen ──
+    const schemeMeta={heavy:{label:'Heavy',col:'var(--warn)'},mod:{label:'Volume',col:'var(--gm)'},backoff:{label:'Backoff',col:'var(--mt)'}};
 
-    // Week volume stats
-    const weekAgo=new Date(Date.now()-7*864e5);
-    const setsThisWeek=SETS.filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
+    h+=`<div class="preview-shell">
+      <div class="preview-scroll">
 
-    const wib=weekInBlock();
-    const blockLabel=['','Base','Build','Overreach','Deload'][wib]||'';
-
-    h+=`<div class="circuit-page" style="padding-bottom:120px">
-
-      <!-- Session header -->
-      <div style="padding:16px 0 12px">
-        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Block ${blockNumber()} · Week ${wib} · ${blockLabel}</div>
-        <div style="font-size:26px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1">
-          ${curDay===4?'Benchmark Day':['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][curDay]||`Day ${curDay+1}`}
+        <div style="padding:var(--s3) 0 var(--s3)">
+          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:3px">Block ${blockNumber()} · Week ${wib2} · ${blockLabel}</div>
+          <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1">${dayName}</div>
+          <div style="font-size:12px;color:var(--mt);margin-top:2px">${dayBias}</div>
         </div>
-        <div style="font-size:13px;color:var(--mt);margin-top:2px">${curDay===4?(bmDay5?.name||'Benchmark Training'):[
-          'Bilateral Heavy','Bilateral Heavy','Unilateral Focus','Unilateral Focus'
-        ][curDay]||''} · ${day?.circuits?.length||0} circuits</div>
+
+        ${day?day.circuits.map(c=>{
+          const sm=schemeMeta[c.scheme]||schemeMeta.mod;
+          return`<div class="preview-circuit">
+            <div class="preview-circuit-hdr">
+              <span class="preview-circuit-letter">${c.letter}</span>
+              <span class="preview-circuit-name">${c.name}</span>
+              <span class="preview-circuit-scheme" style="color:${sm.col}">${sm.label} · ${c.circuitSets}×</span>
+            </div>
+            ${c.exercises.map(item=>`<div class="preview-ex-row">
+              <span class="preview-ex-name">${item.ex?.name||PF[item.pid]}</span>
+              ${item.intent==='unilateral'?`<span class="preview-ex-uni">L/R</span>`:''}
+              <span class="preview-ex-pattern">${PL[item.pid]||item.pid}</span>
+            </div>`).join('')}
+          </div>`;
+        }).join(''):''}
+
+        ${(window.MY_NOTES?.['general']||window.MY_NOTES?.[curDay])?`
+        <div style="background:var(--gl);border:1px solid var(--gml);border-radius:var(--r);padding:var(--s3) var(--s4);margin-top:var(--s2)">
+          <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:4px">Coach Note</div>
+          ${window.MY_NOTES?.['general']?`<div style="font-size:12px;color:var(--md)">${window.MY_NOTES['general']}</div>`:''}
+          ${window.MY_NOTES?.[curDay]?`<div style="font-size:12px;color:var(--dk);font-style:italic;margin-top:3px">"${window.MY_NOTES[curDay]}"</div>`:''}
+        </div>`:''}
+
       </div>
 
-      <!-- Stats strip -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:14px">
-        <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:10px;text-align:center">
-          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk)">${day?.circuits?.length||0}</div>
-          <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px">Circuits</div>
-        </div>
-        <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:10px;text-align:center">
-          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk)">${previewExercises.length}</div>
-          <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px">Exercises</div>
-        </div>
-        <div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:10px;text-align:center">
-          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--gm)">${setsThisWeek}</div>
-          <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-top:2px">Sets/wk</div>
-        </div>
+      <div class="circuit-cta" style="position:relative;padding:var(--s3) 0 0">
+        <button class="circuit-cta-btn" onclick="startSession()">Start Session →</button>
       </div>
-
-      <!-- Exercise preview cards -->
-      ${previewExercises.length?`
-      <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Today's Exercises</div>
-      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:14px">
-        ${previewExercises.map(e=>`
-        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r)">
-          <span style="font-size:9px;font-weight:700;font-family:var(--mono);color:var(--gm);width:12px;flex-shrink:0">${e.letter}</span>
-          <span style="font-size:13px;color:var(--dk);flex:1">${e.name}</span>
-          <span class="ex-tag ${e.type==='Main'?'main':e.type==='Bridge'?'bridge':'limiter'}">${e.type}</span>
-        </div>`).join('')}
-      </div>`:''}
-
-      <!-- Coach note -->
-      ${(window.MY_NOTES?.['general']||window.MY_NOTES?.[curDay])?`
-      <div style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
-        <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:6px">Coach Note</div>
-        ${window.MY_NOTES?.['general']?`<div style="font-size:13px;color:var(--md)">${window.MY_NOTES['general']}</div>`:''}
-        ${window.MY_NOTES?.[curDay]?`<div style="font-size:13px;color:var(--dk);font-style:italic;margin-top:4px">"${window.MY_NOTES[curDay]}"</div>`:''}
-      </div>`:''}
-
-      <!-- Last session callout -->
-      ${lastSessionDate?`
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);margin-bottom:14px">
-        <div>
-          <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Last Session</div>
-          <div style="font-size:12px;color:var(--dk);margin-top:2px;font-family:var(--mono)">${new Date(lastSessionDate+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--gm)">${lastSets.length} sets</div>
-          ${lastVol>0?`<div style="font-size:10px;color:var(--mt);font-family:var(--mono)">${Math.round(lastVol)}kg volume</div>`:''}
-        </div>
-      </div>`:''}
-
-    </div>
-
-    <!-- Sticky start CTA -->
-    <div class="circuit-cta">
-      <button class="circuit-cta-btn" onclick="startSession()">Start Session →</button>
-    </div>
-    </div>`; // close workout-shell
+    </div></div>`;
 
     document.getElementById('v-workout').innerHTML=h;
     return;
@@ -6445,6 +6441,8 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
   return h;
 }
 
+let wuOpenPhase=null; // which accordion phase is expanded
+
 function buildWarmUpTab(){
   const tierName=getWarmUpTier();
   const tierIndex={Foundation:0,Development:1,Performance:2,Athletic:3}[tierName];
@@ -6453,29 +6451,38 @@ function buildWarmUpTab(){
   const phaseDuration={Mobilise:'45–60s each',Activate:'10–12 reps',Stabilise:'30–45s each side',React:'4–6 reps'};
   const today=new Date().toISOString().split('T')[0];
 
+  const doneMap={};
+  phases.forEach(p=>{doneMap[p]=!!localStorage.getItem(`wu_done_${CU.id}_wu-d${curDay}-${p}_${today}`);});
+  const doneCount=phases.filter(p=>doneMap[p]).length;
+  if(wuOpenPhase===null)wuOpenPhase=phases.find(p=>!doneMap[p])||null;
+
   let h=`<div class="circuit-page">
     <div class="circuit-page-hdr">
       <div style="flex:1">
         <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--dk)">Warm Up</div>
-        <div style="font-size:11px;color:var(--mt);font-family:var(--mono)">${tierName} tier · 4 phases</div>
+        <div style="font-size:11px;color:var(--mt);font-family:var(--mono)">${tierName} tier · ${doneCount}/4 done</div>
       </div>
+      <button onclick="setWorkoutTab('c0')" style="padding:5px 10px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Skip →</button>
     </div>`;
 
-  phases.forEach((phase,pi)=>{
+  phases.forEach(phase=>{
     const wuKey=`wu-d${curDay}-${phase}`;
-    const isDone=!!localStorage.getItem(`wu_done_${CU.id}_${wuKey}_${today}`);
+    const isDone=doneMap[phase];
+    const isOpen=wuOpenPhase===phase;
     const data=WARM_UP[phase];
     const ex1=data.ex1[tierName][curDay];
     const ex2=data.ex2[tierName][curDay];
     const meta=data.meta[tierIndex];
 
     h+=`<div class="wu-phase">
-      <div class="wu-phase-hdr">
+      <div class="wu-phase-hdr" onclick="toggleWuPhase('${phase}')" style="cursor:pointer">
         <span class="wu-phase-icon">${phaseIcons[phase]}</span>
         <span class="wu-phase-name">${phase}</span>
         <span class="wu-phase-dur">${phaseDuration[phase]}</span>
-        <button class="wu-done-btn${isDone?' done':''}" onclick="markWuPhaseDone('${wuKey}','${today}')">${isDone?'✓ Done':'Mark done'}</button>
+        <button class="wu-done-btn${isDone?' done':''}" onclick="event.stopPropagation();markWuPhaseDone('${wuKey}','${today}')">${isDone?'✓ Done':'Mark done'}</button>
+        <span style="font-size:10px;color:var(--mt);margin-left:2px;transition:transform .2s;display:inline-block;${isOpen?'transform:rotate(180deg)':''}">▾</span>
       </div>
+      ${isOpen?`
       <div class="wu-ex-row">
         <span class="wu-ex-name">${ex1}</span>
         <span class="wu-ex-meta">${meta}</span>
@@ -6483,15 +6490,20 @@ function buildWarmUpTab(){
       <div class="wu-ex-row">
         <span class="wu-ex-name">${ex2}</span>
         <span class="wu-ex-meta">${meta}</span>
-      </div>
+      </div>`:''}
     </div>`;
   });
-  h+=`<div style="height:80px"></div></div>`;
+  h+=`</div>`;
 
   h+=`<div class="circuit-cta">
-    <button class="circuit-cta-btn" onclick="setWorkoutTab('c0')">Start Training →</button>
+    <button class="circuit-cta-btn" onclick="setWorkoutTab('c0')">${doneCount===4?'✓ Warm — Start Training →':'Start Training →'}</button>
   </div>`;
   return h;
+}
+
+function toggleWuPhase(phase){
+  wuOpenPhase=wuOpenPhase===phase?null:phase;
+  rWorkout();
 }
 
 function buildAccCircuitPage(circuit,i){
@@ -6614,6 +6626,39 @@ function startSession(){
   rWorkout();
 }
 
+// ── SESSION PERSISTENCE ──
+// A finished session is marked per user/week/day. The preview renders a
+// completed state instead of offering the same session forever.
+function sessionDoneKey(w,d){return`sess_done_${CU.id}_w${w}_d${d}`;}
+function getSessionDone(w,d){
+  try{return JSON.parse(localStorage.getItem(sessionDoneKey(w,d)))||null;}catch(e){return null;}
+}
+function markSessionDone(){
+  const today=new Date().toISOString().split('T')[0];
+  const daySets=SETS.filter(s=>s.session_date===today);
+  const rec={
+    date:today,
+    sets:daySets.length,
+    vol:Math.round(daySets.reduce((sum,s)=>sum+((s.reps_achieved||0)*(s.load_kg||0)),0)),
+    mins:SESSION.startTime?Math.floor((Date.now()-SESSION.startTime)/60000):0,
+    prs:SESSION.prs.length,
+  };
+  try{localStorage.setItem(sessionDoneKey(curWeek,curDay),JSON.stringify(rec));}catch(e){}
+  return rec;
+}
+// Manual end — allowed mid-session; partial work is still work.
+function finishSession(early){
+  if(early&&!confirm('End session and save? Logged sets are kept.'))return;
+  clearRestTimer();
+  markSessionDone();
+  showSessionComplete();
+}
+// Re-open a finished session for extra volume
+function reopenSession(){
+  try{localStorage.removeItem(sessionDoneKey(curWeek,curDay));}catch(e){}
+  startSession();
+}
+
 function setWorkoutTab(tabId){
   SESSION.activeTab=tabId;
   rWorkout();
@@ -6623,6 +6668,7 @@ function setWorkoutTab(tabId){
 function setDay(d){
   curDay=d;
   openCircuits={};
+  wuOpenPhase=null;
   SESSION.active=false;
   SESSION.activeTab=d===4?'bm':'warm';
   rWorkout();rHome();
@@ -6885,6 +6931,7 @@ function checkSessionComplete(){
   const accDone=accCircuits.length===0||accCircuits.every((ac,i)=>isAccCircuitLogged(`acc-d${curDay}-${i}`,ac));
   if(mainDone&&accDone){
     clearRestTimer();
+    markSessionDone();
     setTimeout(()=>showSessionComplete(),500);
   } else if(mainDone&&!accDone){
     // Advance to first unlogged accessory tab
