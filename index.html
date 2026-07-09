@@ -4649,7 +4649,7 @@ document.addEventListener('visibilitychange',async()=>{
 // ── STATIC DATA CACHE ──
 // Standards and exercises never change — cache them in localStorage
 // Cache version bump forces a refresh if data structure changes
-const CACHE_VERSION='std_v3';
+const CACHE_VERSION='std_v4'; // bumped: exercise ids changed after reseed
 
 async function loadStaticData(){
   try{
@@ -7184,7 +7184,20 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
       console.error('Set save failed:',error);
       const m=error.message||'';
       let hint;
-      if(/side/i.test(m))hint='run: ALTER TABLE workout_sets ADD COLUMN side text';
+      if(/foreign key/i.test(m)){
+        // Stale cached exercise ids after a library reseed — heal automatically
+        try{localStorage.removeItem(CACHE_VERSION);}catch(e){}
+        sb.from('exercises').select('*').then(({data})=>{
+          if(data?.length){
+            EX.length=0;EX.push(...data);
+            try{localStorage.setItem(CACHE_VERSION,JSON.stringify({std:STD,ex:EX}));}catch(e){}
+            rWorkout();
+            toast('Exercise library refreshed — tick that set again','ok');
+          }
+        });
+        hint='stale exercise data, refreshing now…';
+      }
+      else if(/side/i.test(m))hint='run: ALTER TABLE workout_sets ADD COLUMN side text';
       else if(/rpe/i.test(m))hint='run: ALTER TABLE workout_sets ADD COLUMN rpe integer';
       else if(/schema cache/i.test(m))hint='column missing — run the SQL then NOTIFY pgrst reload';
       else if(/row-level security|policy/i.test(m))hint='RLS blocking insert on workout_sets';
