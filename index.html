@@ -515,8 +515,8 @@
     .train-cal{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3)}
     .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:var(--s1)}
     .cal-dow{text-align:center;font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--mt)}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-    .cal-cell{height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:var(--r);position:relative}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:34px;gap:2px}
+    .cal-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:var(--r);position:relative}
     .cal-mark{font-size:6.5px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--mt);height:7px}
     .calw-mark{font-size:7px;font-weight:700;font-family:var(--mono);line-height:1;height:8px;color:var(--mt)}
     .s-done{background:var(--pass-dim)!important}
@@ -6299,7 +6299,10 @@ function rWorkout(){
           ${window.MY_NOTES?.['general']?`<div style="font-size:12px;color:var(--md)">${window.MY_NOTES['general']}</div>`:''}
           ${window.MY_NOTES?.[curDay]?`<div style="font-size:12px;color:var(--dk);font-style:italic;margin-top:3px">"${window.MY_NOTES[curDay]}"</div>`:''}
         </div>`:''}
-        <button class="train-start-btn" onclick="startSession()">Start Session →</button>
+        <div style="display:flex;gap:var(--s2);margin-top:var(--s3)">
+          <button class="train-start-btn" style="margin-top:0;flex:1" onclick="startSession()">Start Session →</button>
+          ${curDay<4?`<button onclick="openMoveSession(${curWeek},${curDay})" style="flex-shrink:0;padding:14px 16px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Move</button>`:''}
+        </div>
       </div>`;
     }
     h+=`</div></div>`;
@@ -6371,11 +6374,77 @@ function rWorkout(){
 // ── SESSION SCHEDULE ──
 // The 4 weekly sessions are pinned to real weekdays:
 // D1 Monday · D2 Tuesday · D3 Thursday · D4 Friday
+// All day arithmetic uses calendar components (never raw ms) so DST
+// transitions can never shift the schedule.
 const SESS_DOW=[0,1,3,4];
+function dayDiff(a,b){
+  return Math.round((Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())-Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()))/864e5);
+}
+function localISO(dt){
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+// Per-session date overrides — "move Tuesday's session to Wednesday"
+function schedKey(w,d){return`sess_sched_${CU.id}_w${w}_d${d}`;}
+function getSchedOverride(w,d){
+  try{return localStorage.getItem(schedKey(w,d))||null;}catch(e){return null;}
+}
+function setSessionSchedule(w,d,dateStr){
+  try{
+    if(dateStr)localStorage.setItem(schedKey(w,d),dateStr);
+    else localStorage.removeItem(schedKey(w,d));
+  }catch(e){}
+  closeBenchmarkLogSheet();
+  rWorkout();
+  toast(dateStr?'Session moved':'Session reset to default day','ok');
+}
 function sessionDateFor(w,d){
+  const ov=getSchedOverride(w,d);
+  if(ov){const[y,m,dd]=ov.split('-').map(Number);return new Date(y,m-1,dd);}
   const dt=new Date(weekStartDate(w));
   dt.setDate(dt.getDate()+(SESS_DOW[d]??0));
   return dt;
+}
+// Which session (if any) lives on a real calendar date — override-aware.
+// Overrides can move a session across week boundaries, so scan w-1..w+1.
+function sessionOnDate(dt){
+  const ps=programmeStart();
+  if(dayDiff(dt,ps)<0)return null;
+  const w=Math.floor(dayDiff(dt,ps)/7)+1;
+  const ds=localISO(dt);
+  for(const wk of[w-1,w,w+1]){
+    if(wk<1)continue;
+    for(let d=0;d<4;d++){
+      if(localISO(sessionDateFor(wk,d))===ds)return{w:wk,d};
+    }
+  }
+  return null;
+}
+// Bottom sheet: pick a new day for a session within its programme week ±
+function openMoveSession(w,d){
+  const overlay=document.getElementById('bm-log-overlay');
+  const body=document.getElementById('bm-log-sheet-body');
+  if(!overlay||!body)return;
+  const ws=weekStartDate(w);
+  const curDs=localISO(sessionDateFor(w,d));
+  const defDs=(()=>{const t=new Date(ws);t.setDate(t.getDate()+SESS_DOW[d]);return localISO(t);})();
+  let opts='';
+  for(let i=0;i<7;i++){
+    const dt=new Date(ws);dt.setDate(dt.getDate()+i);
+    const ds=localISO(dt);
+    const taken=[0,1,2,3].filter(x=>x!==d).some(x=>localISO(sessionDateFor(w,x))===ds);
+    const isCur=ds===curDs;
+    opts+=`<div onclick="setSessionSchedule(${w},${d},'${ds}')"
+      style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--br);cursor:pointer;${isCur?'opacity:1':''}">
+      <div style="font-size:14px;font-weight:600;color:${isCur?'var(--gm)':'var(--dk)'}">${dt.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
+      <span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;color:var(--mt)">${isCur?'CURRENT':taken?'HAS SESSION':''}</span>
+    </div>`;
+  }
+  body.innerHTML=`
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Move Day ${d+1} — Week ${w}</div>
+    ${opts}
+    ${getSchedOverride(w,d)?`<div onclick="setSessionSchedule(${w},${d},null)" style="padding:13px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--mono);color:var(--warn);cursor:pointer">Reset to default day</div>`:''}`;
+  overlay.classList.add('open');
 }
 let sessOpen=false;
 function openSessionDetail(d){
@@ -6406,15 +6475,7 @@ function buildTrainCalendar(){
   const dayShort=['Push+Squat','Pull+Hinge','Push+Squat','Pull+Hinge'];
 
   // For a real calendar date: which programme session (if any) lives here?
-  const sessionAt=dt=>{
-    const ps=programmeStart();
-    if(dt<ps)return null;
-    const diff=Math.floor((dt-ps)/864e5);
-    const w=Math.floor(diff/7)+1;
-    const o=diff%7;
-    const d=SESS_DOW.indexOf(o);
-    return d>=0?{w,d}:null;
-  };
+  const sessionAt=dt=>sessionOnDate(dt);
   const statusOf=(w,d,dt)=>{
     if(getSessionDone(w,d))return'done';
     if(dt<today0)return'missed';
@@ -6431,7 +6492,7 @@ function buildTrainCalendar(){
     let strip='';
     for(let i=0;i<7;i++){
       const dt=new Date(ws);dt.setDate(dt.getDate()+i);
-      const ds=dt.toISOString().split('T')[0];
+      const ds=localISO(dt);
       const sess=sessionAt(dt);
       const trained=trainedDates.has(ds);
       const isToday=dt.getTime()===today0.getTime();
@@ -6497,7 +6558,7 @@ function buildTrainCalendar(){
   for(let i=0;i<startDow;i++)cells+=`<div class="cal-cell empty"></div>`;
   for(let d=1;d<=daysIn;d++){
     const dt=new Date(y,m,d);
-    const ds=dt.toISOString().split('T')[0];
+    const ds=localISO(dt);
     const sess=sessionAt(dt);
     const trained=trainedDates.has(ds);
     const isToday=dt.getTime()===today0.getTime();
@@ -6904,7 +6965,7 @@ function programmeStart(){
   return d;
 }
 function currentProgrammeWeek(){
-  return Math.max(1,Math.floor((Date.now()-programmeStart().getTime())/(7*864e5))+1);
+  return Math.max(1,Math.floor(dayDiff(new Date(),programmeStart())/7)+1);
 }
 function weekStartDate(w){
   const d=new Date(programmeStart());
