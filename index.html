@@ -527,6 +527,7 @@
     .s-today{box-shadow:inset 0 0 0 1px var(--gml)}
     .s-today .cal-mark,.s-today .calw-mark{color:var(--gm)}
     .s-upcoming .cal-mark,.s-upcoming .calw-mark{color:var(--md)}
+    .s-bm.s-upcoming .cal-mark,.s-bm.s-upcoming .calw-mark,.s-bm.s-today .cal-mark,.s-bm.s-today .calw-mark{color:var(--pass)}
     .cal-cell[onclick],.calw-cell[onclick]{cursor:pointer}
     .train-next-tile{display:flex;align-items:center;gap:var(--s3);background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s3) var(--s4);cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s}
     .train-next-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)}
@@ -6230,7 +6231,7 @@ function rWorkout(){
 
   // ══ SESSION DETAIL — full view, opened from tile or calendar ══
   if(sessOpen){
-    const schedDate=curDay<4?sessionDateFor(curWeek,curDay):null;
+    const schedDate=curDay<=4?sessionDateFor(curWeek,curDay):null;
     const isMissed=!doneRec&&schedDate&&schedDate<new Date(new Date().toDateString());
     let h=`<div class="workout-shell">
       <div class="workout-header" style="padding:0 var(--s4)">
@@ -6301,7 +6302,7 @@ function rWorkout(){
         </div>`:''}
         <div style="display:flex;gap:var(--s2);margin-top:var(--s3)">
           <button class="train-start-btn" style="margin-top:0;flex:1" onclick="startSession()">Start Session →</button>
-          ${curDay<4?`<button onclick="openMoveSession(${curWeek},${curDay})" style="flex-shrink:0;padding:14px 16px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Move</button>`:''}
+          ${curDay<=4?`<button onclick="openMoveSession(${curWeek},${curDay})" style="flex-shrink:0;padding:14px 16px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Move</button>`:''}
         </div>
       </div>`;
     }
@@ -6312,11 +6313,12 @@ function rWorkout(){
 
   // ══ TRAIN DASHBOARD — fits one screen ══
   // Compact next-session tile → calendar (the scheduler) → insights
-  const nextIncomplete=[0,1,2,3].find(d=>!getSessionDone(curWeek,d));
+  let nextIncomplete=[0,1,2,3].find(d=>!getSessionDone(curWeek,d));
+  // D1–D4 done but benchmark focus pending → the benchmark is what's next
+  if(nextIncomplete===undefined&&bmDay5&&!getSessionDone(curWeek,4))nextIncomplete=4;
   const tileDay=nextIncomplete??curDay;
-  const tileRec=getSessionDone(curWeek,tileDay);
-  const tileName=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][tileDay];
-  const tileBias=['Bilateral Heavy','Bilateral Heavy','Unilateral Focus','Unilateral Focus'][tileDay];
+  const tileName=tileDay===4?(bmDay5?.name||'Benchmark'):['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][tileDay];
+  const tileBias=tileDay===4?'Benchmark':['Bilateral Heavy','Bilateral Heavy','Unilateral Focus','Unilateral Focus'][tileDay];
   const tileDate=sessionDateFor(curWeek,tileDay);
   const weekDone=nextIncomplete===undefined;
 
@@ -6326,7 +6328,7 @@ function rWorkout(){
       <div class="train-next-tile" onclick="openSessionDetail(${tileDay})">
         <div style="flex:1;min-width:0">
           <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:${weekDone?'var(--pass)':'var(--gm)'};margin-bottom:3px">${weekDone?`Week ${curWeek} complete ✓`:`Week ${curWeek} · Up next`}</div>
-          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.15">Day ${tileDay+1} · ${tileName}</div>
+          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.15">${tileDay===4?tileName:`Day ${tileDay+1} · ${tileName}`}</div>
           <div style="font-size:11px;color:var(--mt);margin-top:2px">${tileBias} · ${tileDate.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
         </div>
         <span style="font-size:18px;color:var(--gm);flex-shrink:0">›</span>
@@ -6373,10 +6375,10 @@ function rWorkout(){
 
 // ── SESSION SCHEDULE ──
 // The 4 weekly sessions are pinned to real weekdays:
-// D1 Monday · D2 Tuesday · D3 Thursday · D4 Friday
 // All day arithmetic uses calendar components (never raw ms) so DST
 // transitions can never shift the schedule.
-const SESS_DOW=[0,1,3,4];
+// D1 Mon · D2 Tue · D3 Thu · D4 Fri · D5 benchmark Sat (only when a focus is set)
+const SESS_DOW=[0,1,3,4,5];
 function dayDiff(a,b){
   return Math.round((Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())-Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()))/864e5);
 }
@@ -6411,9 +6413,10 @@ function sessionOnDate(dt){
   if(dayDiff(dt,ps)<0)return null;
   const w=Math.floor(dayDiff(dt,ps)/7)+1;
   const ds=localISO(dt);
+  const maxD=getBenchmarkDay5()?5:4;
   for(const wk of[w-1,w,w+1]){
     if(wk<1)continue;
-    for(let d=0;d<4;d++){
+    for(let d=0;d<maxD;d++){
       if(localISO(sessionDateFor(wk,d))===ds)return{w:wk,d};
     }
   }
@@ -6431,7 +6434,8 @@ function openMoveSession(w,d){
   for(let i=0;i<7;i++){
     const dt=new Date(ws);dt.setDate(dt.getDate()+i);
     const ds=localISO(dt);
-    const taken=[0,1,2,3].filter(x=>x!==d).some(x=>localISO(sessionDateFor(w,x))===ds);
+    const maxD=getBenchmarkDay5()?5:4;
+    const taken=[...Array(maxD).keys()].filter(x=>x!==d).some(x=>localISO(sessionDateFor(w,x))===ds);
     const isCur=ds===curDs;
     opts+=`<div onclick="setSessionSchedule(${w},${d},'${ds}')"
       style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--br);cursor:pointer;${isCur?'opacity:1':''}">
@@ -6441,7 +6445,7 @@ function openMoveSession(w,d){
   }
   body.innerHTML=`
     <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
-    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Move Day ${d+1} — Week ${w}</div>
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Move ${d===4?'Benchmark':'Day '+(d+1)} — Week ${w}</div>
     ${opts}
     ${getSchedOverride(w,d)?`<div onclick="setSessionSchedule(${w},${d},null)" style="padding:13px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--mono);color:var(--warn);cursor:pointer">Reset to default day</div>`:''}`;
   overlay.classList.add('open');
@@ -6499,8 +6503,8 @@ function buildTrainCalendar(){
       let cls='',mark='';
       if(sess){
         const st=statusOf(sess.w,sess.d,dt);
-        cls=` s-${st}`;
-        mark=st==='done'?'✓':`D${sess.d+1}`;
+        cls=` s-${st}`+(sess.d===4?' s-bm':'');
+        mark=st==='done'?'✓':sess.d===4?'BM':`D${sess.d+1}`;
       }
       strip+=`<div class="calw-cell${isToday?' today':''}${trained?' trained':''}${cls}" ${sess?`onclick="openSessionDetail(${sess.d})"`:''}>
         <span class="calw-dow">${dows[i]}</span>
@@ -6526,12 +6530,23 @@ function buildTrainCalendar(){
       </div>`;
     }).join('');
     const bm5=getBenchmarkDay5();
-    const bmRow=bm5?`<div class="calw-sess" onclick="openSessionDetail(4)">
-      <span class="calw-sess-day" style="color:var(--pass)">D5</span>
-      <span class="calw-sess-name">${bm5.name}</span>
-      <span class="calw-sess-status" style="color:var(--pass)">Benchmark</span>
-      <span style="font-size:13px;color:var(--mt);flex-shrink:0">›</span>
-    </div>`:'';
+    let bmRow='';
+    if(bm5){
+      const bdt=sessionDateFor(curWeek,4);
+      const brec=getSessionDone(curWeek,4);
+      const bst=statusOf(curWeek,4,bdt);
+      let bstatus,bcol;
+      if(bst==='done'){bstatus='✓ Done';bcol='var(--pass)';}
+      else if(bst==='missed'){bstatus='Missed';bcol='var(--warn)';}
+      else if(bst==='today'){bstatus='Today →';bcol='var(--gm)';}
+      else{bstatus=bdt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});bcol='var(--mt)';}
+      bmRow=`<div class="calw-sess" onclick="openSessionDetail(4)">
+        <span class="calw-sess-day" style="color:var(--pass)">${bdt.toLocaleDateString('en-GB',{weekday:'short'})}</span>
+        <span class="calw-sess-name">D5 · ${bm5.name}</span>
+        <span class="calw-sess-status" style="color:${bcol}">${bstatus}</span>
+        <span style="font-size:13px;color:var(--mt);flex-shrink:0">›</span>
+      </div>`;
+    }
 
     return`<div class="home-section-label" style="margin-top:var(--s3);display:flex;align-items:center;justify-content:space-between">
       <span>Programme</span>
@@ -6566,8 +6581,8 @@ function buildTrainCalendar(){
     if(sess){
       const st=statusOf(sess.w,sess.d,dt);
       if(st==='done')doneN++;
-      cls=` s-${st}`;
-      mark=st==='done'?'✓':`D${sess.d+1}`;
+      cls=` s-${st}`+(sess.d===4?' s-bm':'');
+      mark=st==='done'?'✓':sess.d===4?'BM':`D${sess.d+1}`;
     }
     cells+=`<div class="cal-cell${isToday?' today':''}${trained&&!sess?' trained':''}${cls}" ${sess?`onclick="curWeek=${sess.w};openSessionDetail(${sess.d})"`:''}>
       <span class="cal-num">${d}</span>
