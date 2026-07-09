@@ -198,6 +198,7 @@
     .topbar-av:hover{border-color:var(--gm)}
     .topbar-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
     .nav-tab .nav-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center}
+    .view.msg-open{display:flex!important;flex-direction:column;z-index:60;background:var(--bg)}
     .nav-tab.active{color:var(--gm)}
     .nav-tab.active .nav-icon{filter:drop-shadow(0 0 4px rgba(0,229,255,0.4))}
     .log-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:250;display:none;align-items:flex-end;justify-content:center}
@@ -1784,7 +1785,7 @@
     <div id="v-workout" class="view"></div>
     <div id="v-profile" class="view"></div>
     <div id="v-leaderboard" class="view"></div>
-    <div id="v-messages" class="view" style="display:none"></div>
+    <div id="v-messages" class="view"></div>
     <div id="v-coach" style="display:none;padding:16px;overflow-y:auto;width:100%"></div>
   </div>
   <nav class="nav-dock" id="nav-tabs">
@@ -3440,7 +3441,7 @@ function renderBmOnboard(){
         ${[
           {n:'1',t:'Select a benchmark',d:'Choose the endurance test you want to improve. Your programme updates immediately with a dedicated training day.'},
           {n:'2',t:'Train on Day 5',d:'Your fifth session is built around improving your benchmark — short intervals, threshold work, long slow distance, and technique drills.'},
-          {n:'3',t:'Log your result',d:'Test yourself and submit your time. Your personal best is tracked. Reach Level 2 to unlock the ability to change your benchmark focus.'},
+          {n:'3',t:'Log your result',d:'Test yourself and submit your time. Your personal best is tracked. Aim for Level 2 to master the ability to change your benchmark focus.'},
         ].map(s=>`<div style="display:flex;gap:14px;padding:14px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--r)">
           <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:var(--gm);font-size:13px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">${s.n}</div>
           <div><div style="font-size:13px;font-weight:700;color:var(--dk);margin-bottom:3px">${s.t}</div><div style="font-size:12px;color:var(--mt);line-height:1.5">${s.d}</div></div>
@@ -3451,7 +3452,7 @@ function renderBmOnboard(){
     `<div class="bm-slide active">
       <div class="bm-eyebrow">Choose your benchmark</div>
       <div class="bm-h1">What will you train?</div>
-      <div class="bm-body">Select one. You can change your focus once you reach Level 2.</div>
+      <div class="bm-body">Select one. You can switch any time — but one focus taken to Level 2 builds the strongest data.</div>
       <div class="bm-cards">
         ${BENCHMARKS.map(b=>{
           const pb=getBMPB(b.id);
@@ -3487,12 +3488,11 @@ function renderBmOnboard(){
 }
 
 function selectBenchmark(id){
-  // Check if already at Level 2+ on a different benchmark — allow change
+  // Advisory only — switching early is allowed, but one focus builds better data
   if(ATHLETE_BENCHMARK&&ATHLETE_BENCHMARK.benchmark_id!==id){
     const currentLevel=window.ACTIVE_BENCHMARK?.level||0;
     if(currentLevel<2){
-      toast('Reach Level 2 to change your benchmark focus','err');
-      return;
+      toast('Tip: sticking with one focus to Level 2 builds the best progression data','ok');
     }
   }
   bmSelectedId=id;
@@ -4008,9 +4008,9 @@ function closeLogSheet(e){
 // openBenchmarkLog defined in benchmark section
 
 function openMessagesOverlay(){
-  // Show messages as full screen overlay
+  // Show messages as full screen overlay — class-based so it wins over .view{display:none!important}
   const el=document.getElementById('v-messages');
-  if(el)el.style.display='block';
+  if(el)el.classList.add('msg-open');
   if(!document.getElementById('msg-conv-list')){rMessages();}
   else{renderConvList();}
   // Add close button if not already there
@@ -4027,7 +4027,7 @@ function openMessagesOverlay(){
 
 function closeMessagesOverlay(){
   const el=document.getElementById('v-messages');
-  if(el)el.style.display='none';
+  if(el)el.classList.remove('msg-open');
   const btn=document.getElementById('msg-overlay-close');
   if(btn)btn.remove();
 }
@@ -4322,7 +4322,10 @@ async function uploadAvatar(input){
     renderSettings();
     rProfile();
   }catch(err){
-    toast('Upload failed: '+err.message,'err');
+    const m=err.message||'';
+    if(/bucket.*not.*found/i.test(m))toast('Storage not set up — create a public "avatars" bucket in Supabase Storage','err');
+    else if(/row-level security|policy/i.test(m))toast('Storage policy blocking upload — avatars bucket needs an insert policy','err');
+    else toast('Upload failed: '+m.slice(0,80),'err');
   }
 }
 
@@ -6341,7 +6344,46 @@ function rWorkout(){
         const strongest=levels.length?levels.reduce((a,b)=>b.lv>a.lv?b:a):null;
         const weakest=levels.length?levels.reduce((a,b)=>b.lv<a.lv?b:a):null;
         const sym=getSymmetryScore();
-        return`<div class="home-section-label" style="margin-top:var(--s3)">Insights</div>
+
+        // ── Engagement stats ──
+        const now2=new Date();
+        const weekAgo=new Date(Date.now()-7*864e5);
+        const wkSets=SETS.filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo);
+        const wkVol=Math.round(wkSets.reduce((t,s)=>t+((s.reps_achieved||0)*(s.load_kg||0)),0));
+        const moPrefix=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+        const moSessions=new Set(SETS.map(s=>s.session_date).filter(d=>d&&d.startsWith(moPrefix))).size;
+        // Week streak: consecutive programme weeks (back from current) with ≥1 trained day
+        const lw=currentProgrammeWeek();
+        const dateSet=new Set(SETS.map(s=>s.session_date).filter(Boolean));
+        let streakW=0;
+        for(let w=lw;w>=1;w--){
+          const ws2=weekStartDate(w);
+          let hit=false;
+          for(let i=0;i<7;i++){const t=new Date(ws2);t.setDate(t.getDate()+i);if(dateSet.has(localISO(t))){hit=true;break;}}
+          if(hit)streakW++;
+          else if(w<lw)break; // current week gets grace
+        }
+        // PBs in last 28 days: exercises whose recent max load beats their prior max
+        const cut28=new Date(Date.now()-28*864e5);
+        const byExMax={};
+        SETS.forEach(s=>{
+          if(!s.exercise_id||!s.load_kg)return;
+          const recent=new Date(s.logged_at||s.session_date)>=cut28;
+          const rec=byExMax[s.exercise_id]=byExMax[s.exercise_id]||{recent:0,prior:0};
+          if(recent)rec.recent=Math.max(rec.recent,s.load_kg);
+          else rec.prior=Math.max(rec.prior,s.load_kg);
+        });
+        const pbs=Object.values(byExMax).filter(r=>r.prior>0&&r.recent>r.prior).length;
+
+        return`<div class="home-section-label" style="margin-top:var(--s3)">This Week</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1);margin-bottom:var(--s1)">
+          <div class="preview-stat"><div class="preview-stat-val" style="color:var(--gm)">${wkVol>999?(wkVol/1000).toFixed(1)+'k':wkVol}</div><div class="preview-stat-label">Vol kg</div></div>
+          <div class="preview-stat"><div class="preview-stat-val">${wkSets.length}</div><div class="preview-stat-label">Sets</div></div>
+          <div class="preview-stat"><div class="preview-stat-val" style="color:${streakW>1?'var(--warn)':'var(--dk)'}">${streakW}${streakW>1?'🔥':''}</div><div class="preview-stat-label">Wk streak</div></div>
+          <div class="preview-stat"><div class="preview-stat-val" style="color:${pbs?'var(--pass)':'var(--dk)'}">${pbs}</div><div class="preview-stat-label">PBs 28d</div></div>
+        </div>
+        <div style="font-size:10px;color:var(--mt);font-family:var(--mono);text-align:center;margin-bottom:var(--s1)">${moSessions} session${moSessions===1?'':'s'} this month</div>
+        <div class="home-section-label" style="margin-top:var(--s3)">Insights</div>
         <div class="home-insights-grid">
           <div class="home-insight-card">
             <div class="home-insight-eyebrow">Strongest</div>
@@ -7133,12 +7175,21 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
   SETS.unshift(row);
   updateSessionProgress();
   _checkCircuitComplete(ck);
+  // exercise_id column is integer — coerce, never send a non-numeric string
+  row.exercise_id=Number.isFinite(+exKey)?+exKey:null;
   sb.from('workout_sets').insert(row).then(({error})=>{
     if(error){
       const i=SETS.indexOf(row);
       if(i>-1)SETS.splice(i,1);
-      console.error('Set save failed:',error.message);
-      toast('⚠ Set not saved — '+(error.message.includes('side')?'run the side column SQL':'check connection'),'err');
+      console.error('Set save failed:',error);
+      const m=error.message||'';
+      let hint;
+      if(/side/i.test(m))hint='run: ALTER TABLE workout_sets ADD COLUMN side text';
+      else if(/rpe/i.test(m))hint='run: ALTER TABLE workout_sets ADD COLUMN rpe integer';
+      else if(/schema cache/i.test(m))hint='column missing — run the SQL then NOTIFY pgrst reload';
+      else if(/row-level security|policy/i.test(m))hint='RLS blocking insert on workout_sets';
+      else hint=m.slice(0,70);
+      toast('⚠ Set not saved — '+hint,'err');
       rWorkout();
     }
   });
