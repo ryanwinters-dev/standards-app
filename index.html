@@ -112,7 +112,7 @@
         #v-home{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom));max-height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
     #v-profile{overflow:hidden;height:calc(100vh - 52px - env(safe-area-inset-top) - 65px - env(safe-area-inset-bottom))}
     #v-workout{position:fixed;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(65px + env(safe-area-inset-bottom));overflow:hidden;display:none;background:var(--bg)}
-    #v-workout.active{display:flex!important;flex-direction:column;z-index:5}
+    #v-workout.active{display:flex!important;flex-direction:column;z-index:5;overflow:hidden}
     /* ── GLOBAL RESET ── */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     html{font-size:16px;-webkit-text-size-adjust:100%}
@@ -516,7 +516,24 @@
     .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:var(--s1)}
     .cal-dow{text-align:center;font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--mt)}
     .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-    .cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:var(--r);position:relative}
+    .cal-cell{height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:var(--r);position:relative}
+    .cal-mark{font-size:6.5px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--mt);height:7px}
+    .calw-mark{font-size:7px;font-weight:700;font-family:var(--mono);line-height:1;height:8px;color:var(--mt)}
+    .s-done{background:var(--pass-dim)!important}
+    .s-done .cal-num,.s-done .calw-num{color:var(--pass);font-weight:700}
+    .s-done .cal-mark,.s-done .calw-mark{color:var(--pass)}
+    .s-missed .cal-mark,.s-missed .calw-mark{color:var(--warn)}
+    .s-missed{box-shadow:inset 0 0 0 1px var(--warn-border)}
+    .s-today{box-shadow:inset 0 0 0 1px var(--gml)}
+    .s-today .cal-mark,.s-today .calw-mark{color:var(--gm)}
+    .s-upcoming .cal-mark,.s-upcoming .calw-mark{color:var(--md)}
+    .cal-cell[onclick],.calw-cell[onclick]{cursor:pointer}
+    .train-next-tile{display:flex;align-items:center;gap:var(--s3);background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s3) var(--s4);cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s}
+    .train-next-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)}
+    .train-next-tile:active{border-color:var(--gm)}
+    .detail-ex-block{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s2) var(--s3);margin-bottom:var(--s2)}
+    .detail-ex-name{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--dk);padding-bottom:5px;border-bottom:1px solid var(--br);margin-bottom:3px}
+    .detail-set-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--md);padding:4px 0}
     .cal-cell.empty{visibility:hidden}
     .cal-cell.today{border:1px solid var(--gml)}
     .cal-cell.trained{background:var(--pass-dim)}
@@ -6177,14 +6194,13 @@ function rWorkout(){
   }
 
   // ══ ACTIVE SESSION — FULL-SCREEN FOCUS MODE ══
-  // No week nav, no day tabs: nothing on screen can kill the session.
   if(SESSION.active){
     let h=`<div class="workout-shell">
-      <div class="workout-header">
+      <div class="workout-header" style="padding:0 var(--s4)">
         <div class="focus-hdr-row">
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dayName}</div>
-            <div style="font-size:9px;font-family:var(--mono);color:var(--mt);letter-spacing:.06em;text-transform:uppercase">Block ${blockNum} · W${wib} ${wl[wib]} · ${doneCircuits}/${totalCircuits} circuits</div>
+            <div style="font-size:9px;font-family:var(--mono);color:var(--mt);letter-spacing:.06em;text-transform:uppercase">Week ${curWeek} ${wl[wib]} · ${doneCircuits}/${totalCircuits} circuits</div>
           </div>
           <button class="focus-end-btn" onclick="finishSession(true)">End</button>
         </div>
@@ -6207,103 +6223,170 @@ function rWorkout(){
     return;
   }
 
-  // ══ TRAIN DASHBOARD (no active session) ══
   initProgrammeClock();
   const liveWeek=currentProgrammeWeek();
-  let h=`<div class="workout-shell">
-    <div class="train-dash">`;
-
-  const doneRec=getSessionDone(curWeek,curDay);
   const schemeMeta={heavy:{label:'Heavy',col:'var(--warn)'},mod:{label:'Volume',col:'var(--gm)'},backoff:{label:'Backoff',col:'var(--mt)'}};
+  const doneRec=getSessionDone(curWeek,curDay);
 
-  if(doneRec){
-    // Completed state for selected day
-    h+=`<div class="train-next-card" style="border-color:var(--pass-border)">
-      <div style="display:flex;align-items:center;gap:var(--s3)">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--pass-dim);border:1.5px solid var(--pass-border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--pass);flex-shrink:0">✓</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pass)">Session Complete</div>
-          <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--dk)">${dayName}</div>
+  // ══ SESSION DETAIL — full view, opened from tile or calendar ══
+  if(sessOpen){
+    const schedDate=curDay<4?sessionDateFor(curWeek,curDay):null;
+    const isMissed=!doneRec&&schedDate&&schedDate<new Date(new Date().toDateString());
+    let h=`<div class="workout-shell">
+      <div class="workout-header" style="padding:0 var(--s4)">
+        <div class="focus-hdr-row">
+          <button class="back-btn" onclick="closeSessionDetail()">← Back</button>
+          <div style="flex:1"></div>
+          <span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt)">Week ${curWeek} · ${wl[wib]}</span>
         </div>
-        <button onclick="reopenSession()" style="flex-shrink:0;padding:7px 12px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Train again</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1);margin-top:var(--s3)">
-        <div class="preview-stat"><div class="preview-stat-val">${doneRec.sets}</div><div class="preview-stat-label">Sets</div></div>
-        <div class="preview-stat"><div class="preview-stat-val">${doneRec.mins}m</div><div class="preview-stat-label">Time</div></div>
-        <div class="preview-stat"><div class="preview-stat-val">${doneRec.vol>999?Math.round(doneRec.vol/1000)+'k':doneRec.vol||'—'}</div><div class="preview-stat-label">Volume</div></div>
-        <div class="preview-stat"><div class="preview-stat-val" style="color:${doneRec.prs?'var(--gm)':'var(--dk)'}">${doneRec.prs||0}</div><div class="preview-stat-label">PBs</div></div>
-      </div>
-    </div>`;
-  } else {
-    // Next session hero — the priority object on this screen
-    const isPastWeek=curWeek<liveWeek;
-    h+=`<div class="train-next-card">
-      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:${isPastWeek?'var(--warn)':'var(--gm)'};margin-bottom:var(--s1)">${isPastWeek?`Week ${curWeek} · Missed session`:`Week ${curWeek} · ${wl[wib]} · Next Session`}</div>
-      <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1">${dayName}</div>
-      <div style="font-size:12px;color:var(--mt);margin-top:2px;margin-bottom:var(--s3)">${dayBias}${day?` · ${day.circuits.length} circuits`:''}</div>
-      ${day?day.circuits.map(c=>{
-        const sm=schemeMeta[c.scheme]||schemeMeta.mod;
-        return`<div class="preview-circuit">
-          <div class="preview-circuit-hdr">
-            <span class="preview-circuit-letter">${c.letter}</span>
-            <span class="preview-circuit-name">${c.name}</span>
-            <span class="preview-circuit-scheme" style="color:${sm.col}">${sm.label} · ${c.circuitSets}×</span>
+      <div class="train-dash">`;
+
+    if(doneRec){
+      // Completed session — record view with logged sets
+      const daySets=SETS.filter(s=>s.session_date===doneRec.date);
+      const byEx={};
+      daySets.forEach(s=>{(byEx[s.exercise_id]=byEx[s.exercise_id]||[]).push(s);});
+      const exBlocks=Object.entries(byEx).map(([eid,ss])=>{
+        const exo=EX.find(e=>e.id==eid);
+        const nm=exo?exo.name:'Exercise';
+        const rows=ss.sort((a,b)=>(a.set_number-b.set_number)||String(a.side||'').localeCompare(String(b.side||''))).map(s=>
+          `<div class="detail-set-row"><span>Set ${s.set_number}${s.side?` <span class="set-side ${s.side==='L'?'sl':'sr'}">${s.side}</span>`:''}</span><span style="font-family:var(--mono)">${s.reps_achieved} reps${s.load_kg?` × ${s.load_kg}kg`:''}${s.rpe?` · RPE ${s.rpe}`:''}</span></div>`).join('');
+        return`<div class="detail-ex-block"><div class="detail-ex-name">${nm}</div>${rows}</div>`;
+      }).join('');
+
+      h+=`<div class="train-next-card" style="border-color:var(--pass-border)">
+        <div style="display:flex;align-items:center;gap:var(--s3)">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--pass-dim);border:1.5px solid var(--pass-border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--pass);flex-shrink:0">✓</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pass)">Complete · ${new Date(doneRec.date+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
+            <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--dk)">${dayName}</div>
           </div>
-          ${c.exercises.map(item=>`<div class="preview-ex-row">
-            <span class="preview-ex-name">${item.ex?.name||PF[item.pid]}</span>
-            ${item.intent==='unilateral'?`<span class="preview-ex-uni">L/R</span>`:''}
-            <span class="preview-ex-pattern">${PL[item.pid]||item.pid}</span>
-          </div>`).join('')}
-        </div>`;
-      }).join(''):''}
-      ${(window.MY_NOTES?.['general']||window.MY_NOTES?.[curDay])?`
-      <div style="background:var(--gl);border:1px solid var(--gml);border-radius:var(--r);padding:var(--s2) var(--s3);margin-top:var(--s1)">
-        <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:3px">Coach Note</div>
-        ${window.MY_NOTES?.['general']?`<div style="font-size:12px;color:var(--md)">${window.MY_NOTES['general']}</div>`:''}
-        ${window.MY_NOTES?.[curDay]?`<div style="font-size:12px;color:var(--dk);font-style:italic;margin-top:3px">"${window.MY_NOTES[curDay]}"</div>`:''}
-      </div>`:''}
-      <button class="train-start-btn" onclick="startSession()">Start Session →</button>
-    </div>`;
+          <button onclick="reopenSession()" style="flex-shrink:0;padding:7px 12px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Train again</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1);margin-top:var(--s3)">
+          <div class="preview-stat"><div class="preview-stat-val">${doneRec.sets}</div><div class="preview-stat-label">Sets</div></div>
+          <div class="preview-stat"><div class="preview-stat-val">${doneRec.mins}m</div><div class="preview-stat-label">Time</div></div>
+          <div class="preview-stat"><div class="preview-stat-val">${doneRec.vol>999?Math.round(doneRec.vol/1000)+'k':doneRec.vol||'—'}</div><div class="preview-stat-label">Volume</div></div>
+          <div class="preview-stat"><div class="preview-stat-val" style="color:${doneRec.prs?'var(--gm)':'var(--dk)'}">${doneRec.prs||0}</div><div class="preview-stat-label">PBs</div></div>
+        </div>
+      </div>
+      ${exBlocks?`<div class="home-section-label" style="margin-top:var(--s3)">Logged Work</div>${exBlocks}`:''}`;
+    } else {
+      // Upcoming (or missed) session — full preview + start
+      h+=`<div class="train-next-card">
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:${isMissed?'var(--warn)':'var(--gm)'};margin-bottom:var(--s1)">${isMissed?'Missed':'Scheduled'}${schedDate?` · ${schedDate.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}`:''}</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1">${dayName}</div>
+        <div style="font-size:12px;color:var(--mt);margin-top:2px;margin-bottom:var(--s3)">${dayBias}${day?` · ${day.circuits.length} circuits`:''}</div>
+        ${day?day.circuits.map(c=>{
+          const sm=schemeMeta[c.scheme]||schemeMeta.mod;
+          return`<div class="preview-circuit">
+            <div class="preview-circuit-hdr">
+              <span class="preview-circuit-letter">${c.letter}</span>
+              <span class="preview-circuit-name">${c.name}</span>
+              <span class="preview-circuit-scheme" style="color:${sm.col}">${sm.label} · ${c.circuitSets}×</span>
+            </div>
+            ${c.exercises.map(item=>`<div class="preview-ex-row">
+              <span class="preview-ex-name">${item.ex?.name||PF[item.pid]}</span>
+              ${item.intent==='unilateral'?`<span class="preview-ex-uni">L/R</span>`:''}
+              <span class="preview-ex-pattern">${PL[item.pid]||item.pid}</span>
+            </div>`).join('')}
+          </div>`;
+        }).join(''):''}
+        ${(window.MY_NOTES?.['general']||window.MY_NOTES?.[curDay])?`
+        <div style="background:var(--gl);border:1px solid var(--gml);border-radius:var(--r);padding:var(--s2) var(--s3);margin-top:var(--s1)">
+          <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:3px">Coach Note</div>
+          ${window.MY_NOTES?.['general']?`<div style="font-size:12px;color:var(--md)">${window.MY_NOTES['general']}</div>`:''}
+          ${window.MY_NOTES?.[curDay]?`<div style="font-size:12px;color:var(--dk);font-style:italic;margin-top:3px">"${window.MY_NOTES[curDay]}"</div>`:''}
+        </div>`:''}
+        <button class="train-start-btn" onclick="startSession()">Start Session →</button>
+      </div>`;
+    }
+    h+=`</div></div>`;
+    document.getElementById('v-workout').innerHTML=h;
+    return;
   }
 
-  // Insights (relocated from Home)
-  const levels=PATS.map(p=>({p,lv:AP[p]||0})).filter(x=>x.lv>0);
-  const strongest=levels.length?levels.reduce((a,b)=>b.lv>a.lv?b:a):null;
-  const weakest=levels.length?levels.reduce((a,b)=>b.lv<a.lv?b:a):null;
-  const sym=getSymmetryScore();
-  h+=`<div class="home-section-label" style="margin-top:var(--s3)">Insights</div>
-  <div class="home-insights-grid">
-    <div class="home-insight-card">
-      <div class="home-insight-eyebrow">Strongest</div>
-      <div class="home-insight-val" style="color:var(--pass)">${strongest?PL[strongest.p]:'—'}</div>
-      <div class="home-insight-sub">${strongest?`Level ${strongest.lv}`:'Not assessed'}</div>
-    </div>
-    <div class="home-insight-card">
-      <div class="home-insight-eyebrow">Weakest</div>
-      <div class="home-insight-val" style="color:var(--red)">${weakest?PL[weakest.p]:'—'}</div>
-      <div class="home-insight-sub">${weakest?`Level ${weakest.lv}`:'Not assessed'}</div>
-    </div>
-    ${sym?(()=>{
-      const col=sym.score>=90?'var(--pass)':sym.score>=80?'var(--warn)':'var(--red)';
-      const msg=sym.score>=90?'Balanced across sides':`${PL[sym.worst.pid]} ${sym.worst.weakSide==='L'?'left':'right'} lagging ${sym.worst.pct}%`;
-      return`<div class="home-insight-card" style="grid-column:span 2">
-        <div class="home-insight-eyebrow">Symmetry · ${sym.patterns} pattern${sym.patterns>1?'s':''} tracked</div>
-        <div class="home-insight-val" style="color:${col}">${sym.score}<span style="font-size:12px;color:var(--mt)">/100</span></div>
-        <div class="home-insight-sub" style="${sym.score<90?`color:${col}`:''}">${msg}</div>
-      </div>`;
-    })():`<div class="home-insight-card" style="grid-column:span 2">
-      <div class="home-insight-eyebrow">Symmetry</div>
-      <div class="home-insight-val" style="color:var(--mt)">—</div>
-      <div class="home-insight-sub">Log unilateral sets left and right to unlock</div>
-    </div>`}
-  </div>`;
+  // ══ TRAIN DASHBOARD — fits one screen ══
+  // Compact next-session tile → calendar (the scheduler) → insights
+  const nextIncomplete=[0,1,2,3].find(d=>!getSessionDone(curWeek,d));
+  const tileDay=nextIncomplete??curDay;
+  const tileRec=getSessionDone(curWeek,tileDay);
+  const tileName=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][tileDay];
+  const tileBias=['Bilateral Heavy','Bilateral Heavy','Unilateral Focus','Unilateral Focus'][tileDay];
+  const tileDate=sessionDateFor(curWeek,tileDay);
+  const weekDone=nextIncomplete===undefined;
 
-  // Month calendar — trained days at a glance
-  h+=buildTrainCalendar();
+  let h=`<div class="workout-shell">
+    <div class="train-dash">
 
-  h+=`</div></div>`;
+      <div class="train-next-tile" onclick="openSessionDetail(${tileDay})">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:${weekDone?'var(--pass)':'var(--gm)'};margin-bottom:3px">${weekDone?`Week ${curWeek} complete ✓`:`Week ${curWeek} · Up next`}</div>
+          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.15">Day ${tileDay+1} · ${tileName}</div>
+          <div style="font-size:11px;color:var(--mt);margin-top:2px">${tileBias} · ${tileDate.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
+        </div>
+        <span style="font-size:18px;color:var(--gm);flex-shrink:0">›</span>
+      </div>
+
+      ${buildTrainCalendar()}
+
+      ${(()=>{
+        const levels=PATS.map(p=>({p,lv:AP[p]||0})).filter(x=>x.lv>0);
+        const strongest=levels.length?levels.reduce((a,b)=>b.lv>a.lv?b:a):null;
+        const weakest=levels.length?levels.reduce((a,b)=>b.lv<a.lv?b:a):null;
+        const sym=getSymmetryScore();
+        return`<div class="home-section-label" style="margin-top:var(--s3)">Insights</div>
+        <div class="home-insights-grid">
+          <div class="home-insight-card">
+            <div class="home-insight-eyebrow">Strongest</div>
+            <div class="home-insight-val" style="color:var(--pass)">${strongest?PL[strongest.p]:'—'}</div>
+            <div class="home-insight-sub">${strongest?`Level ${strongest.lv}`:'Not assessed'}</div>
+          </div>
+          <div class="home-insight-card">
+            <div class="home-insight-eyebrow">Weakest</div>
+            <div class="home-insight-val" style="color:var(--red)">${weakest?PL[weakest.p]:'—'}</div>
+            <div class="home-insight-sub">${weakest?`Level ${weakest.lv}`:'Not assessed'}</div>
+          </div>
+          ${sym?(()=>{
+            const col=sym.score>=90?'var(--pass)':sym.score>=80?'var(--warn)':'var(--red)';
+            const msg=sym.score>=90?'Balanced across sides':`${PL[sym.worst.pid]} ${sym.worst.weakSide==='L'?'left':'right'} lagging ${sym.worst.pct}%`;
+            return`<div class="home-insight-card" style="grid-column:span 2">
+              <div class="home-insight-eyebrow">Symmetry · ${sym.patterns} pattern${sym.patterns>1?'s':''} tracked</div>
+              <div class="home-insight-val" style="color:${col}">${sym.score}<span style="font-size:12px;color:var(--mt)">/100</span></div>
+              <div class="home-insight-sub" style="${sym.score<90?`color:${col}`:''}">${msg}</div>
+            </div>`;
+          })():`<div class="home-insight-card" style="grid-column:span 2">
+            <div class="home-insight-eyebrow">Symmetry</div>
+            <div class="home-insight-val" style="color:var(--mt)">—</div>
+            <div class="home-insight-sub">Log unilateral sets left and right to unlock</div>
+          </div>`}
+        </div>`;
+      })()}
+
+    </div></div>`;
   document.getElementById('v-workout').innerHTML=h;
 }
+
+// ── SESSION SCHEDULE ──
+// The 4 weekly sessions are pinned to real weekdays:
+// D1 Monday · D2 Tuesday · D3 Thursday · D4 Friday
+const SESS_DOW=[0,1,3,4];
+function sessionDateFor(w,d){
+  const dt=new Date(weekStartDate(w));
+  dt.setDate(dt.getDate()+(SESS_DOW[d]??0));
+  return dt;
+}
+let sessOpen=false;
+function openSessionDetail(d){
+  curDay=d;
+  sessOpen=true;
+  SESSION.activeTab=d===4?'bm':'warm';
+  openCircuits={};
+  rWorkout();
+}
+function closeSessionDetail(){sessOpen=false;rWorkout();}
+
 
 // ── TRAIN CALENDAR ──
 // Collapsed = programme week: date strip + the week's 4 sessions (day
@@ -6317,9 +6400,27 @@ function calNav(dir){
 }
 function buildTrainCalendar(){
   const now=new Date();
+  const today0=new Date(now.toDateString());
   const liveWeek=currentProgrammeWeek();
-  const todayStr=now.toISOString().split('T')[0];
   const trainedDates=new Set(SETS.map(s=>s.session_date).filter(Boolean));
+  const dayShort=['Push+Squat','Pull+Hinge','Push+Squat','Pull+Hinge'];
+
+  // For a real calendar date: which programme session (if any) lives here?
+  const sessionAt=dt=>{
+    const ps=programmeStart();
+    if(dt<ps)return null;
+    const diff=Math.floor((dt-ps)/864e5);
+    const w=Math.floor(diff/7)+1;
+    const o=diff%7;
+    const d=SESS_DOW.indexOf(o);
+    return d>=0?{w,d}:null;
+  };
+  const statusOf=(w,d,dt)=>{
+    if(getSessionDone(w,d))return'done';
+    if(dt<today0)return'missed';
+    if(dt.getTime()===today0.getTime())return'today';
+    return'upcoming';
+  };
 
   if(!calExpanded){
     // ── WEEK VIEW ──
@@ -6329,39 +6430,46 @@ function buildTrainCalendar(){
     const dows=['M','T','W','T','F','S','S'];
     let strip='';
     for(let i=0;i<7;i++){
-      const d=new Date(ws);d.setDate(d.getDate()+i);
-      const ds=d.toISOString().split('T')[0];
+      const dt=new Date(ws);dt.setDate(dt.getDate()+i);
+      const ds=dt.toISOString().split('T')[0];
+      const sess=sessionAt(dt);
       const trained=trainedDates.has(ds);
-      const isToday=ds===todayStr;
-      strip+=`<div class="calw-cell${isToday?' today':''}${trained?' trained':''}">
+      const isToday=dt.getTime()===today0.getTime();
+      let cls='',mark='';
+      if(sess){
+        const st=statusOf(sess.w,sess.d,dt);
+        cls=` s-${st}`;
+        mark=st==='done'?'✓':`D${sess.d+1}`;
+      }
+      strip+=`<div class="calw-cell${isToday?' today':''}${trained?' trained':''}${cls}" ${sess?`onclick="openSessionDetail(${sess.d})"`:''}>
         <span class="calw-dow">${dows[i]}</span>
-        <span class="calw-num">${d.getDate()}</span>
-        ${trained?`<span class="cal-dot"></span>`:`<span style="height:3px"></span>`}
+        <span class="calw-num">${dt.getDate()}</span>
+        <span class="calw-mark">${mark||' '}</span>
       </div>`;
     }
 
-    // The week's 4 programme sessions
-    const nextIncomplete=[0,1,2,3].find(d=>!getSessionDone(curWeek,d));
     const rows=[0,1,2,3].map(d=>{
+      const dt=sessionDateFor(curWeek,d);
       const rec=getSessionDone(curWeek,d);
-      const dn=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][d];
-      const sel=curDay===d;
+      const st=statusOf(curWeek,d,dt);
       let status,statusCol;
-      if(rec){status=`✓ ${new Date(rec.date+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${rec.sets} sets`;statusCol='var(--pass)';}
-      else if(curWeek<liveWeek){status='Missed';statusCol='var(--warn)';}
-      else if(d===nextIncomplete){status='Up next →';statusCol='var(--gm)';}
-      else{status='Queued';statusCol='var(--mt)';}
-      return`<div class="calw-sess${sel?' sel':''}" onclick="setDay(${d})">
-        <span class="calw-sess-day">D${d+1}</span>
-        <span class="calw-sess-name">${dn}</span>
+      if(st==='done'){status=`✓ ${rec.sets} sets`;statusCol='var(--pass)';}
+      else if(st==='missed'){status='Missed';statusCol='var(--warn)';}
+      else if(st==='today'){status='Today →';statusCol='var(--gm)';}
+      else{status=dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});statusCol='var(--mt)';}
+      return`<div class="calw-sess" onclick="openSessionDetail(${d})">
+        <span class="calw-sess-day">${dt.toLocaleDateString('en-GB',{weekday:'short'})}</span>
+        <span class="calw-sess-name">D${d+1} · ${dayShort[d]}</span>
         <span class="calw-sess-status" style="color:${statusCol}">${status}</span>
+        <span style="font-size:13px;color:var(--mt);flex-shrink:0">›</span>
       </div>`;
     }).join('');
     const bm5=getBenchmarkDay5();
-    const bmRow=bm5?`<div class="calw-sess${curDay===4?' sel':''}" onclick="setDay(4)">
+    const bmRow=bm5?`<div class="calw-sess" onclick="openSessionDetail(4)">
       <span class="calw-sess-day" style="color:var(--pass)">D5</span>
       <span class="calw-sess-name">${bm5.name}</span>
       <span class="calw-sess-status" style="color:var(--pass)">Benchmark</span>
+      <span style="font-size:13px;color:var(--mt);flex-shrink:0">›</span>
     </div>`:'';
 
     return`<div class="home-section-label" style="margin-top:var(--s3);display:flex;align-items:center;justify-content:space-between">
@@ -6384,22 +6492,29 @@ function buildTrainCalendar(){
   const y=view.getFullYear(),m=view.getMonth();
   const startDow=(view.getDay()+6)%7;
   const daysIn=new Date(y,m+1,0).getDate();
-  const mPrefix=`${y}-${String(m+1).padStart(2,'0')}`;
-  const trained=new Set([...trainedDates].filter(d=>d.startsWith(mPrefix)).map(d=>parseInt(d.split('-')[2])));
-  const isThisMonth=calMonthOffset===0;
-
+  let doneN=0;
   let cells='';
   for(let i=0;i<startDow;i++)cells+=`<div class="cal-cell empty"></div>`;
   for(let d=1;d<=daysIn;d++){
-    const isToday=isThisMonth&&d===now.getDate();
-    const did=trained.has(d);
-    cells+=`<div class="cal-cell${isToday?' today':''}${did?' trained':''}">
+    const dt=new Date(y,m,d);
+    const ds=dt.toISOString().split('T')[0];
+    const sess=sessionAt(dt);
+    const trained=trainedDates.has(ds);
+    const isToday=dt.getTime()===today0.getTime();
+    let cls='',mark='';
+    if(sess){
+      const st=statusOf(sess.w,sess.d,dt);
+      if(st==='done')doneN++;
+      cls=` s-${st}`;
+      mark=st==='done'?'✓':`D${sess.d+1}`;
+    }
+    cells+=`<div class="cal-cell${isToday?' today':''}${trained&&!sess?' trained':''}${cls}" ${sess?`onclick="curWeek=${sess.w};openSessionDetail(${sess.d})"`:''}>
       <span class="cal-num">${d}</span>
-      ${did?`<span class="cal-dot"></span>`:''}
+      <span class="cal-mark">${mark||(trained?'·':' ')}</span>
     </div>`;
   }
   return`<div class="home-section-label" style="margin-top:var(--s3);display:flex;align-items:center;justify-content:space-between">
-    <span>Programme · ${trained.size} session${trained.size===1?'':'s'}</span>
+    <span>Programme · ${doneN} done</span>
     <button onclick="toggleCalView()" class="cal-toggle-btn">Week ▴</button>
   </div>
   <div class="train-cal">
@@ -7192,6 +7307,7 @@ function showSessionComplete(){
 function closeSessionComplete(){
   document.getElementById('session-complete-overlay')?.classList.remove('active');
   SESSION.active=false;
+  sessOpen=false;
   rWorkout();rHome();
 }
 
