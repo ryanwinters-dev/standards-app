@@ -523,6 +523,24 @@
     .cal-num{font-size:10px;font-family:var(--mono);color:var(--md);line-height:1}
     .cal-cell.trained .cal-num{color:var(--pass);font-weight:700}
     .cal-dot{width:3px;height:3px;border-radius:50%;background:var(--pass)}
+    .cal-hdr{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);margin-bottom:var(--s2)}
+    .cal-hdr-label{font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dk)}
+    .cal-toggle-btn{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gm);background:transparent;border:none;cursor:pointer;padding:2px 0}
+    .calw-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:var(--s2)}
+    .calw-cell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;border-radius:var(--r)}
+    .calw-cell.today{border:1px solid var(--gml)}
+    .calw-cell.trained{background:var(--pass-dim)}
+    .calw-dow{font-size:7px;font-weight:700;font-family:var(--mono);color:var(--mt);letter-spacing:.08em}
+    .calw-num{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--md);line-height:1}
+    .calw-cell.trained .calw-num{color:var(--pass)}
+    .calw-sess-list{display:flex;flex-direction:column;border-top:1px solid var(--br)}
+    .calw-sess{display:flex;align-items:center;gap:var(--s2);padding:9px 2px;cursor:pointer;border-radius:var(--r);transition:background .15s}
+    .calw-sess+.calw-sess{border-top:1px solid var(--br)}
+    .calw-sess.sel{background:var(--gl)}
+    .calw-sess:active{background:var(--bg3)}
+    .calw-sess-day{font-size:9px;font-weight:700;font-family:var(--mono);color:var(--gm);width:20px;flex-shrink:0}
+    .calw-sess-name{flex:1;font-size:12px;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .calw-sess-status{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;flex-shrink:0}
     .ex-prescription{font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk)}
     /* Last session strip */
     .last-session-strip{margin:0 14px 10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .2s}
@@ -1840,7 +1858,7 @@
     <div class="log-sheet-handle"></div>
     <div class="log-sheet-title">What are you logging?</div>
     <div class="log-sheet-tiles">
-      <div class="log-sheet-tile" onclick="closeLogSheet();openAssessment()">
+      <div class="log-sheet-tile" onclick="closeLogSheet();openMovementTestLog()">
         <div class="log-sheet-tile-icon" style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </div>
@@ -3511,6 +3529,35 @@ function openBenchmarkLogForId(benchmarkId){
   if(!bm)return;
   const pb=getBMPB(benchmarkId);
   _openBmLogSheet(bm,pb,benchmarkId);
+}
+
+// Movement standards test picker — mirrors the benchmark picker.
+// Lists all 8 patterns with current level and the next level's test.
+function openMovementTestLog(){
+  const overlay=document.getElementById('bm-log-overlay');
+  const body=document.getElementById('bm-log-sheet-body');
+  if(!overlay||!body)return;
+  body.innerHTML=`
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Movement Standards</div>
+    <div style="font-size:11px;color:var(--mt);margin-bottom:8px">Tap a pattern to view the standard and log a test</div>
+    ${PATS.map(pid=>{
+      const lv=AP[pid]||0;
+      const nextLv=Math.min(lv+1,5);
+      const std=(STD||[]).find(s=>s.pattern_id===pid&&s.level===nextLv);
+      const atMax=lv>=5;
+      const col=LC[lv]||'var(--mt)';
+      return`<div onclick="closeBenchmarkLogSheet();openPatternPage('${pid}','${CU?.id}',false)"
+        style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--br);cursor:pointer">
+        <span style="font-size:16px;font-weight:700;font-family:var(--mono);color:${col};width:24px;text-align:center;flex-shrink:0">${lv}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--dk)">${PF[pid]||pid}</div>
+          <div style="font-size:11px;color:var(--mt);font-family:var(--mono);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${atMax?'Level 5 — max standard held':std?`Test L${nextLv}: ${std.test_exercise}`:`Level ${lv} of 5`}</div>
+        </div>
+        <span style="font-size:18px;color:var(--mt);flex-shrink:0">›</span>
+      </div>`;
+    }).join('')}`;
+  overlay.classList.add('open');
 }
 
 function openBenchmarkLog(){
@@ -6161,23 +6208,9 @@ function rWorkout(){
   }
 
   // ══ TRAIN DASHBOARD (no active session) ══
+  initProgrammeClock();
+  const liveWeek=currentProgrammeWeek();
   let h=`<div class="workout-shell">
-    <div class="workout-header">
-      <div class="workout-week-row">
-        <div>
-          <span style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dk)">Block ${blockNum} · W${wib} <span style="color:var(--mt);font-weight:400">${wl[wib]}</span></span>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button class="wn-btn" onclick="changeWeek(-1)" ${curWeek<=1?'disabled':''}>←</button>
-          <span style="font-size:10px;font-family:var(--mono);color:var(--mt)">Wk ${curWeek}</span>
-          <button class="wn-btn" onclick="changeWeek(1)">→</button>
-        </div>
-      </div>
-      <div class="day-sub-tabs">
-        ${[0,1,2,3].map(d=>`<button class="day-sub-tab${curDay===d?' act':''}" onclick="setDay(${d})">Day ${d+1}${getSessionDone(curWeek,d)?`<span style="color:var(--pass);margin-left:3px">✓</span>`:''}</button>`).join('')}
-        ${bmDay5?`<button class="day-sub-tab${curDay===4?' act':''}" onclick="setDay(4)" style="color:var(--pass);${curDay===4?'border-bottom-color:var(--pass)':''}">Day 5</button>`:''}
-      </div>
-    </div>
     <div class="train-dash">`;
 
   const doneRec=getSessionDone(curWeek,curDay);
@@ -6203,8 +6236,9 @@ function rWorkout(){
     </div>`;
   } else {
     // Next session hero — the priority object on this screen
+    const isPastWeek=curWeek<liveWeek;
     h+=`<div class="train-next-card">
-      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gm);margin-bottom:var(--s1)">Next Session</div>
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:${isPastWeek?'var(--warn)':'var(--gm)'};margin-bottom:var(--s1)">${isPastWeek?`Week ${curWeek} · Missed session`:`Week ${curWeek} · ${wl[wib]} · Next Session`}</div>
       <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.1">${dayName}</div>
       <div style="font-size:12px;color:var(--mt);margin-top:2px;margin-bottom:var(--s3)">${dayBias}${day?` · ${day.circuits.length} circuits`:''}</div>
       ${day?day.circuits.map(c=>{
@@ -6271,29 +6305,109 @@ function rWorkout(){
   document.getElementById('v-workout').innerHTML=h;
 }
 
-// Month overview: green dot = sets logged that day, ring = today
+// ── TRAIN CALENDAR ──
+// Collapsed = programme week: date strip + the week's 4 sessions (day
+// selection lives here now). Expanded = month grid. ‹ › navigates week-to-week
+// collapsed, month-to-month expanded. Past weeks stay scrollable forever.
+let calExpanded=false,calMonthOffset=0;
+function toggleCalView(){calExpanded=!calExpanded;calMonthOffset=0;rWorkout();}
+function calNav(dir){
+  if(calExpanded){calMonthOffset+=dir;rWorkout();}
+  else changeWeek(dir);
+}
 function buildTrainCalendar(){
   const now=new Date();
-  const y=now.getFullYear(),m=now.getMonth();
-  const first=new Date(y,m,1);
-  const startDow=(first.getDay()+6)%7; // Monday-first
+  const liveWeek=currentProgrammeWeek();
+  const todayStr=now.toISOString().split('T')[0];
+  const trainedDates=new Set(SETS.map(s=>s.session_date).filter(Boolean));
+
+  if(!calExpanded){
+    // ── WEEK VIEW ──
+    const ws=weekStartDate(curWeek);
+    const wib2=((curWeek-1)%4)+1;
+    const phase=['','Base','Build','Overreach','Deload'][wib2]||'';
+    const dows=['M','T','W','T','F','S','S'];
+    let strip='';
+    for(let i=0;i<7;i++){
+      const d=new Date(ws);d.setDate(d.getDate()+i);
+      const ds=d.toISOString().split('T')[0];
+      const trained=trainedDates.has(ds);
+      const isToday=ds===todayStr;
+      strip+=`<div class="calw-cell${isToday?' today':''}${trained?' trained':''}">
+        <span class="calw-dow">${dows[i]}</span>
+        <span class="calw-num">${d.getDate()}</span>
+        ${trained?`<span class="cal-dot"></span>`:`<span style="height:3px"></span>`}
+      </div>`;
+    }
+
+    // The week's 4 programme sessions
+    const nextIncomplete=[0,1,2,3].find(d=>!getSessionDone(curWeek,d));
+    const rows=[0,1,2,3].map(d=>{
+      const rec=getSessionDone(curWeek,d);
+      const dn=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][d];
+      const sel=curDay===d;
+      let status,statusCol;
+      if(rec){status=`✓ ${new Date(rec.date+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${rec.sets} sets`;statusCol='var(--pass)';}
+      else if(curWeek<liveWeek){status='Missed';statusCol='var(--warn)';}
+      else if(d===nextIncomplete){status='Up next →';statusCol='var(--gm)';}
+      else{status='Queued';statusCol='var(--mt)';}
+      return`<div class="calw-sess${sel?' sel':''}" onclick="setDay(${d})">
+        <span class="calw-sess-day">D${d+1}</span>
+        <span class="calw-sess-name">${dn}</span>
+        <span class="calw-sess-status" style="color:${statusCol}">${status}</span>
+      </div>`;
+    }).join('');
+    const bm5=getBenchmarkDay5();
+    const bmRow=bm5?`<div class="calw-sess${curDay===4?' sel':''}" onclick="setDay(4)">
+      <span class="calw-sess-day" style="color:var(--pass)">D5</span>
+      <span class="calw-sess-name">${bm5.name}</span>
+      <span class="calw-sess-status" style="color:var(--pass)">Benchmark</span>
+    </div>`:'';
+
+    return`<div class="home-section-label" style="margin-top:var(--s3);display:flex;align-items:center;justify-content:space-between">
+      <span>Programme</span>
+      <button onclick="toggleCalView()" class="cal-toggle-btn">Month ▾</button>
+    </div>
+    <div class="train-cal">
+      <div class="cal-hdr">
+        <button class="wn-btn" onclick="calNav(-1)" ${curWeek<=1?'disabled':''}>←</button>
+        <span class="cal-hdr-label">Week ${curWeek} <span style="color:var(--mt);font-weight:400">· ${phase}${curWeek===liveWeek?' · current':''}</span></span>
+        <button class="wn-btn" onclick="calNav(1)">→</button>
+      </div>
+      <div class="calw-strip">${strip}</div>
+      <div class="calw-sess-list">${rows}${bmRow}</div>
+    </div>`;
+  }
+
+  // ── MONTH VIEW ──
+  const view=new Date(now.getFullYear(),now.getMonth()+calMonthOffset,1);
+  const y=view.getFullYear(),m=view.getMonth();
+  const startDow=(view.getDay()+6)%7;
   const daysIn=new Date(y,m+1,0).getDate();
-  const todayD=now.getDate();
-  const trained=new Set(SETS.map(s=>s.session_date).filter(d=>d&&d.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).map(d=>parseInt(d.split('-')[2])));
+  const mPrefix=`${y}-${String(m+1).padStart(2,'0')}`;
+  const trained=new Set([...trainedDates].filter(d=>d.startsWith(mPrefix)).map(d=>parseInt(d.split('-')[2])));
+  const isThisMonth=calMonthOffset===0;
 
   let cells='';
   for(let i=0;i<startDow;i++)cells+=`<div class="cal-cell empty"></div>`;
   for(let d=1;d<=daysIn;d++){
-    const isToday=d===todayD;
+    const isToday=isThisMonth&&d===now.getDate();
     const did=trained.has(d);
     cells+=`<div class="cal-cell${isToday?' today':''}${did?' trained':''}">
       <span class="cal-num">${d}</span>
       ${did?`<span class="cal-dot"></span>`:''}
     </div>`;
   }
-  const trainedCount=trained.size;
-  return`<div class="home-section-label" style="margin-top:var(--s3)">${now.toLocaleDateString('en-GB',{month:'long',year:'numeric'})} · ${trainedCount} session${trainedCount===1?'':'s'}</div>
+  return`<div class="home-section-label" style="margin-top:var(--s3);display:flex;align-items:center;justify-content:space-between">
+    <span>Programme · ${trained.size} session${trained.size===1?'':'s'}</span>
+    <button onclick="toggleCalView()" class="cal-toggle-btn">Week ▴</button>
+  </div>
   <div class="train-cal">
+    <div class="cal-hdr">
+      <button class="wn-btn" onclick="calNav(-1)">←</button>
+      <span class="cal-hdr-label">${view.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</span>
+      <button class="wn-btn" onclick="calNav(1)" ${calMonthOffset>=0?'disabled':''}>→</button>
+    </div>
     <div class="cal-dow-row">${['M','T','W','T','F','S','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}</div>
     <div class="cal-grid">${cells}</div>
   </div>`;
@@ -6662,6 +6776,32 @@ function startSession(){
   SESSION.prs=[];
   SESSION.activeTab=curDay===4?'bm':'warm';
   rWorkout();
+}
+
+// ── PROGRAMME CLOCK ──
+// The programme rolls from signup: week 1 starts the Monday of the week the
+// athlete created their account. curWeek auto-advances; history stays scrollable.
+function programmeStart(){
+  const d=new Date(CU?.created_at||Date.now());
+  const dow=(d.getDay()+6)%7; // Monday-first
+  d.setDate(d.getDate()-dow);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function currentProgrammeWeek(){
+  return Math.max(1,Math.floor((Date.now()-programmeStart().getTime())/(7*864e5))+1);
+}
+function weekStartDate(w){
+  const d=new Date(programmeStart());
+  d.setDate(d.getDate()+(w-1)*7);
+  return d;
+}
+let _clockInit=false;
+function initProgrammeClock(){
+  if(_clockInit||!CU)return;
+  _clockInit=true;
+  curWeek=currentProgrammeWeek();
+  curDay=[0,1,2,3].find(d=>!getSessionDone(curWeek,d))??0;
 }
 
 // ── SESSION PERSISTENCE ──
@@ -7366,7 +7506,7 @@ function openAssessmentForPattern(pid){
   closeExHistory();
   openAssessment(pid);
 }
-function changeWeek(d){curWeek=Math.max(1,curWeek+d);openCircuits={};extraSets={};rWorkout();rHome();}
+function changeWeek(d){curWeek=Math.max(1,curWeek+d);curDay=[0,1,2,3].find(x=>!getSessionDone(curWeek,x))??0;openCircuits={};extraSets={};rWorkout();rHome();}
 function addSet(ck,exKey){
   if(!extraSets[ck])extraSets[ck]={};
   extraSets[ck][exKey]=(extraSets[ck][exKey]||0)+1;
