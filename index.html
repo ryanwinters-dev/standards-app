@@ -2178,7 +2178,11 @@ function getProgressionLoad(exId,intent,pid){
 }
 
 function suggestedLoad(exId,intent,pid){
-  return getProgressionLoad(exId,intent,pid);
+  const base=getProgressionLoad(exId,intent,pid);
+  if(base==null)return base;
+  const r=readiness();
+  if(r.loadMult===1)return base;
+  return Math.round(base*r.loadMult*2)/2; // nearest 0.5kg
 }
 
 // ── ASYMMETRY ENGINE ──
@@ -2211,6 +2215,53 @@ function getPatternAsymmetry(pid){
   const weakCounts={L:0,R:0};
   asyms.forEach(a=>weakCounts[a.weakSide]++);
   return{pct:Math.round(avgPct*10)/10,weakSide:weakCounts.L>=weakCounts.R?'L':'R',samples:uniSets.length};
+}
+
+// ── READINESS ENGINE ──
+// Reads the athlete's own check-ins and modulates today's session.
+// Thresholds (coach-set, research-calibrated):
+//   RED   — sleep <5h, or stress ≥8, or two+ amber flags → load ×0.90, −1 set on Main/Bridge
+//   AMBER — sleep 5–6h, or stress 7, or energy ≤5/10     → load ×0.95
+//   GREEN — no flags, or no check-in data (never punish missing data)
+function getReadiness(){
+  const today=new Date();
+  const tISO=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const yd=new Date(today);yd.setDate(yd.getDate()-1);
+  const yISO=`${yd.getFullYear()}-${String(yd.getMonth()+1).padStart(2,'0')}-${String(yd.getDate()).padStart(2,'0')}`;
+  const am=CHECKINS.find(c=>c.checkin_date===tISO&&c.session==='am');
+  const pm=CHECKINS.find(c=>c.checkin_date===tISO&&c.session==='pm')
+        ||CHECKINS.find(c=>c.checkin_date===yISO&&c.session==='pm');
+  const sleep=am?.hours_slept??null;
+  const energy=am?.energy??null;
+  const stress=pm?.stress??null;
+
+  const reds=[],ambers=[];
+  if(sleep!=null){
+    if(sleep<5)reds.push(`${sleep}h sleep`);
+    else if(sleep<6)ambers.push(`${sleep}h sleep`);
+  }
+  if(stress!=null){
+    if(stress>=8)reds.push(`stress ${stress}/10`);
+    else if(stress===7)ambers.push(`stress ${stress}/10`);
+  }
+  if(energy!=null&&energy<=5)ambers.push(`energy ${energy}/10`);
+
+  let tier='green';
+  if(reds.length||ambers.length>=2)tier='red';
+  else if(ambers.length)tier='amber';
+
+  return{
+    tier,
+    loadMult:tier==='red'?0.90:tier==='amber'?0.95:1,
+    setDelta:tier==='red'?-1:0,
+    reasons:[...reds,...ambers],
+  };
+}
+let _readinessMemo=null,_readinessDay=null;
+function readiness(){
+  const d=new Date().toDateString();
+  if(_readinessDay!==d||!_readinessMemo){_readinessDay=d;_readinessMemo=getReadiness();}
+  return _readinessMemo;
 }
 
 // Overall symmetry score: 100 − mean asymmetry across patterns with data.
@@ -6015,8 +6066,12 @@ function getSlotExercise(pid, exType, slotIntent, usedNames){
   if(overrideId){const ov=EX.find(e=>e.id==overrideId);if(ov&&!usedNames.has(ov.name))return ov;}
 
   const lv=AP[pid]||0;
-  const block=blockNumber();
   const isUni=slotIntent==='unilateral';
+  // Rotation tiers: Mains persist a full 12-week macro (progressive overload
+  // needs a stable bar); Bridges & Limiters rotate each 4-week wave.
+  const macro=Math.floor((curWeek-1)/12)+1;
+  const wave=blockNumber();
+  const rotIdx=exType==='Main'?(macro-1):(wave-1);
 
   // Build candidate pool — INTENT IS PRESERVED through the level cascade.
   // A unilateral slot exhausts every unilateral option (at level, adjacent
@@ -6024,7 +6079,19 @@ function getSlotExercise(pid, exType, slotIntent, usedNames){
   // Rationale: levels 1–2 are bilateral by design, so low-level athletes'
   // unilateral slots correctly serve the next level's unilateral variation.
   const intentMatch=e=>isUni?e.intent==='Unilateral':e.intent!=='Unilateral';
-  const pools=[
+  // Athlete-need bias: a Bridge slot on a pattern with >10% L/R asymmetry
+  // prefers a unilateral variant — the bridge exists to fix the weakness.
+  let needPools=[];
+  if(exType==='Bridge'&&!isUni){
+    const asym=typeof getPatternAsymmetry==='function'?getPatternAsymmetry(pid):null;
+    if(asym&&asym.pct>10){
+      needPools=[
+        EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type==='Bridge'&&e.intent==='Unilateral'),
+        EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1&&e.type==='Bridge'&&e.intent==='Unilateral'),
+      ];
+    }
+  }
+  const pools=[...needPools,
     // 1. Exact: pattern, level, type, intent
     EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType&&intentMatch(e)),
     // 2. Pattern, level, intent — any type
@@ -6045,10 +6112,11 @@ function getSlotExercise(pid, exType, slotIntent, usedNames){
 
   for(const pool of pools){
     if(!pool.length)continue;
-    // Try fresh (not used today) first, rotated by block
-    const fresh=pool.filter(e=>!usedNames.has(e.name));
+    // Fresh (not used today) first; stable id order so DB fetch order can
+    // never change selection; rotated by the slot's rotation tier.
+    const fresh=pool.filter(e=>!usedNames.has(e.name)).sort((a,b)=>(a.id||0)-(b.id||0));
     if(fresh.length){
-      const idx=(block-1)%fresh.length;
+      const idx=rotIdx%fresh.length;
       return fresh[idx];
     }
   }
@@ -6211,6 +6279,14 @@ function rWorkout(){
         <div class="session-progress-bar">
           <div class="session-progress-fill" id="session-prog-fill" style="width:${pct}%"></div>
         </div>
+        ${(()=>{const r=readiness();if(r.tier==='green')return'';
+          const col=r.tier==='red'?'var(--red)':'var(--warn)';
+          const bg=r.tier==='red'?'var(--red-dim)':'var(--warn-dim)';
+          const what=r.tier==='red'?'load −10% · one set trimmed':'load −5%';
+          return`<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:${bg};border:1px solid ${col};border-radius:var(--r);margin-bottom:6px">
+            <span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:${col}">${r.tier==='red'?'Red day':'Amber day'}</span>
+            <span style="font-size:10px;color:var(--md);font-family:var(--mono);flex:1">${what} · ${r.reasons.join(', ')}</span>
+          </div>`;})()}
         <div class="rest-timer-bar" id="rest-timer-bar">
           <span class="rest-timer-label">Rest</span>
           <span class="rest-timer-count" id="rest-timer-count">0:00</span>
@@ -6332,7 +6408,7 @@ function rWorkout(){
         <div style="flex:1;min-width:0">
           <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:${weekDone?'var(--pass)':'var(--gm)'};margin-bottom:3px">${weekDone?`Week ${curWeek} complete ✓`:`Week ${curWeek} · Up next`}</div>
           <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1.15">${tileDay===4?tileName:`Day ${tileDay+1} · ${tileName}`}</div>
-          <div style="font-size:11px;color:var(--mt);margin-top:2px">${tileBias} · ${tileDate.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
+          <div style="font-size:11px;color:var(--mt);margin-top:2px">${tileBias} · ${tileDate.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}${(()=>{const r=readiness();return r.tier==='green'?'':` · <span style="color:${r.tier==='red'?'var(--red)':'var(--warn)'};font-weight:700">${r.tier==='red'?'Red day −10%':'Amber −5%'}</span>`;})()}</div>
         </div>
         <span style="font-size:18px;color:var(--gm);flex-shrink:0">›</span>
       </div>
@@ -6717,7 +6793,9 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
   const scheme=item.scheme||'mod';
   const rs=repStr(scheme,item.sets||3,curWeek);
   const extra=extraSets[ck]?.[exKey]||0;
-  const totalSets=rs.sets+extra;
+  const rdy=readiness();
+  const trim=(rdy.setDelta<0&&(item.type==='Main'||item.type==='Bridge'))?rdy.setDelta:0;
+  const totalSets=Math.max(2,rs.sets+trim)+extra;
   const exName=ex?ex.name:(STD.find(s=>s.pattern_id===item.pid&&s.level===(AP[item.pid]||0))?.test_exercise||PF[item.pid]);
   const typeClass=item.type==='Main'?'main':item.type==='Bridge'?'bridge':'limiter';
 
@@ -6727,7 +6805,7 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
   const sigClass={progress:'up',maintain:'hold',regress:'down',deload:'down',test_ready:'test'}[sig.signal]||'hold';
 
   // Suggested load
-  const sugLoad=ex?.id?getProgressionLoad(ex.id,intent,item.pid):null;
+  const sugLoad=ex?.id?suggestedLoad(ex.id,intent,item.pid):null;
 
   // Last session data (previous week)
   const prevSets=SETS.filter(s=>s.exercise_id==ex?.id&&s.week_number===curWeek-1).sort((a,b)=>a.set_number-b.set_number);
@@ -9229,7 +9307,7 @@ function toast(msg,type='err'){
 function showTab(t,btn){
   document.querySelectorAll('.view').forEach(v=>{
     v.classList.remove('active');
-    if(v.id==='v-messages')v.style.display='none';
+    if(v.id==='v-messages'){v.classList.remove('msg-open');v.style.display='';}
   });
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
   const el=document.getElementById('v-'+t);
