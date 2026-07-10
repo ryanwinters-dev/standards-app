@@ -997,10 +997,10 @@
     .wb-body::-webkit-scrollbar{display:none}
     .wb-day-tabs{display:flex;gap:2px;margin-bottom:16px}
     .wb-day-tab{flex:1;padding:8px 4px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--br);background:var(--bg2);color:var(--mt);cursor:pointer;text-align:center;transition:all .2s;border-radius:var(--r)}
-    .wb-day-tab.act{background:var(--gm);color:var(--bg);border-color:var(--gm)}
+    .wb-day-tab.act{background:var(--gl);color:var(--gm);border-color:var(--gm)}
     .wb-circuit{background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);margin-bottom:12px;overflow:hidden}
     .wb-circuit-hdr{padding:12px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}
-    .wb-circuit-letter{width:28px;height:28px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .wb-circuit-letter{width:22px;height:22px;border-radius:50%;background:var(--gl);border:1px solid var(--gml);color:var(--gm);font-size:10px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .wb-circuit-name{font-size:13px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;flex:1}
     .wb-ex-row{padding:12px 14px;border-bottom:1px solid var(--br);display:flex;flex-direction:column;gap:8px}
     .wb-ex-row:last-child{border-bottom:none}
@@ -8033,7 +8033,9 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     }).join('')}
   </div>`;
 
-  const bmStrip=BENCHMARKS.length?`<div class="prof-bm-strip" style="padding:0">
+  // Coach lens: benchmark strip hidden — getBMPB reads the viewer's own
+  // results, which would show the coach's PBs on every client (data bleed).
+  const bmStrip=(BENCHMARKS.length&&!needsSwap)?`<div class="prof-bm-strip" style="padding:0">
     ${BENCHMARKS.map(b=>{
       const pb=getBMPB(b.id);
       const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
@@ -8047,8 +8049,11 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   let actionTiles='';
   if(isCoach){
     actionTiles=`
+      <div class="prof-action-tile" onclick="openWorkoutBuilder()"><div class="prof-action-icon">🛠</div><div class="prof-action-label">Programme</div></div>
       <div class="prof-action-tile" onclick="openCoachTestModal()"><div class="prof-action-icon">✓</div><div class="prof-action-label">Log Test</div></div>
-      <div class="prof-action-tile" onclick="openCoachWorkout()"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Workout</div></div>`;
+      <div class="prof-action-tile" onclick="openCoachWorkout()"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Log Workout</div></div>
+      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Journey',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">Journey</div></div>
+      ${checkins&&checkins.length?`<div class="prof-action-tile" onclick="openProfileOverlay('checkins','Wellness',buildCheckinProfilePage)"><div class="prof-action-icon">❤</div><div class="prof-action-label">Wellness</div></div>`:''}`;
   } else {
     actionTiles=`
       <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Journey',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">Journey</div></div>
@@ -8487,58 +8492,65 @@ function rCoach(){
   const pendingCount=ALL_PENDING.length;
   let h='';
 
-  // Invite athlete form
-  h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;padding:16px;margin-bottom:14px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Invite an Athlete</div>
-    <label>Full name</label>
-    <input type="text" id="invite-name" placeholder="e.g. John Smith" style="margin-bottom:10px"/>
-    <label>Email address</label>
-    <input type="email" id="invite-email" placeholder="athlete@email.com" style="margin-bottom:12px"/>
-    <button class="btn btn-full btn-dk" onclick="inviteAthlete()">Send Invitation</button>
-    <div class="msg" id="invite-msg"></div>
-  </div>`;
-
-  // Pending banner at top
+  // Pending reviews — the coach's most urgent signal, first
   if(pendingCount>0){
-    h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
-      <span style="font-size:13px;font-weight:600;color:var(--amber)">⏳ ${pendingCount} test${pendingCount>1?'s':''} pending review</span>
-      <span style="font-size:12px;color:var(--mt)">Open a client to review</span>
+    h+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--warn-dim);border:1px solid var(--warn-border);border-radius:var(--rl);margin-bottom:var(--s3)">
+      <span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--warn)">⏳ ${pendingCount} test${pendingCount>1?'s':''} to review</span>
+      <span style="font-size:11px;color:var(--mt);font-family:var(--mono)">Open a client below</span>
     </div>`;
   }
 
-  h+=`<div class="sl">Athletes (${ALL_ATHLETES.length})</div>`;
+  h+=`<div class="home-section-label" style="display:flex;align-items:center;justify-content:space-between">
+    <span>Roster · ${ALL_ATHLETES.length} athlete${ALL_ATHLETES.length===1?'':'s'}</span>
+    <button onclick="toggleInviteForm()" class="cal-toggle-btn">+ Invite</button>
+  </div>
+  <div id="invite-form-card" style="display:none;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s4);margin-bottom:var(--s2)">
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:var(--s3)">Invite an Athlete</div>
+    <input type="text" id="invite-name" placeholder="Full name" style="margin-bottom:8px"/>
+    <input type="email" id="invite-email" placeholder="athlete@email.com" style="margin-bottom:10px"/>
+    <button class="btn btn-full btn-gm" onclick="inviteAthlete()">Send Invitation</button>
+    <div class="msg" id="invite-msg"></div>
+  </div>`;
 
   if(!ALL_ATHLETES.length){
-    h+=`<div class="empty"><div class="ei">👥</div>No athletes yet. They'll appear here once they sign up.</div>`;
+    h+=`<div class="empty"><div class="ei">👥</div>No athletes yet. Invite your first above.</div>`;
   } else {
     const sorted=[...ALL_ATHLETES].sort((a,b)=>
       PATS.reduce((s,p)=>s+(b.scores[p]||0),0)-PATS.reduce((s,p)=>s+(a.scores[p]||0),0)
     );
     sorted.forEach((a,i)=>{
       const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-      const init=gi(a.name),c=AVC[i%AVC.length];
-      const bars=PATS.map(p=>`<div class="ccc-bar" style="background:${LC[a.scores[p]||0]}"></div>`).join('');
+      const init=gi(a.name);
       const clientPending=ALL_PENDING.filter(p=>p.athlete_id===a.id).length;
       const clientSets=ALL_CLIENT_SETS[a.id]||[];
-      const lastActive=clientSets.length?new Date(clientSets[0].logged_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'No sessions';
-      h+=`<div class="coach-client-card" onclick="openClientPage('${a.id}')">
-        <div class="ccc-av" style="background:${c.bg};color:${c.fg}">${init}</div>
-        <div class="ccc-info">
-          <div class="ccc-name">${a.name}</div>
-          <div class="ccc-sub">Last active: ${lastActive}</div>
-          <div class="ccc-bars">${bars}</div>
+      const lastActive=clientSets.length?new Date(clientSets[0].logged_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';
+      const bars=PATS.map(p=>{
+        const lv=a.scores[p]||0;
+        return`<div style="flex:1;height:3px;border-radius:2px;background:${lv?LC[lv]:'var(--br)'}"></div>`;
+      }).join('');
+      h+=`<div onclick="openClientPage('${a.id}')" style="display:flex;align-items:center;gap:var(--s3);background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3) var(--s4);margin-bottom:var(--s2);cursor:pointer;transition:border-color .15s">
+        <div class="prof-av" style="width:40px;height:40px;font-size:13px">${init}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div>
+          <div style="font-size:10px;color:var(--mt);font-family:var(--mono);margin:2px 0 5px">Last active ${lastActive}${clientPending>0?` · <span style="color:var(--warn)">⏳ ${clientPending} pending</span>`:''}</div>
+          <div style="display:flex;gap:2px">${bars}</div>
         </div>
-        <div class="ccc-right">
-          <div class="ccc-score">${total}</div>
-          ${clientPending>0?`<div class="ccc-pending-dot">⏳ ${clientPending}</div>`:''}
-          <div class="ccc-arrow">›</div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--gm);line-height:1">${total}</div>
+          <div style="font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">/ 40</div>
         </div>
+        <span style="font-size:16px;color:var(--mt)">›</span>
       </div>`;
     });
   }
 
   document.getElementById('v-coach').innerHTML=h;
 }
+function toggleInviteForm(){
+  const el=document.getElementById('invite-form-card');
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+
 
 // ── CLIENT PROFILE PAGE ──
 let _clientPageOpening=false;
@@ -8568,26 +8580,13 @@ async function openClientPage(athleteId){
 
     openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
 
-    const actionTiles=`<div class="client-action-tiles">
-      <div class="client-action-tile" onclick="openWorkoutBuilder()">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        <span class="client-action-tile-label">Programme</span>
-      </div>
-      <div class="client-action-tile" onclick="openCoachTestModal()">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        <span class="client-action-tile-label">Log Test</span>
-      </div>
-      <div class="client-action-tile" onclick="openCoachWorkout()" style="border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.04)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gm)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M1 8h5M18 8h5M1 16h5M18 16h5"/></svg>
-        <span class="client-action-tile-label" style="color:var(--gm)">Log Workout</span>
-      </div>
-    </div>`;
-
     let banner='';
     if(clientPending.length>0){
-      banner=`<div style="background:rgba(255,179,64,0.08);border:1px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--amber);font-family:var(--mono)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting review</div>`;
+      banner=`<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--warn-dim);border:1px solid var(--warn-border);border-radius:var(--rl);margin-bottom:var(--s2)">
+        <span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--warn)">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting review</span>
+      </div>`;
     }
-    document.getElementById('cp-body').innerHTML=actionTiles+banner;
+    document.getElementById('cp-body').innerHTML=banner;
     rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
     document.getElementById('cp-body').scrollTop=0;
   }catch(err){
@@ -8755,63 +8754,72 @@ function closeCoachWorkout(){
 }
 
 function renderCoachWorkout(){
-  // Temporarily swap AP to client scores so buildDay uses client levels
+  // Swap AP to client scores so buildDay selects for THEIR levels
   const savedAP={...AP};
   const savedSETS=[...SETS];
   Object.keys(AP).forEach(k=>delete AP[k]);
   Object.assign(AP,coachLogClientScores);
-  // Use empty SETS so no pre-logged state
   SETS=ALL_CLIENT_SETS[coachLogClientId]||[];
 
   const wib=weekInBlock();
   const wl=['','Base','Build','Overreach','Deload'];
-  let h=`<div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px">`;
+  const schemeMeta={heavy:{label:'Heavy',col:'var(--warn)'},mod:{label:'Volume',col:'var(--gm)'},backoff:{label:'Backoff',col:'var(--mt)'}};
+  const dayNames=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'];
+
+  let h=`<div style="display:flex;gap:var(--s1);margin-bottom:var(--s3);overflow-x:auto">`;
   for(let d=0;d<4;d++){
-    h+=`<button style="padding:6px 14px;border:0.5px solid ${coachWorkoutDay===d?'var(--gm)':'var(--br)'};border-radius:8px;background:${coachWorkoutDay===d?'var(--gm)':'var(--bg2)'};color:${coachWorkoutDay===d?'#fff':'var(--md)'};font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);flex-shrink:0" onclick="setCoachWorkoutDay(${d})">Day ${d+1}</button>`;
+    h+=`<button onclick="setCoachWorkoutDay(${d})" style="flex-shrink:0;padding:7px 14px;border:1px solid ${coachWorkoutDay===d?'var(--gm)':'var(--br)'};background:${coachWorkoutDay===d?'var(--gl)':'var(--bg2)'};color:${coachWorkoutDay===d?'var(--gm)':'var(--mt)'};border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;cursor:pointer">D${d+1}</button>`;
   }
-  h+=`</div>`;
-  h+=`<div style="font-size:12px;color:var(--mt);margin-bottom:14px">Block ${blockNumber()} · Week ${wib} — ${wl[wib]}</div>`;
+  h+=`</div>
+  <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:var(--s3)">Week ${curWeek} · ${wl[wib]} · ${dayNames[coachWorkoutDay]}</div>`;
 
   const day=buildDay(coachWorkoutDay);
   day.circuits.forEach((circuit,ci)=>{
     const ck=`coach-d${coachWorkoutDay}c${ci}`;
     const isOpen=!!coachWorkoutOpenCircuits[ck];
-    h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;margin-bottom:10px;overflow:hidden">
-      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--bg)" onclick="toggleCoachCircuit('${ck}')">
-        <div style="width:26px;height:26px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--brm);color:var(--gm);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center">${circuit.letter}</div>
-        <span style="font-size:13px;font-weight:600;flex:1">${circuit.name} circuit</span>
-        <span style="font-size:12px;color:var(--mt)">${circuit.circuitSets} sets · ${circuit.exercises.length} ex</span>
-        <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
+    const sm=schemeMeta[circuit.scheme]||schemeMeta.mod;
+    h+=`<div class="preview-circuit">
+      <div class="preview-circuit-hdr" onclick="toggleCoachCircuit('${ck}')" style="cursor:pointer">
+        <span class="preview-circuit-letter">${circuit.letter}</span>
+        <span class="preview-circuit-name">${circuit.name}</span>
+        <span class="preview-circuit-scheme" style="color:${sm.col}">${sm.label} · ${circuit.circuitSets}×</span>
+        <span style="font-size:10px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
       </div>`;
 
     if(isOpen){
-      h+=`<div style="padding:0 14px 12px">`;
+      h+=`<div style="padding:var(--s2) var(--s3) var(--s3)">`;
       circuit.exercises.forEach((item,xi)=>{
         const ex=item.ex;
-        const intent=ex?.intent||'Control';
-        const rs=repStr(intent,circuit.circuitSets,curWeek);
+        // scheme drives rep targets — the athlete-app engine's contract
+        const rs=repStr(item.scheme||'mod',circuit.circuitSets,curWeek);
         const exKey=ex?.id||`coach-${ck}-${xi}`;
         const extra=coachWorkoutExtraSets[ck]?.[exKey]||0;
         const totalSets=rs.sets+extra;
-        h+=`<div style="margin-top:10px">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <span class="cx-slot">${circuit.letter}${xi+1}</span>
-            <span style="font-size:13px;font-weight:600">${ex?.name||PF[item.pid]}</span>
-          </div>
-          <table class="set-table"><thead><tr><th>Set</th><th>Reps</th><th>kg</th><th>Target</th></tr></thead><tbody>`;
+        const isUni=item.intent==='unilateral';
+        const sides=isUni?['L','R']:[''];
+        h+=`<div style="margin-top:var(--s2)">
+          <div style="display:flex;align-items:center;gap:var(--s2);margin-bottom:5px">
+            <span style="font-size:9px;font-weight:700;font-family:var(--mono);color:var(--gm)">${circuit.letter}${xi+1}</span>
+            <span style="font-size:13px;font-weight:600;color:var(--dk);flex:1">${ex?.name||PF[item.pid]}</span>
+            ${isUni?`<span class="preview-ex-uni">L/R</span>`:''}
+            <span style="font-size:10px;font-family:var(--mono);color:var(--mt)">${rs.lo}–${rs.hi} reps</span>
+          </div>`;
         for(let s=1;s<=totalSets;s++){
-          const uid=`coach-${ck}-${exKey}-${s}`;
-          h+=`<tr><td class="set-num-cell">${s}</td>
-            <td><input class="set-inp" type="number" id="r-${uid}" placeholder="—" min="1" max="50"/></td>
-            <td><input class="set-inp" type="number" id="l-${uid}" placeholder="—" min="0" max="500" step="0.5"/></td>
-            <td class="set-target">${rs.lo}–${rs.hi}</td></tr>`;
+          for(const side of sides){
+            const uid=`coach-${ck}-${exKey}-${s}${side}`;
+            h+=`<div class="set-row">
+              <span class="set-num${side?' set-num-side':''}">${s}${side?`<span class="set-side ${side==='L'?'sl':'sr'}">${side}</span>`:''}</span>
+              <input class="set-input" type="number" id="r-${uid}" placeholder="${rs.lo}–${rs.hi}" min="1" max="50" inputmode="numeric"/>
+              <span class="set-sep">×</span>
+              <input class="set-input" type="number" id="l-${uid}" placeholder="kg" min="0" max="500" step="0.5" inputmode="decimal"/>
+            </div>`;
+          }
         }
-        h+=`</tbody></table>
-          <button class="add-set-btn" onclick="addCoachSet('${ck}','${exKey}')">+ Add set</button>
+        h+=`<button class="add-set-btn" onclick="addCoachSet('${ck}','${exKey}')">+ Add set</button>
         </div>`;
       });
-      h+=`<button class="log-circuit-btn" style="margin-top:10px" onclick="logCoachCircuit('${ck}',${coachWorkoutDay},${JSON.stringify(circuit.exercises.map(i=>({exId:i.ex?.id,pid:i.pid,intent:i.ex?.intent||'Control'})))})">Log circuit</button>
-        <div class="circuit-log-msg" id="clm-${ck}"></div>
+      h+=`<button class="train-start-btn" style="margin-top:var(--s2);padding:11px" onclick="logCoachCircuit('${ck}',${coachWorkoutDay},${JSON.stringify(circuit.exercises.map(it=>({exId:it.ex?.id||null,pid:it.pid,scheme:it.scheme,intent:it.intent}))).replace(/"/g,'&quot;')})">Log Circuit ✓</button>
+      <div class="circuit-log-msg" id="clm-${ck}"></div>
       </div>`;
     }
     h+=`</div>`;
@@ -8819,7 +8827,6 @@ function renderCoachWorkout(){
 
   document.getElementById('cwm-body').innerHTML=h;
 
-  // Restore
   Object.keys(AP).forEach(k=>delete AP[k]);
   Object.assign(AP,savedAP);
   SETS=savedSETS;
@@ -8835,43 +8842,45 @@ function addCoachSet(ck,exKey){
 }
 
 async function logCoachCircuit(ck,dayIndex,exercises){
-  const btn=document.querySelector(`#cwm-body #clm-${ck}`)?.previousElementSibling;
   const msg=document.getElementById(`clm-${ck}`);
-  if(btn)btn.disabled=true;
   const today=new Date().toISOString().split('T')[0];
   const inserts=[];
 
   exercises.forEach((item,xi)=>{
     const exKey=item.exId||`coach-${ck}-${xi}`;
     const extra=coachWorkoutExtraSets[ck]?.[exKey]||0;
-    const rs=repStr(item.intent||'Control',3,curWeek);
+    const rs=repStr(item.scheme||'mod',3,curWeek);
     const totalSets=rs.sets+extra;
+    const sides=item.intent==='unilateral'?['L','R']:[''];
     for(let s=1;s<=totalSets;s++){
-      const uid=`coach-${ck}-${exKey}-${s}`;
-      const reps=parseInt(document.getElementById(`r-${uid}`)?.value);
-      const load=parseFloat(document.getElementById(`l-${uid}`)?.value)||null;
-      if(reps&&reps>0){
-        inserts.push({
-          athlete_id:coachLogClientId,
-          exercise_id:item.exId||null,
-          pattern_id:item.pid,
-          set_number:s,
-          reps_achieved:reps,
-          load_kg:load,
-          reps_target_low:rs.lo,
-          reps_target_high:rs.hi,
-          week_number:curWeek,
-          session_date:today,
-          logged_at:new Date().toISOString(),
-        });
+      for(const side of sides){
+        const uid=`coach-${ck}-${exKey}-${s}${side}`;
+        const reps=parseInt(document.getElementById(`r-${uid}`)?.value);
+        const load=parseFloat(document.getElementById(`l-${uid}`)?.value)||null;
+        if(reps&&reps>0){
+          inserts.push({
+            athlete_id:coachLogClientId,
+            exercise_id:Number.isFinite(+item.exId)?+item.exId:null,
+            pattern_id:item.pid,
+            set_number:s,
+            reps_achieved:reps,
+            load_kg:load,
+            side:side||null,
+            reps_target_low:rs.lo,
+            reps_target_high:rs.hi,
+            week_number:curWeek,
+            session_date:today,
+            logged_at:new Date().toISOString(),
+          });
+        }
       }
     }
   });
 
   if(!inserts.length){if(msg)msg.textContent='Enter reps first.';return;}
   const{error}=await sb.from('workout_sets').insert(inserts);
-  if(error){if(msg){msg.textContent='Error: '+error.message;msg.style.color='var(--red)';}if(btn)btn.disabled=false;return;}
-  if(msg){msg.textContent=`✓ ${inserts.length} sets logged for ${coachLogClientName}`;msg.style.color='var(--gm)';}
+  if(error){if(msg){msg.textContent='Error: '+error.message;msg.style.color='var(--red)';}return;}
+  if(msg){msg.textContent=`✓ ${inserts.length} sets logged for ${coachLogClientName}`;msg.style.color='var(--pass)';}
   toast(`✓ ${inserts.length} sets logged for ${coachLogClientName}`,'ok');
 }
 
