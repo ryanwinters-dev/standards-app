@@ -7983,11 +7983,13 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
       .sort((a,b)=>new Date(b.assessed_at)-new Date(a.assessed_at));
   });
 
-  // Stats
+  // Journey stats
   const weekAgo=new Date(Date.now()-7*864e5);
   const setsThisWeek=(sets||[]).filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
   const allDates=new Set((sets||[]).map(s=>s.session_date||s.logged_at?.split('T')[0]).filter(Boolean));
   const assessedCount=PATS.filter(p=>(scores[p]||0)>0).length;
+  const totalVol=(sets||[]).reduce((t,s)=>t+((s.reps_achieved||0)*(s.load_kg||0)),0);
+  const sym=(!isCoach&&typeof getSymmetryScore==='function')?getSymmetryScore():null;
 
   // Radar — swap AP if viewing someone else
   let profileRadar;
@@ -8003,7 +8005,6 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     profileRadar=drawSpider();
   }
 
-  // Compact radar bars for the collapsed view
   const radarBars=PATS.map(pid=>{
     const lv=scores[pid]||0;
     const col=LC[lv]||'var(--mt)';
@@ -8015,8 +8016,7 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     </div>`;
   }).join('');
 
-  // Pattern tiles
-  const patGrid=`<div class="pg">
+  const patGrid=`<div class="pg" style="flex:none;padding:0">
     ${PATS.map(pid=>{
       const lv=scores[pid]||0;
       const col=LC[lv]||'var(--mt)';
@@ -8033,8 +8033,7 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     }).join('')}
   </div>`;
 
-  // Benchmark strip
-  const bmStrip=BENCHMARKS.length?`<div class="prof-bm-strip">
+  const bmStrip=BENCHMARKS.length?`<div class="prof-bm-strip" style="padding:0">
     ${BENCHMARKS.map(b=>{
       const pb=getBMPB(b.id);
       const isActive=ATHLETE_BENCHMARK?.benchmark_id===b.id;
@@ -8045,7 +8044,6 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
     }).join('')}
   </div>`:'';
 
-  // Action tiles
   let actionTiles='';
   if(isCoach){
     actionTiles=`
@@ -8053,17 +8051,17 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
       <div class="prof-action-tile" onclick="openCoachWorkout()"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Workout</div></div>`;
   } else {
     actionTiles=`
-      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Training Log',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">Calendar</div></div>
-      ${BENCHMARKS.length?`<div class="prof-action-tile" onclick="openProfileOverlay('benchmarks','Benchmarks',buildBenchmarkProfilePage)"><div class="prof-action-icon">🏁</div><div class="prof-action-label">Benchmarks</div></div>`:''}
+      <div class="prof-action-tile" onclick="openProfileOverlay('calendar','Journey',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">Journey</div></div>
       ${checkins&&checkins.length?`<div class="prof-action-tile" onclick="openProfileOverlay('checkins','Wellness',buildCheckinProfilePage)"><div class="prof-action-icon">❤</div><div class="prof-action-label">Wellness</div></div>`:''}
+      ${BENCHMARKS.length?`<div class="prof-action-tile" onclick="openProfileOverlay('benchmarks','Benchmarks',buildBenchmarkProfilePage)"><div class="prof-action-icon">🏁</div><div class="prof-action-label">Benchmarks</div></div>`:''}
       <div class="prof-action-tile" onclick="openSettings()"><div class="prof-action-icon">⚙</div><div class="prof-action-label">Settings</div></div>`;
   }
 
-  const body=`<div class="prof-shell" style="${isCoach?'height:auto;overflow-y:auto;':''}">
+  const body=`<div class="prof-shell" style="${isCoach?'height:auto;':''}">
+    <div class="train-dash" style="${isCoach?'overflow:visible;':''}">
 
-    ${!isCoach?`<!-- Radar section — compact with expand -->
-    <div class="prof-radar-section">
-      <div class="prof-radar-card">
+      ${!isCoach?`<div class="prof-radar-card" style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
         <div class="prof-radar-compact" onclick="toggleProfileRadar()">
           <div class="prof-radar-compact-svg">${profileRadar}</div>
           <div class="prof-radar-compact-info">
@@ -8075,24 +8073,29 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
           <span id="radar-expand-label">Expand radar ↓</span>
         </div>
         <div class="prof-radar-expanded" id="prof-radar-expanded">${profileRadar}</div>
+      </div>`:''}
+
+      <div class="home-section-label" style="margin-top:var(--s3)">Patterns · ${assessedCount}/8 assessed</div>
+      ${patGrid}
+
+      ${bmStrip?`<div class="home-section-label" style="margin-top:var(--s3)">Benchmarks</div>${bmStrip}`:''}
+
+      <div class="home-section-label" style="margin-top:var(--s3)">Journey</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s1)">
+        <div class="preview-stat"><div class="preview-stat-val" style="color:var(--gm)">${tot}</div><div class="preview-stat-label">Score</div></div>
+        <div class="preview-stat"><div class="preview-stat-val">${allDates.size}</div><div class="preview-stat-label">Sessions</div></div>
+        <div class="preview-stat"><div class="preview-stat-val" style="color:var(--pass)">${totalVol>999?Math.round(totalVol/1000)+'k':Math.round(totalVol)}</div><div class="preview-stat-label">Total kg</div></div>
+        <div class="preview-stat"><div class="preview-stat-val">${setsThisWeek}</div><div class="preview-stat-label">Sets/wk</div></div>
       </div>
-    </div>`:''}
+      ${sym?`<div class="home-insight-card" style="margin-top:var(--s1)">
+        <div class="home-insight-eyebrow">Symmetry</div>
+        <div class="home-insight-val" style="color:${sym.score>=90?'var(--pass)':sym.score>=80?'var(--warn)':'var(--red)'}">${sym.score}<span style="font-size:12px;color:var(--mt)">/100</span></div>
+        <div class="home-insight-sub">${sym.score>=90?'Balanced across sides':`${PL[sym.worst.pid]} ${sym.worst.weakSide==='L'?'left':'right'} lagging ${sym.worst.pct}%`}</div>
+      </div>`:''}
 
-    <!-- Pattern tiles -->
-    ${patGrid}
-
-    <!-- Benchmark strip -->
-    ${bmStrip}
-
-    <!-- Bottom card -->
-    <div class="prof-card">
-      <div class="prof-card-stats">
-        <div class="prof-stat-tile"><div class="prof-stat-val" style="color:var(--gm)">${tot}</div><div class="prof-stat-label">Score</div></div>
-        <div class="prof-stat-tile"><div class="prof-stat-val">${allDates.size}</div><div class="prof-stat-label">Sessions</div></div>
-        <div class="prof-stat-tile"><div class="prof-stat-val" style="color:var(--pass)">${assessedCount}</div><div class="prof-stat-label">Assessed</div></div>
-        <div class="prof-stat-tile"><div class="prof-stat-val">${setsThisWeek}</div><div class="prof-stat-label">Sets/wk</div></div>
-      </div>
+      <div class="home-section-label" style="margin-top:var(--s3)">More</div>
       <div class="prof-action-row">${actionTiles}</div>
+
     </div>
   </div>`;
 
@@ -8202,305 +8205,181 @@ function buildCheckinProfilePage(){
 }
 
 function buildCheckinTiles(checkins,isCoach,athleteId){
-  if(!checkins||!checkins.length)return'';
-  const recent=checkins.slice(0,7).reverse(); // oldest→newest for trends
-  const latest=checkins[0];
+  const cis=(checkins||[]).slice().sort((a,b)=>b.checkin_date.localeCompare(a.checkin_date));
+  if(!cis.length)return null;
 
-  const avg=(arr,key)=>{const v=arr.map(c=>c[key]).filter(x=>x!=null&&x!==0);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null;}
-  const last2trend=(key)=>{const v=checkins.slice(0,2).map(c=>c[key]).filter(Boolean);if(v.length<2)return'';const d=v[0]-v[1];return d>0.5?'↑ up':d<-0.5?'↓ down':'→ stable';}
-  const streak=()=>{let s=0;const today=new Date();for(let i=0;i<checkins.length;i++){const d=new Date(checkins[i].checkin_date+'T12:00:00');const diff=Math.round((today-d)/(1000*60*60*24));if(diff===i)s++;else break;}return s;}
-
-  // Weight sparkline SVG
-  const wVals=recent.map(c=>c.weight).filter(Boolean);
-  let sparkline='';
-  if(wVals.length>=2){
-    const min=Math.min(...wVals),max=Math.max(...wVals),range=max-min||0.5;
-    const W=60,H=22,pad=2;
-    const pts=wVals.map((v,i)=>`${pad+i*(W-pad*2)/(wVals.length-1)},${H-pad-((v-min)/range)*(H-pad*2)}`).join(' ');
-    const wTrend=wVals[wVals.length-1]-wVals[0];
-    const lineCol=wTrend<=0?'var(--gm)':'var(--red)';
-    sparkline=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;margin-top:4px"><polyline points="${pts}" fill="none" stroke="${lineCol}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
-  }
-
-  // Steps fill bar
-  const latestSteps=latest.steps||0;
-  const stepsPct=Math.min(100,Math.round((latestSteps/10000)*100));
-  const stepsCol=stepsPct>=100?'var(--gm)':stepsPct>=70?'var(--amber)':'var(--red)';
-  const stepsBar=`<div style="height:3px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden"><div style="width:${stepsPct}%;height:100%;background:${stepsCol};border-radius:2px"></div></div>
-    <div style="font-size:9px;color:var(--mt);margin-top:2px">${stepsPct}% of 10k</div>`;
-
-  // Colour helpers
-  const sleepVal=latest.hours_slept;
-  const sleepCol=sleepVal>=7?'var(--gm)':sleepVal>=6?'var(--amber)':'var(--red)';
-  const energyAvg=avg(recent,'energy');
-  const energyCol=energyAvg>=7?'var(--gm)':energyAvg>=5?'var(--amber)':'var(--red)';
-  const stressAvg=avg(recent,'stress');
-  const stressCol=stressAvg<=3?'var(--gm)':stressAvg<=6?'var(--amber)':'var(--red)';
-  const hrTrend=last2trend('resting_hr');
-  const avgWater=avg(recent,'water_litres');
-  const avgProtein=avg(recent,'protein_g');
-  const cs=streak();
-
-  const TILES=[
-    {
-      icon:'⚖',label:'Weight',
-      val:latest.weight?latest.weight+'kg':'—',
-      extra:sparkline||(last2trend('weight')?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${last2trend('weight')}</div>`:''),
-      col:'var(--dk)'
-    },
-    {
-      icon:'😴',label:'Sleep',
-      val:sleepVal?sleepVal+'h':'—',
-      extra:`<div style="font-size:10px;color:var(--mt);margin-top:3px">${checkins.slice(0,7).filter(c=>c.hours_slept>=7).length}/7 days ≥7h</div>`,
-      col:sleepCol
-    },
-    {
-      icon:'⚡',label:'Energy',
-      val:energyAvg?energyAvg+'/10':'—',
-      extra:`<div style="font-size:10px;color:var(--mt);margin-top:3px">7-day avg</div>`,
-      col:energyCol
-    },
-    {
-      icon:'🧠',label:'Stress',
-      val:stressAvg?stressAvg+'/10':'—',
-      extra:`<div style="font-size:10px;color:var(--mt);margin-top:3px">7-day avg</div>`,
-      col:stressCol
-    },
-    {
-      icon:'❤',label:'Resting HR',
-      val:latest.resting_hr?latest.resting_hr+'bpm':'—',
-      extra:hrTrend?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${hrTrend}</div>`:'',
-      col:'var(--dk)'
-    },
-    {
-      icon:'💪',label:'Protein',
-      val:latest.protein_g?latest.protein_g+'g':'—',
-      extra:avgProtein?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${avgProtein}g avg</div>`:'',
-      col:'var(--dk)'
-    },
-    {
-      icon:'👟',label:'Steps',
-      val:latestSteps?latestSteps.toLocaleString():'—',
-      extra:latestSteps?stepsBar:'',
-      col:stepsCol
-    },
-    {
-      icon:'💧',label:'Water',
-      val:latest.water_litres?latest.water_litres+'L':'—',
-      extra:avgWater?`<div style="font-size:10px;color:var(--mt);margin-top:3px">${avgWater}L avg</div>`:'',
-      col:'var(--dk)'
-    },
-  ];
-
-  let h=`<div class="sl">Wellness Snapshot</div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">`;
-
-  TILES.forEach(({icon,label,val,extra,col})=>{
-    h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:10px;padding:9px 8px">
-      <div style="font-size:9px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">${icon} ${label}</div>
-      <div style="font-size:18px;font-weight:700;color:${col};line-height:1;letter-spacing:-.5px">${val}</div>
-      ${extra}
-    </div>`;
-  });
-
-  h+=`</div>`;
-
-  // Check-in log — collapsible with full entry expansion
-  const ciKey=`ci-entries-${athleteId?athleteId.slice(0,8):'me'}`;
-  const isOpen=!!openPatHist[ciKey];
-  h+=`<div style="background:var(--bg2);border:0.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;cursor:pointer" onclick="togglePatHist('${ciKey}')">
-      <span style="font-size:13px;font-weight:600">Check-in log (${checkins.length})</span>
-      <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
-    </div>`;
-
-  if(isOpen){
-    h+=`<div>`;
-    checkins.forEach((c,ci)=>{
-      const dt=new Date(c.checkin_date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-      const entryKey=`ci-entry-${ciKey}-${ci}`;
-      const entryOpen=!!openPatHist[entryKey];
-
-      // Summary chips for collapsed row
-      const chips=[];
-      if(c.weight)chips.push(`${c.weight}kg`);
-      if(c.hours_slept)chips.push(`${c.hours_slept}h`);
-      if(c.energy)chips.push(`E${c.energy}`);
-
-      h+=`<div style="border-top:0.5px solid var(--br)">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;cursor:pointer" onclick="togglePatHist('${entryKey}')">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:13px;font-weight:500">${dt}</span>
-            ${chips.map(ch=>`<span style="font-size:11px;color:var(--mt);background:var(--bg);padding:1px 6px;border-radius:99px;border:0.5px solid var(--br)">${ch}</span>`).join('')}
-          </div>
-          <span style="font-size:12px;color:var(--mt)">${entryOpen?'▲':'▼'}</span>
-        </div>`;
-
-      if(entryOpen){
-        const fields=[
-          ['Weight',c.weight?c.weight+'kg':null,'var(--dk)'],
-          ['Sleep',c.hours_slept?c.hours_slept+'h':null,c.hours_slept>=7?'var(--gm)':c.hours_slept>=6?'var(--amber)':'var(--red)'],
-          ['Energy',c.energy?c.energy+'/10':null,c.energy>=7?'var(--gm)':c.energy>=5?'var(--amber)':'var(--red)'],
-          ['Stress',c.stress?c.stress+'/10':null,c.stress<=3?'var(--gm)':c.stress<=6?'var(--amber)':'var(--red)'],
-          ['Resting HR',c.resting_hr?c.resting_hr+'bpm':null,'var(--dk)'],
-          ['Calories',c.calories?c.calories+'kcal':null,'var(--dk)'],
-          ['Protein',c.protein_g?c.protein_g+'g':null,'var(--dk)'],
-          ['Water',c.water_litres?c.water_litres+'L':null,'var(--dk)'],
-          ['Steps',c.steps?c.steps.toLocaleString():null,'var(--dk)'],
-          ['Hunger',c.hunger?c.hunger+'/10':null,'var(--dk)'],
-          ['Alcohol',(c.alcohol_consumed===true||c.alcohol_consumed==='true')?'Yes':null,'var(--amber)'],
-        ].filter(([,v])=>v!=null);
-
-        h+=`<div style="background:var(--bg);padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px">`;
-        fields.forEach(([label,val,col])=>{
-          h+=`<div style="background:var(--bg2);border-radius:8px;padding:8px 10px">
-            <div style="font-size:9px;color:var(--mt);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${label}</div>
-            <div style="font-size:15px;font-weight:700;color:${col}">${val}</div>
-          </div>`;
-        });
-        h+=`</div>`;
-      }
-      h+=`</div>`;
-    });
-    h+=`</div>`;
-  }
-  h+=`</div>`;
-  return h;
-}
-
-function buildProfileCalendar(sets){
   const today=new Date();
-  const todayStr=today.toISOString().split('T')[0];
+  const dISO=n=>{const d=new Date(today);d.setDate(d.getDate()-n);return localISO(d);};
+  const last7=new Set(Array.from({length:7},(_,i)=>dISO(i)));
+  const prev7=new Set(Array.from({length:7},(_,i)=>dISO(i+7)));
 
-  const workedDates=new Set();
-  sets.forEach(s=>{
-    const d=s.session_date||s.logged_at?.split('T')[0];
-    if(d)workedDates.add(d);
-  });
+  const avg=(arr,f)=>{const v=arr.map(f).filter(x=>x!=null&&!isNaN(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;};
+  const w7=cis.filter(c=>last7.has(c.checkin_date));
+  const wPrev=cis.filter(c=>prev7.has(c.checkin_date));
 
-  // Find Monday of the current week (profCalDate determines which week)
-  const ref=new Date(profCalDate);
-  const dayOfWeek=(ref.getDay()+6)%7; // Mon=0
-  const weekStart=new Date(ref);
-  weekStart.setDate(ref.getDate()-dayOfWeek);
+  const mkTrend=(cur,prev,goodUp)=>{
+    if(cur==null||prev==null)return'';
+    const d=cur-prev;
+    if(Math.abs(d)<0.15)return`<span style="color:var(--mt)">→ steady</span>`;
+    const good=goodUp?d>0:d<0;
+    return`<span style="color:${good?'var(--pass)':'var(--warn)'}">${d>0?'↑':'↓'} ${Math.abs(d).toFixed(1)} vs last wk</span>`;
+  };
 
-  // Build 7 days Mon-Sun
-  const days=[];
-  for(let i=0;i<7;i++){
-    const d=new Date(weekStart);
-    d.setDate(weekStart.getDate()+i);
-    const ds=d.toISOString().split('T')[0];
-    days.push({d,ds,worked:workedDates.has(ds),isToday:ds===todayStr,isSelected:selectedCalDay===ds});
+  const sleep7=avg(w7,c=>c.hours_slept),sleepP=avg(wPrev,c=>c.hours_slept);
+  const energy7=avg(w7,c=>c.energy),energyP=avg(wPrev,c=>c.energy);
+  const stress7=avg(w7,c=>c.stress),stressP=avg(wPrev,c=>c.stress);
+
+  const sleepCol=sleep7==null?'var(--mt)':sleep7>=7?'var(--pass)':sleep7>=6?'var(--warn)':'var(--red)';
+  const energyCol=energy7==null?'var(--mt)':energy7>=7?'var(--pass)':energy7>=5?'var(--warn)':'var(--red)';
+  const stressCol=stress7==null?'var(--mt)':stress7<=4?'var(--pass)':stress7<=6?'var(--warn)':'var(--red)';
+
+  // Weight — latest + 28d change + sparkline
+  const weights=cis.filter(c=>c.weight!=null).slice(0,28).reverse();
+  let weightCard='';
+  if(weights.length){
+    const latest=weights[weights.length-1].weight;
+    const first=weights[0].weight;
+    const delta=latest-first;
+    const vals=weights.map(w=>w.weight);
+    const mn=Math.min(...vals),mx=Math.max(...vals);
+    const rng=(mx-mn)||1;
+    const pts=vals.map((v,i)=>`${(i/(vals.length-1||1))*100},${28-((v-mn)/rng)*24-2}`).join(' ');
+    weightCard=`<div class="home-insight-card" style="grid-column:span 2">
+      <div class="home-insight-eyebrow">Weight · ${weights.length} logs</div>
+      <div style="display:flex;align-items:center;gap:var(--s3)">
+        <div>
+          <div class="home-insight-val">${latest}<span style="font-size:12px;color:var(--mt)">kg</span></div>
+          <div class="home-insight-sub" style="color:${Math.abs(delta)<0.3?'var(--mt)':'var(--md)'}">${delta>0?'+':''}${delta.toFixed(1)}kg over ${weights.length} check-ins</div>
+        </div>
+        <svg viewBox="0 0 100 28" style="flex:1;height:28px" preserveAspectRatio="none">
+          <polyline points="${pts}" fill="none" stroke="var(--gm)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+    </div>`;
   }
 
-  const dayLabels=['M','T','W','T','F','S','S'];
-  const weekLabel=weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  // Consistency — last 7 days AM/PM pips
+  const pips=Array.from({length:7},(_,i)=>{
+    const ds=dISO(6-i);
+    const am=cis.some(c=>c.checkin_date===ds&&c.session==='am');
+    const pm=cis.some(c=>c.checkin_date===ds&&c.session==='pm');
+    return`<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+      <div class="home-ci-pip${am?' am':''}"></div>
+      <div class="home-ci-pip${pm?' pm':''}"></div>
+    </div>`;
+  }).join('');
+  const ciCount=w7.length;
 
-  let h=`<div class="cal-wrap">
-    <div class="cal-hdr">
-      <span class="cal-title">w/c ${weekLabel}</span>
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="profCalNav(-1)">←</button>
-        <button class="cal-nav-btn" onclick="profCalNav(1)">→</button>
+  const r=(!isCoach||athleteId===CU?.id)?readiness():null;
+
+  return`<div>
+    ${r&&r.tier!=='green'?`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:${r.tier==='red'?'var(--red-dim)':'var(--warn-dim)'};border:1px solid ${r.tier==='red'?'var(--red-border)':'var(--warn-border)'};border-radius:var(--r);margin-bottom:var(--s2)">
+      <span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:${r.tier==='red'?'var(--red)':'var(--warn)'}">${r.tier==='red'?'Red day':'Amber day'}</span>
+      <span style="font-size:10px;color:var(--md);font-family:var(--mono)">${r.reasons.join(', ')} — training adjusted</span>
+    </div>`:''}
+    <div class="home-insights-grid">
+      <div class="home-insight-card">
+        <div class="home-insight-eyebrow">Sleep · 7d avg</div>
+        <div class="home-insight-val" style="color:${sleepCol}">${sleep7!=null?sleep7.toFixed(1)+'h':'—'}</div>
+        <div class="home-insight-sub">${mkTrend(sleep7,sleepP,true)||'Log AM check-ins'}</div>
+      </div>
+      <div class="home-insight-card">
+        <div class="home-insight-eyebrow">Energy · 7d avg</div>
+        <div class="home-insight-val" style="color:${energyCol}">${energy7!=null?energy7.toFixed(1):'—'}<span style="font-size:12px;color:var(--mt)">${energy7!=null?'/10':''}</span></div>
+        <div class="home-insight-sub">${mkTrend(energy7,energyP,true)||'Log AM check-ins'}</div>
+      </div>
+      <div class="home-insight-card" style="grid-column:span 2">
+        <div class="home-insight-eyebrow">Stress · 7d avg</div>
+        <div class="home-insight-val" style="color:${stressCol}">${stress7!=null?stress7.toFixed(1):'—'}<span style="font-size:12px;color:var(--mt)">${stress7!=null?'/10':''}</span></div>
+        <div class="home-insight-sub">${mkTrend(stress7,stressP,false)||'Log PM check-ins'}</div>
+      </div>
+      ${weightCard}
+      <div class="home-insight-card" style="grid-column:span 2">
+        <div class="home-insight-eyebrow">Check-in consistency · ${ciCount}/14 this week</div>
+        <div style="display:flex;gap:3px;margin-top:6px">${pips}</div>
+        <div class="home-insight-sub" style="margin-top:6px">Top row AM · bottom row PM — your check-ins drive the readiness engine</div>
       </div>
     </div>
-    <div class="cal-week-scroll" style="justify-content:space-around">`;
+  </div>`;
+}
 
-  days.forEach(({d,ds,worked,isToday,isSelected})=>{
-    const dow=(d.getDay()+6)%7;
-    const onclick=worked?`onclick="selectCalDay('${ds}')"`:'' ;
-    h+=`<div class="cal-week-day">
-      <div class="cal-week-label">${dayLabels[dow]}</div>
-      <div class="cal-week-num${worked?' worked':''}${isToday?' today':''}${isSelected?' selected':''}" ${onclick}>${d.getDate()}</div>
+let profCalOffset=0;
+function profCalNav(dir){
+  profCalOffset=Math.min(0,profCalOffset+dir);
+  const el=document.getElementById('prof-cal-body');
+  if(el)el.innerHTML=buildProfileCalendar(profContext.sets||[]);
+}
+function buildProfileCalendar(sets){
+  const now=new Date();
+  const view=new Date(now.getFullYear(),now.getMonth()+profCalOffset,1);
+  const y=view.getFullYear(),m=view.getMonth();
+  const startDow=(view.getDay()+6)%7;
+  const daysIn=new Date(y,m+1,0).getDate();
+  const today0=new Date(now.toDateString());
+  const trainedDates=new Set((sets||[]).map(s=>s.session_date).filter(Boolean));
+  const mPrefix=`${y}-${String(m+1).padStart(2,'0')}`;
+
+  // Month grid — same treatment as Train
+  let cells='';let monthTrained=0;
+  for(let i=0;i<startDow;i++)cells+=`<div class="cal-cell empty"></div>`;
+  for(let d=1;d<=daysIn;d++){
+    const dt=new Date(y,m,d);
+    const ds=localISO(dt);
+    const trained=trainedDates.has(ds);
+    if(trained)monthTrained++;
+    const isToday=dt.getTime()===today0.getTime();
+    cells+=`<div class="cal-cell${isToday?' today':''}${trained?' trained':''}">
+      <span class="cal-num">${d}</span>
+      <span class="cal-mark">${trained?'·':' '}</span>
     </div>`;
+  }
+
+  // Journey stats
+  const allDays=[...trainedDates].sort();
+  const totalSessions=allDays.length;
+  const totalVol=(sets||[]).reduce((t,s)=>t+((s.reps_achieved||0)*(s.load_kg||0)),0);
+  // longest streak of consecutive training days
+  let best=0,cur=0,prev=null;
+  allDays.forEach(ds=>{
+    if(prev){
+      const a=new Date(prev),b=new Date(ds);
+      cur=(dayDiff(b,a)===1)?cur+1:1;
+    } else cur=1;
+    best=Math.max(best,cur);prev=ds;
   });
 
-  h+=`</div>`;
+  // Session history — most recent 10 training days
+  const byDate={};
+  (sets||[]).forEach(s=>{
+    if(!s.session_date)return;
+    const r=byDate[s.session_date]=byDate[s.session_date]||{sets:0,vol:0};
+    r.sets++;r.vol+=(s.reps_achieved||0)*(s.load_kg||0);
+  });
+  const history=Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,10)
+    .map(([ds,r])=>`<div class="calw-sess" style="cursor:default">
+      <span class="calw-sess-day">${new Date(ds+'T12:00').toLocaleDateString('en-GB',{weekday:'short'})}</span>
+      <span class="calw-sess-name">${new Date(ds+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+      <span class="calw-sess-status" style="color:var(--pass)">${r.sets} sets${r.vol>0?` · ${r.vol>999?Math.round(r.vol/1000)+'k':Math.round(r.vol)}kg`:''}</span>
+    </div>`).join('');
 
-  // Selected day detail
-  if(selectedCalDay){
-    const daySets=sets.filter(s=>(s.session_date||s.logged_at?.split('T')[0])===selectedCalDay);
-    const label=new Date(selectedCalDay+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
-    h+=`<div class="cal-day-detail">
-      <div class="cal-day-detail-hdr">
-        <span>${label} · ${daySets.length} sets</span>
-        <span class="cal-day-close" onclick="selectCalDay(null)">✕</span>
-      </div>`;
-    if(daySets.length){
-      const byEx={};
-      daySets.forEach(s=>{
-        const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
-        if(!byEx[nm])byEx[nm]=[];byEx[nm].push(s);
-      });
-      Object.entries(byEx).forEach(([nm,exSets])=>{
-        exSets.sort((a,b)=>a.set_number-b.set_number);
-        h+=`<div style="margin-bottom:8px"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${nm}</div>`;
-        exSets.forEach(s=>{
-          const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
-          const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
-          h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0">
-            <span style="color:var(--mt)">Set ${s.set_number}</span>
-            <span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?600:400}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span>
-          </div>`;
-        });
-        h+=`</div>`;
-      });
-    } else {
-      h+=`<div style="font-size:12px;color:var(--mt)">No sets logged this day.</div>`;
-    }
-    h+=`</div>`;
-  }
-
-  // Session log toggle
-  const sessionDates=Object.entries(
-    sets.reduce((acc,s)=>{
-      const d=s.session_date||s.logged_at?.split('T')[0]||'';
-      if(d)acc[d]=(acc[d]||0)+1;
-      return acc;
-    },{})
-  ).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20);
-
-  if(sessionDates.length){
-    h+=`<button class="cal-list-btn" onclick="toggleCalList()">${calListOpen?'▲ Hide session log':'▼ View all sessions'}</button>`;
-    if(calListOpen){
-      h+=`<div style="border-top:0.5px solid var(--br)">`;
-      sessionDates.forEach(([date])=>{
-        const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-        const daySets=sets.filter(s=>(s.session_date||s.logged_at?.split('T')[0])===date);
-        const byEx={};
-        daySets.forEach(s=>{
-          const nm=EX.find(e=>e.id===s.exercise_id)?.name||PF[s.pattern_id]||'Exercise';
-          if(!byEx[nm])byEx[nm]=[];byEx[nm].push(s);
-        });
-        const sid=`cal-${date}`;
-        const isOpen=!!openPatHist[sid];
-        h+=`<div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:0.5px solid var(--br)" onclick="togglePatHist('${sid}')">
-            <div><span style="font-weight:500">${label}</span><span style="font-size:11px;color:var(--mt);margin-left:8px">${Object.keys(byEx).length} ex · ${daySets.length} sets</span></div>
-            <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
-          </div>`;
-        if(isOpen){
-          h+=`<div style="background:var(--bg);padding:6px 14px 10px">`;
-          Object.entries(byEx).forEach(([nm,exSets])=>{
-            exSets.sort((a,b)=>a.set_number-b.set_number);
-            h+=`<div style="margin-bottom:8px"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${nm}</div>`;
-            exSets.forEach(s=>{
-              const hitTop=s.reps_target_high&&s.reps_achieved>=s.reps_target_high;
-              const loadStr=s.load_kg?` @ ${s.load_kg}kg`:'';
-              h+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span style="color:var(--mt)">Set ${s.set_number}</span><span style="color:${hitTop?'var(--gm)':'var(--dk)'};font-weight:${hitTop?600:400}">${s.reps_achieved} reps${loadStr}${hitTop?' ↑':''}</span></div>`;
-            });
-            h+=`</div>`;
-          });
-          h+=`</div>`;
-        }
-        h+=`</div>`;
-      });
-      h+=`</div>`;
-    }
-  }
-
-  h+=`</div>`;
-  return h;
+  return`<div id="prof-cal-body-inner">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s1);margin-bottom:var(--s3)">
+      <div class="preview-stat"><div class="preview-stat-val" style="color:var(--gm)">${totalSessions}</div><div class="preview-stat-label">Sessions</div></div>
+      <div class="preview-stat"><div class="preview-stat-val" style="color:var(--pass)">${totalVol>999?Math.round(totalVol/1000)+'k':Math.round(totalVol)}</div><div class="preview-stat-label">Total kg</div></div>
+      <div class="preview-stat"><div class="preview-stat-val" style="color:${best>2?'var(--warn)':'var(--dk)'}">${best}${best>2?'🔥':''}</div><div class="preview-stat-label">Best streak</div></div>
+    </div>
+    <div class="train-cal">
+      <div class="cal-hdr">
+        <button class="wn-btn" onclick="profCalNav(-1)">←</button>
+        <span class="cal-hdr-label">${view.toLocaleDateString('en-GB',{month:'long',year:'numeric'})} · ${monthTrained} session${monthTrained===1?'':'s'}</span>
+        <button class="wn-btn" onclick="profCalNav(1)" ${profCalOffset>=0?'disabled':''}>→</button>
+      </div>
+      <div class="cal-dow-row">${['M','T','W','T','F','S','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}</div>
+      <div class="cal-grid">${cells}</div>
+    </div>
+    ${history?`<div class="home-section-label" style="margin-top:var(--s3)">Recent Sessions</div>
+    <div class="train-cal" style="padding:var(--s2) var(--s3)">${history}</div>`:''}
+  </div>`;
 }
 function rDetail(pid){
   const lv=AP[pid]||0;
@@ -8514,10 +8393,6 @@ function selectCalDay(date){selectedCalDay=date;_reprof();}
 function _reprof(){rProfile(profContext.scores,profContext.logs,profContext.sets,profContext.isCoach,profContext.pendingTests,profContext.athleteId,profContext.checkins);}
 function togglePatHist(pid){openPatHist[pid]=!openPatHist[pid];_reprof();}
 function toggleCalList(){calListOpen=!calListOpen;_reprof();}
-function profCalNav(dir){
-  profCalDate=new Date(profCalDate.getFullYear(),profCalDate.getMonth(),profCalDate.getDate()+(dir*7));
-  _reprof();
-}
 function selP(p){selPat=selPat===p?null:p;_reprof();if(selPat)setTimeout(()=>{const e=document.querySelector('.dc');if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},50)}
 function cD(){selPat=null;_reprof();}
 
