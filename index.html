@@ -2078,6 +2078,29 @@ const sb=createClient(
 const SUPA_URL='https://pczfamrjdwbeejoxhxnq.supabase.co';
 const PRICE_COACHED='price_1TE8VjJjyXKoXrJjlelN6Sb0';
 const PRICE_COACH='price_1TE8WTJjyXKoXrJjj4yQxtn8';
+// ── ERROR MONITORING ──
+// 1. Local ring buffer (always on): last 20 errors survive in localStorage —
+//    view anytime via console: JSON.parse(localStorage.getItem('radar_errlog'))
+// 2. Sentry (optional): create a project at sentry.io, paste the DSN below,
+//    redeploy. Zero DSN = Sentry silently skipped.
+const RADAR_SENTRY_DSN=''; // ← paste Sentry DSN here
+function _logErr(kind,msg,src){
+  try{
+    const log=JSON.parse(localStorage.getItem('radar_errlog')||'[]');
+    log.unshift({t:new Date().toISOString(),kind,msg:String(msg).slice(0,300),src:String(src||'').slice(0,120)});
+    localStorage.setItem('radar_errlog',JSON.stringify(log.slice(0,20)));
+  }catch(e){}
+}
+window.addEventListener('error',e=>_logErr('error',e.message,e.filename+':'+e.lineno));
+window.addEventListener('unhandledrejection',e=>_logErr('promise',e.reason?.message||e.reason,''));
+if(RADAR_SENTRY_DSN){
+  const s=document.createElement('script');
+  s.src='https://browser.sentry-cdn.com/8.26.0/bundle.min.js';
+  s.crossOrigin='anonymous';
+  s.onload=()=>{try{Sentry.init({dsn:RADAR_SENTRY_DSN,release:'radar@std_v4',tracesSampleRate:0});}catch(e){}};
+  document.head.appendChild(s);
+}
+
 let CU=null,IS_COACH=false,STD=[],EX=[],AP={},AAP=[],LOGS=[],SETS=[],CHECKINS=[];
 let USER_TIER='free'; // 'free' | 'coached' | 'coach'
 let USER_SUB=null;    // full subscription row
@@ -4777,8 +4800,10 @@ async function load(){
 
     // Render athlete views — isolated so UI errors don't kill load
     const safeRender=(fn,name)=>{try{fn();}catch(e){console.error(`${name} render error:`,e);}};
+    restoreSession();
     safeRender(rHome,'rHome');
     safeRender(rWorkout,'rWorkout');
+    flushSetQueue();
     safeRender(rProfile,'rProfile');
     safeRender(rLB,'rLB');
 
@@ -7086,6 +7111,7 @@ function startSession(){
   SESSION.startTime=Date.now();
   SESSION.prs=[];
   SESSION.activeTab=curDay===4?'bm':'warm';
+  persistSession();
   rWorkout();
 }
 
@@ -7135,10 +7161,76 @@ function markSessionDone(){
   try{localStorage.setItem(sessionDoneKey(curWeek,curDay),JSON.stringify(rec));}catch(e){}
   return rec;
 }
+// ── ACTIVE-SESSION RECOVERY ──
+// Phone dies / tab killed / accidental refresh mid-workout: the session
+// state survives in localStorage (4h TTL) and resumes on next load.
+function persistSession(){
+  try{
+    localStorage.setItem('sess_live_'+CU.id,JSON.stringify({
+      active:SESSION.active,startTime:SESSION.startTime,prs:SESSION.prs,
+      activeTab:SESSION.activeTab,curDay,curWeek,ts:Date.now()
+    }));
+  }catch(e){}
+}
+function clearPersistedSession(){
+  try{localStorage.removeItem('sess_live_'+CU.id);}catch(e){}
+}
+function restoreSession(){
+  try{
+    const raw=localStorage.getItem('sess_live_'+CU.id);
+    if(!raw)return false;
+    const s=JSON.parse(raw);
+    if(!s.active||Date.now()-s.ts>4*3600e3){clearPersistedSession();return false;}
+    SESSION.active=true;
+    SESSION.startTime=s.startTime||Date.now();
+    SESSION.prs=s.prs||[];
+    SESSION.activeTab=s.activeTab||'warm';
+    curDay=s.curDay??curDay;
+    curWeek=s.curWeek??curWeek;
+    toast('Session resumed — picking up where you left off','ok');
+    return true;
+  }catch(e){clearPersistedSession();return false;}
+}
+
+// ── OFFLINE SET QUEUE ──
+// Failed-by-network set inserts wait here and sync automatically:
+// on app load, when the browser regains connectivity, and after any
+// successful save. Sets survive app restarts (localStorage).
+function _queueKey(){return'set_queue_'+CU.id;}
+function _readQueue(){try{return JSON.parse(localStorage.getItem(_queueKey()))||[];}catch(e){return[];}}
+function _writeQueue(q){try{localStorage.setItem(_queueKey(),JSON.stringify(q));}catch(e){}}
+function enqueueSet(row){
+  const q=_readQueue();q.push(row);_writeQueue(q);
+}
+let _flushing=false;
+async function flushSetQueue(){
+  if(_flushing||!CU)return;
+  const q=_readQueue();
+  if(!q.length)return;
+  _flushing=true;
+  let synced=0;
+  const remaining=[];
+  for(const row of q){
+    try{
+      const{error}=await sb.from('workout_sets').insert(row);
+      if(error){
+        if(/fetch|network|timeout|load failed|connection/i.test(error.message||'')){remaining.push(row);continue;}
+        // Non-network error: drop it (bad row) rather than block the queue forever
+        console.error('Queued set dropped:',error.message);
+      } else synced++;
+    }catch(e){remaining.push(row);}
+  }
+  _writeQueue(remaining);
+  _flushing=false;
+  if(synced)toast(`📶 ${synced} offline set${synced===1?'':'s'} synced`,'ok');
+}
+if(typeof window!=='undefined')window.addEventListener('online',()=>flushSetQueue());
+
 // Manual end — allowed mid-session; partial work is still work.
 function finishSession(early){
   if(early&&!confirm('End session and save? Logged sets are kept.'))return;
   clearRestTimer();
+  clearPersistedSession();
   markSessionDone();
   showSessionComplete();
 }
@@ -7149,6 +7241,7 @@ function reopenSession(){
 }
 
 function setWorkoutTab(tabId){
+  if(SESSION.active)persistSession();
   SESSION.activeTab=tabId;
   rWorkout();
   document.getElementById('v-workout').scrollTop=0;
@@ -7255,8 +7348,16 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
   _checkCircuitComplete(ck);
   // exercise_id column is integer — coerce, never send a non-numeric string
   row.exercise_id=Number.isFinite(+exKey)?+exKey:null;
+  persistSession();
   sb.from('workout_sets').insert(row).then(({error})=>{
     if(error){
+      // Network failure (gym basements, dead WiFi): keep the set, queue it,
+      // sync when signal returns. The athlete's work is never lost.
+      if(/fetch|network|timeout|load failed|connection/i.test(error.message||'')){
+        enqueueSet(row);
+        toast('📶 Saved offline — will sync when signal returns','ok');
+        return;
+      }
       const i=SETS.indexOf(row);
       if(i>-1)SETS.splice(i,1);
       console.error('Set save failed:',error);
@@ -7282,6 +7383,8 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
       else hint=m.slice(0,70);
       toast('⚠ Set not saved — '+hint,'err');
       rWorkout();
+    } else {
+      flushSetQueue(); // signal is good — drain any offline backlog
     }
   });
 }
