@@ -542,6 +542,12 @@
     .cal-num{font-size:10px;font-family:var(--mono);color:var(--md);line-height:1}
     .cal-cell.trained .cal-num{color:var(--pass);font-weight:700}
     .cal-dot{width:3px;height:3px;border-radius:50%;background:var(--pass)}
+    .spot-row{display:flex;gap:var(--s2);overflow-x:auto;scrollbar-width:none;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+    .spot-row::-webkit-scrollbar{display:none}
+    .spot-card{flex:0 0 118px;height:148px;border-radius:var(--rl);border:1px solid var(--br);background:linear-gradient(160deg,var(--bg3),var(--bg2));position:relative;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+    .spot-card:active{border-color:var(--gml)}
+    .spot-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+    .spot-meta{position:relative;padding:7px 9px;background:linear-gradient(to top,rgba(8,8,8,.92),transparent)}
     .cal-hdr{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);margin-bottom:var(--s2)}
     .cal-hdr-label{font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dk)}
     .cal-toggle-btn{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gm);background:transparent;border:none;cursor:pointer;padding:2px 0}
@@ -4240,6 +4246,22 @@ function renderSettings(){
     </div>
   </div>
 
+  <!-- Community -->
+  <div class="settings-section">
+    <div class="settings-section-label">Community</div>
+    <div class="settings-group">
+      <div class="settings-row" style="cursor:default">
+        <div class="settings-row-icon" style="background:rgba(0,229,255,0.1)">👁</div>
+        <div class="settings-row-body">
+          <div class="settings-row-title">Leaderboards &amp; public profile</div>
+          <div class="settings-row-sub">${USER_IS_PUBLIC?'Others can view your radar, benchmarks and activity':'Hidden — your score shows on boards but your profile is private'}</div>
+        </div>
+        <button class="settings-toggle${USER_IS_PUBLIC?' on':''}" onclick="togglePublicProfile()" id="toggle-public"></button>
+      </div>
+      <div style="padding:8px 14px 10px;font-size:10px;color:var(--mt);line-height:1.5;font-family:var(--mono)">Wellness data — sleep, stress, energy, weight — is never shared, on or off.</div>
+    </div>
+  </div>
+
   <!-- Data & Research -->
   <div class="settings-section">
     <div class="settings-section-label">Data &amp; Research</div>
@@ -4315,14 +4337,6 @@ function renderSettings(){
   <div class="settings-section">
     <div class="settings-section-label">Preferences</div>
     <div class="settings-group">
-      <div class="settings-row" style="cursor:default">
-        <div class="settings-row-icon" style="background:rgba(0,229,255,0.1)">👁</div>
-        <div class="settings-row-body">
-          <div class="settings-row-title">Public profile</div>
-          <div class="settings-row-sub">${USER_IS_PUBLIC?'Your profile is visible on the leaderboard':'Profile hidden — score visible but not tappable'}</div>
-        </div>
-        <button class="settings-toggle${USER_IS_PUBLIC?' on':''}" onclick="togglePublicProfile()" id="toggle-public"></button>
-      </div>
       <div class="settings-row" style="cursor:default">
         <div class="settings-row-icon" style="background:var(--bg3)">⚖️</div>
         <div class="settings-row-body">
@@ -4414,6 +4428,7 @@ async function uploadAvatar(input){
     if(error)throw error;
     const{data}=sb.storage.from('avatars').getPublicUrl(path);
     USER_AVATAR_URL=data.publicUrl+'?t='+Date.now();
+    sb.from('profiles').update({avatar_url:USER_AVATAR_URL}).eq('id',CU.id).then(()=>{});
     // Save to profile metadata
     await sb.auth.updateUser({data:{avatar_url:USER_AVATAR_URL}});
     toast('✓ Photo updated','ok');
@@ -4563,8 +4578,9 @@ async function togglePublicProfile(){
     if(btn)btn.classList.toggle('on',USER_IS_PUBLIC);
     return;
   }
-  toast(USER_IS_PUBLIC?'Profile set to public':'Profile set to private','ok');
+  toast(USER_IS_PUBLIC?'You\'re on the boards — radar, benchmarks and activity visible':'Profile hidden — wellness was never shared either way','ok');
   renderSettings();
+  rLB();
   rLB();
 }
 
@@ -4576,12 +4592,13 @@ async function openPubProfile(athleteId){
   body.innerHTML=`<div class="empty"><div style="font-size:24px;margin-bottom:8px">⟳</div>Loading…</div>`;
 
   try{
-    const[apRes,logsRes,setsRes,checkinsRes,profRes]=await Promise.all([
+    // Community view: radar, benchmarks, activity — NEVER wellness data.
+    const[apRes,setsRes,profRes,bmRes,photoRes]=await Promise.all([
       sb.from('athlete_profiles').select('pattern_id,current_level').eq('athlete_id',athleteId),
-      sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
-      sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}),
-      sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
-      sb.from('profiles').select('full_name,email,is_public').eq('id',athleteId).maybeSingle(),
+      sb.from('workout_sets').select('exercise_id,session_date,reps_achieved,load_kg,side').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(400),
+      sb.from('profiles').select('full_name,email,is_public,avatar_url').eq('id',athleteId).maybeSingle(),
+      sb.from('benchmark_results').select('benchmark_id,value_seconds,submitted_at').eq('athlete_id',athleteId),
+      sb.from('session_photos').select('session_date,photo_url').eq('athlete_id',athleteId),
     ]);
 
     if(profRes.data?.is_public===false){
@@ -4591,67 +4608,83 @@ async function openPubProfile(athleteId){
 
     const name=profRes.data?.full_name||profRes.data?.email?.split('@')[0]||'Athlete';
     titleEl.textContent=name;
-
-    // Wire message button in topbar
     const msgBtn=document.getElementById('pub-profile-msg-btn');
-    if(msgBtn){
-      msgBtn.style.display='block';
-      msgBtn.onclick=()=>dmUser(athleteId,name);
-    }
+    if(msgBtn){msgBtn.style.display='block';msgBtn.onclick=()=>dmUser(athleteId,name);}
 
     const scores={};
     (apRes.data||[]).forEach(r=>{scores[r.pattern_id]=r.current_level;});
-    const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
+    const photos={};
+    (photoRes.data||[]).forEach(r=>{photos[r.session_date]=r.photo_url;});
 
-    const savedAP={...AP};
-    Object.keys(AP).forEach(k=>delete AP[k]);
-    Object.assign(AP,scores);
-    const spider=drawSpider();
-    Object.keys(AP).forEach(k=>delete AP[k]);
-    Object.assign(AP,savedAP);
-
-    const ci=Math.abs(athleteId.charCodeAt(0))%AVC.length;
-    const c=AVC[ci];
-
-    let h=`
-    <div class="ph" style="margin-bottom:14px">
-      <div class="av" style="background:${c.bg};color:${c.fg}">${gi(name)}</div>
-      <div style="flex:1">
-        <div class="pn">${name}</div>
-        <div class="ps">Athlete · [RADAR]</div>
-      </div>
-      <div class="sc">${tot} / 40</div>
-    </div>
-    <div class="spider-card" style="margin-bottom:14px">
-      <div class="spider-card-top">
-        <span class="spider-card-title">Movement Profile</span>
-        <span class="spider-score">${tot} / 40</span>
-      </div>
-      ${spider}
-    </div>
-    <div class="pg" style="margin-bottom:14px">
-      ${PATS.map(pid=>{
-        const lv=scores[pid]||0;
-        const col=LC[lv]||'rgba(255,255,255,0.2)';
-        return`<div class="pc">
-          <div class="pc-top"><span class="pc-name">${PL[pid]}</span></div>
-          <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:6px">
-            <span class="pc-level" style="color:${col}">${lv}</span>
-            <span class="pc-of5">/ 5</span>
-          </div>
-          <div class="pc-bar"><div class="pc-bar-fill" style="width:${(lv/5)*100}%;background:${col}"></div></div>
-        </div>`;
-      }).join('')}
-    </div>`;
-
-    h+=buildTrainingSnapshotForAthlete(scores,logsRes.data||[],setsRes.data||[],checkinsRes.data||[]);
-    h+=buildProfileCalendar(setsRes.data||[]);
-    if(checkinsRes.data?.length)h+=buildCheckinTiles(checkinsRes.data,false,athleteId);
-
-    body.innerHTML=h;
+    body.innerHTML=buildPubProfileBody(name,scores,setsRes.data||[],bmRes.data||[],photos,profRes.data?.avatar_url||null,athleteId);
   }catch(err){
     body.innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}</div>`;
   }
+}
+
+// Pure renderer — testable offline, no data access.
+function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athleteId){
+  const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
+
+  const savedAP={...AP};
+  Object.keys(AP).forEach(k=>delete AP[k]);
+  Object.assign(AP,scores);
+  const spider=drawSpider();
+  Object.keys(AP).forEach(k=>delete AP[k]);
+  Object.assign(AP,savedAP);
+
+  const radarBars=PATS.map(pid=>{
+    const lv=scores[pid]||0;
+    const col=LC[lv]||'var(--mt)';
+    return`<div class="prof-radar-bar-row">
+      <span class="prof-radar-bar-label">${PL[pid]}</span>
+      <div class="prof-radar-bar-track"><div class="prof-radar-bar-fill" style="width:${Math.round((lv/5)*100)}%;background:${col}"></div></div>
+      <span class="prof-radar-bar-val" style="color:${col}">${lv}</span>
+    </div>`;
+  }).join('');
+
+  // Their benchmark PBs — from THEIR results, never the viewer's
+  const pbs={};
+  (bmResults||[]).forEach(r=>{
+    if(r.value_seconds==null)return;
+    if(pbs[r.benchmark_id]==null||r.value_seconds<pbs[r.benchmark_id])pbs[r.benchmark_id]=r.value_seconds;
+  });
+  const bmStrip=BENCHMARKS.length?`<div class="prof-bm-strip" style="padding:0">
+    ${BENCHMARKS.map(b=>`<div class="prof-bm-item">
+      <div class="prof-bm-name">${b.name.replace(' Run','').replace('km ','k ').replace('m SkiErg','m Ski').replace('km BikeErg','k Bike')}</div>
+      <div class="prof-bm-pb" style="color:${pbs[b.id]!=null?'var(--gm)':'var(--mt)'}">${pbs[b.id]!=null?fmtSeconds(pbs[b.id]):'—'}</div>
+    </div>`).join('')}
+  </div>`:'';
+
+  const avatarHtml=avatarUrl?`<img src="${avatarUrl}">`:gi(name);
+
+  return`
+  <div class="prof-hdr" style="cursor:default">
+    <div class="prof-av">${avatarHtml}</div>
+    <div style="flex:1;min-width:0">
+      <div class="prof-name">${name}</div>
+      <div class="prof-tier" style="color:var(--mt)">Athlete · [RADAR]</div>
+    </div>
+    <div class="prof-score-badge">
+      <div class="prof-score-num">${tot}</div>
+      <div class="prof-score-label">/ 40</div>
+    </div>
+  </div>
+
+  <div class="prof-radar-card" style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden;margin-top:var(--s2)">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
+    <div class="prof-radar-compact" style="cursor:default">
+      <div class="prof-radar-compact-svg">${spider}</div>
+      <div class="prof-radar-compact-info">
+        <div class="prof-radar-compact-title">Movement Score — ${tot}/40</div>
+        <div class="prof-radar-bars">${radarBars}</div>
+      </div>
+    </div>
+  </div>
+
+  ${bmStrip?`<div class="home-section-label" style="margin-top:var(--s3)">Benchmarks</div>${bmStrip}`:''}
+
+  ${buildActivitySpotlight(sets,photos,name)}`;
 }
 
 function closePubProfile(){
@@ -4839,6 +4872,7 @@ async function load(){
     // Render athlete views — isolated so UI errors don't kill load
     const safeRender=(fn,name)=>{try{fn();}catch(e){console.error(`${name} render error:`,e);}};
     restoreSession();
+    loadSessionPhotos().then(()=>{try{rProfile();}catch(e){}});
     safeRender(rHome,'rHome');
     safeRender(rWorkout,'rWorkout');
     flushSetQueue();
@@ -7258,6 +7292,128 @@ function markSessionDone(){
   try{localStorage.setItem(sessionDoneKey(curWeek,curDay),JSON.stringify(rec));}catch(e){}
   return rec;
 }
+// ── ACTIVITY SPOTLIGHT ──
+// Side-scrolling recent-session cards (photo or branded fallback), tappable
+// into a highlight sheet. Powers both the personal profile and public profiles.
+window._SPOT={};
+function buildActivitySpotlight(sets,photos,ownerName){
+  const byDate={};
+  (sets||[]).forEach(s=>{
+    if(!s.session_date)return;
+    const r=byDate[s.session_date]=byDate[s.session_date]||{sets:0,vol:0,rows:[]};
+    r.sets++;r.vol+=(s.reps_achieved||0)*(s.load_kg||0);
+    r.rows.push(s);
+  });
+  const days=Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8);
+  if(!days.length)return'';
+  const cards=days.map(([ds,r],i)=>{
+    const key='sp_'+ds.replace(/-/g,'')+'_'+Math.abs((ownerName||'me').charCodeAt(0));
+    window._SPOT[key]={date:ds,rows:r.rows,photo:(photos||{})[ds]||null,name:ownerName||null};
+    const d=new Date(ds+'T12:00');
+    const vol=r.vol>999?(r.vol/1000).toFixed(1)+'k':Math.round(r.vol);
+    const photo=(photos||{})[ds];
+    return`<div class="spot-card" onclick="openSpotlightDetail('${key}')" style="${photo?`background-image:url('${photo}');background-size:cover;background-position:center;`:''}">
+      ${!photo?`<div class="spot-fallback">
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--gm)">${vol}</div>
+        <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">kg moved</div>
+      </div>`:''}
+      <div class="spot-meta">
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--dk)">${d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+        <div style="font-size:8px;font-family:var(--mono);color:${photo?'var(--dk)':'var(--mt)'}">${r.sets} sets${photo?` · ${vol}kg`:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return`<div class="home-section-label" style="margin-top:var(--s3)">Activity</div>
+  <div class="spot-row">${cards}</div>`;
+}
+function openSpotlightDetail(key){
+  const d=window._SPOT[key];
+  if(!d)return;
+  let ov=document.getElementById('spotlight-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='spotlight-overlay';
+    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:260;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
+    ov.onclick=e=>{if(e.target===ov)ov.style.display='none';};
+    document.body.appendChild(ov);
+  }
+  const vol=d.rows.reduce((t,s)=>t+((s.reps_achieved||0)*(s.load_kg||0)),0);
+  const exIds=[...new Set(d.rows.map(s=>s.exercise_id).filter(Boolean))];
+  // top lifts by best load
+  const best={};
+  d.rows.forEach(s=>{
+    if(!s.exercise_id||!s.load_kg)return;
+    if(!best[s.exercise_id]||s.load_kg>best[s.exercise_id].load_kg)best[s.exercise_id]=s;
+  });
+  const top=Object.values(best).sort((a,b)=>b.load_kg-a.load_kg).slice(0,3).map(s=>{
+    const exo=EX.find(e=>e.id==s.exercise_id);
+    return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--br)">
+      <span style="font-size:12px;color:var(--dk)">${exo?.name||'Exercise'}</span>
+      <span style="font-size:12px;font-family:var(--mono);color:var(--gm)">${s.load_kg}kg × ${s.reps_achieved}${s.side?` <span class="set-side ${s.side==='L'?'sl':'sr'}">${s.side}</span>`:''}</span>
+    </div>`;
+  }).join('');
+  const dt=new Date(d.date+'T12:00');
+  ov.innerHTML=`<div style="max-width:420px;margin:auto;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
+    ${d.photo?`<div style="height:220px;background-image:url('${d.photo}');background-size:cover;background-position:center"></div>`:''}
+    <div style="padding:var(--s4)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s2)">
+        <div>
+          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">${d.name?d.name.split(' ')[0]+"'s session":'Session'}</div>
+          <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--dk)">${dt.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
+        </div>
+        <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s1);margin-bottom:var(--s3)">
+        <div class="preview-stat"><div class="preview-stat-val">${d.rows.length}</div><div class="preview-stat-label">Sets</div></div>
+        <div class="preview-stat"><div class="preview-stat-val" style="color:var(--gm)">${vol>999?(vol/1000).toFixed(1)+'k':Math.round(vol)}</div><div class="preview-stat-label">Volume kg</div></div>
+        <div class="preview-stat"><div class="preview-stat-val">${exIds.length}</div><div class="preview-stat-label">Exercises</div></div>
+      </div>
+      ${top?`<div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Top Lifts</div>${top}`:''}
+    </div>
+  </div>`;
+  ov.style.display='block';
+}
+
+// ── SESSION PHOTOS ──
+// Optional photo per training day. Stored in the session_photos table +
+// session-photos bucket so the community spotlight can show them.
+let SESSION_PHOTOS={};
+async function loadSessionPhotos(){
+  try{
+    const{data}=await sb.from('session_photos').select('session_date,photo_url').eq('athlete_id',CU.id);
+    SESSION_PHOTOS={};
+    (data||[]).forEach(r=>{SESSION_PHOTOS[r.session_date]=r.photo_url;});
+  }catch(e){/* table may not exist yet — spotlight degrades gracefully */}
+}
+async function uploadSessionPhoto(input){
+  const file=input.files?.[0];
+  if(!file)return;
+  const dateISO=new Date().toISOString().split('T')[0];
+  const btn=document.getElementById('sc-photo-btn');
+  if(btn)btn.textContent='Uploading…';
+  try{
+    const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+    const path=`${CU.id}/${dateISO}_${Date.now()}.${ext}`;
+    const{error:upErr}=await sb.storage.from('session-photos').upload(path,file,{contentType:file.type,upsert:true});
+    if(upErr)throw upErr;
+    const{data:urlData}=sb.storage.from('session-photos').getPublicUrl(path);
+    const url=urlData?.publicUrl;
+    const{error:dbErr}=await sb.from('session_photos').upsert(
+      {athlete_id:CU.id,session_date:dateISO,photo_url:url},
+      {onConflict:'athlete_id,session_date'});
+    if(dbErr)throw dbErr;
+    SESSION_PHOTOS[dateISO]=url;
+    if(btn){btn.textContent='✓ Photo added';btn.style.color='var(--pass)';btn.style.borderColor='var(--pass-border)';}
+    toast('📷 Session photo added to your spotlight','ok');
+  }catch(err){
+    if(btn)btn.textContent='📷 Add photo';
+    const m=err.message||'';
+    if(/bucket.*not.*found/i.test(m))toast('Storage not set up — session-photos bucket missing','err');
+    else if(/session_photos/.test(m)||/relation/.test(m))toast('session_photos table missing — run the community SQL','err');
+    else toast('Photo failed: '+m.slice(0,60),'err');
+  }
+}
+
 // ── ACTIVE-SESSION RECOVERY ──
 // Phone dies / tab killed / accidental refresh mid-workout: the session
 // state survives in localStorage (4h TTL) and resumes on next load.
@@ -7714,6 +7870,8 @@ function showSessionComplete(){
     <div style="width:100%;max-width:420px;margin-bottom:16px">
       ${card}
     </div>
+    <input type="file" id="sc-photo-input" accept="image/*" capture="environment" style="display:none" onchange="uploadSessionPhoto(this)">
+    <button id="sc-photo-btn" onclick="document.getElementById('sc-photo-input').click()" style="width:100%;max-width:420px;margin-bottom:8px;padding:11px;background:transparent;border:1px dashed var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);cursor:pointer">📷 Add photo to your spotlight</button>
     <div style="display:flex;gap:8px;width:100%;max-width:420px">
       <button onclick="shareSession()" style="flex:1;padding:12px;background:var(--gm);color:var(--bg);border:none;border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Share</button>
       <button onclick="saveSessionCard()" style="flex:1;padding:12px;background:var(--bg2);color:var(--dk);border:1px solid var(--br);border-radius:var(--r);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Save</button>
@@ -8194,6 +8352,8 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
         <div class="home-insight-val" style="color:${sym.score>=90?'var(--pass)':sym.score>=80?'var(--warn)':'var(--red)'}">${sym.score}<span style="font-size:12px;color:var(--mt)">/100</span></div>
         <div class="home-insight-sub">${sym.score>=90?'Balanced across sides':`${PL[sym.worst.pid]} ${sym.worst.weakSide==='L'?'left':'right'} lagging ${sym.worst.pct}%`}</div>
       </div>`:''}
+
+      ${buildActivitySpotlight(sets,needsSwap?(profContext.photos||{}):SESSION_PHOTOS,needsSwap?null:undefined)}
 
       <div class="home-section-label" style="margin-top:var(--s3)">More</div>
       <div class="prof-action-row">${actionTiles}</div>
