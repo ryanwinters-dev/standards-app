@@ -4645,7 +4645,7 @@ async function openPubProfile(athleteId){
       sb.from('athlete_profiles').select('pattern_id,current_level').eq('athlete_id',athleteId),
       sb.from('workout_sets').select('exercise_id,session_date,reps_achieved,load_kg,side').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(400),
       sb.from('profiles').select('full_name,email,is_public,avatar_url').eq('id',athleteId).maybeSingle(),
-      sb.from('benchmark_results').select('benchmark_id,value_seconds,submitted_at').eq('athlete_id',athleteId),
+      sb.from('benchmark_results').select('benchmark_id,score_seconds').eq('athlete_id',athleteId),
       sb.from('session_photos').select('session_date,photo_url').eq('athlete_id',athleteId),
     ]);
 
@@ -4694,8 +4694,8 @@ function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athlete
   // Their benchmark PBs — from THEIR results, never the viewer's
   const pbs={};
   (bmResults||[]).forEach(r=>{
-    if(r.value_seconds==null)return;
-    if(pbs[r.benchmark_id]==null||r.value_seconds<pbs[r.benchmark_id])pbs[r.benchmark_id]=r.value_seconds;
+    if(r.score_seconds==null)return;
+    if(pbs[r.benchmark_id]==null||r.score_seconds<pbs[r.benchmark_id])pbs[r.benchmark_id]=r.score_seconds;
   });
   const bmStrip=BENCHMARKS.length?`<div class="prof-bm-strip" style="padding:0">
     ${BENCHMARKS.map(b=>`<div class="prof-bm-item">
