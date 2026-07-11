@@ -2298,6 +2298,54 @@ function readiness(){
   return _readinessMemo;
 }
 
+// Full symmetry breakdown — every pattern's L/R picture, not just the worst.
+function openSymmetryBreakdown(){
+  let ov=document.getElementById('spotlight-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='spotlight-overlay';
+    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:260;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
+    ov.onclick=e=>{if(e.target===ov)ov.style.display='none';};
+    document.body.appendChild(ov);
+  }
+  const sym=getSymmetryScore();
+  const rows=PATS.map(pid=>{
+    const a=typeof getPatternAsymmetry==='function'?getPatternAsymmetry(pid):null;
+    if(!a)return`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--br)">
+      <span style="width:34px;font-size:11px;font-weight:700;font-family:var(--mono);color:var(--mt)">${PL[pid]}</span>
+      <span style="flex:1;font-size:11px;color:var(--mt)">No unilateral data yet — log L/R sets to unlock</span>
+    </div>`;
+    const col=a.pct<=10?'var(--pass)':a.pct<=20?'var(--warn)':'var(--red)';
+    const strongIsL=a.weakSide==='R';
+    const wPct=Math.max(20,100-a.pct);
+    return`<div style="padding:11px 0;border-bottom:1px solid var(--br)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="width:34px;font-size:11px;font-weight:700;font-family:var(--mono);color:var(--dk)">${PL[pid]}</span>
+        <span style="flex:1;font-size:11px;color:${col};font-family:var(--mono)">${a.pct<=5?'Balanced':`${a.weakSide==='L'?'Left':'Right'} lagging ${a.pct}%`}</span>
+        <span style="font-size:11px;font-weight:700;font-family:var(--mono);color:${col}">${100-a.pct}/100</span>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center">
+        <span class="set-side sl">L</span>
+        <div style="flex:1;height:6px;border-radius:3px;background:var(--bg3);overflow:hidden"><div style="height:100%;width:${strongIsL?100:wPct}%;background:${strongIsL?'var(--gm)':col}"></div></div>
+        <div style="flex:1;height:6px;border-radius:3px;background:var(--bg3);overflow:hidden"><div style="height:100%;width:${strongIsL?wPct:100}%;background:${strongIsL?col:'var(--gm)'}"></div></div>
+        <span class="set-side sr">R</span>
+      </div>
+    </div>`;
+  }).join('');
+  ov.innerHTML=`<div style="max-width:420px;margin:auto;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s4)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s2)">
+      <div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">Symmetry Breakdown</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk)">${sym?sym.score+'/100':'—'}</div>
+      </div>
+      <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
+    </div>
+    ${rows}
+    <div style="font-size:10px;color:var(--mt);line-height:1.5;margin-top:var(--s2);font-family:var(--mono)">Lagging sides are targeted automatically — Bridge slots on flagged patterns bias to unilateral work.</div>
+  </div>`;
+  ov.style.display='block';
+}
+
 // Overall symmetry score: 100 − mean asymmetry across patterns with data.
 // ≥90 balanced (green) · 80–90 monitor (amber) · <80 flag (red)
 function getSymmetryScore(){
@@ -4671,6 +4719,8 @@ function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athlete
     </div>
   </div>
 
+  ${buildActivitySpotlight(sets,photos,name)}
+
   <div class="prof-radar-card" style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden;margin-top:var(--s2)">
     <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
     <div class="prof-radar-compact" style="cursor:default">
@@ -4682,9 +4732,7 @@ function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athlete
     </div>
   </div>
 
-  ${bmStrip?`<div class="home-section-label" style="margin-top:var(--s3)">Benchmarks</div>${bmStrip}`:''}
-
-  ${buildActivitySpotlight(sets,photos,name)}`;
+  ${bmStrip?`<div class="home-section-label" style="margin-top:var(--s3)">Benchmarks</div>${bmStrip}`:''}`;
 }
 
 function closePubProfile(){
@@ -6129,8 +6177,8 @@ async function logAccCircuit(ck,dayIndex,ci){
   const inserts=[];
   const today=new Date().toISOString().split('T')[0];
   circuit.exercises.forEach(ex=>{
-    // Must match key used in buildAccCircuitPage
-    const exKey=`${ck}-${ex.name.replace(/\s+/g,'')}`;
+    // MUST mirror buildAccCircuitPage exactly: exKey is built from circuit.id
+    const exKey=`${circuit.id}-${ex.name.replace(/\s+/g,'')}`;
     const extra=extraSets[ck]?.[exKey]||0;
     for(let s=1;s<=3+extra;s++){
       const uid=`${ck}-${exKey}-${s}`;
@@ -6141,7 +6189,7 @@ async function logAccCircuit(ck,dayIndex,ci){
       if(!reps)continue;
       inserts.push({
         athlete_id:CU.id,
-        exercise_id:exKey,
+        exercise_id:null, // accessories aren't library exercises — a string here breaks the integer FK
         pattern_id:ex.pattern||null,
         set_number:s,
         reps_achieved:reps,
@@ -6158,10 +6206,14 @@ async function logAccCircuit(ck,dayIndex,ci){
   const{error}=await sb.from('workout_sets').insert(inserts);
   if(error){toast('Error: '+error.message,'err');return;}
   SETS.unshift(...inserts);
+  try{localStorage.setItem(`accdone_${CU.id}_w${curWeek}_${ck}`,'1');}catch(e){}
   toast(`✓ Accessories logged`,'ok');
   updateSessionProgress();
   checkSessionComplete();
   rWorkout();
+}
+function isAccLogged(ck){
+  try{return localStorage.getItem(`accdone_${CU.id}_w${curWeek}_${ck}`)==='1';}catch(e){return false;}
 }
 
 
@@ -6394,7 +6446,7 @@ function rWorkout(){
     if(t.id.startsWith('acc')){
       const i=parseInt(t.id.replace('acc',''));
       const ac=accCircuits[i];
-      return ac&&isCircuitLogged(`acc-d${curDay}-${i}`,ac.exercises,3);
+      return ac&&(isAccLogged(`acc-d${curDay}-${i}`)||isCircuitLogged(`acc-d${curDay}-${i}`,ac.exercises,3));
     }
     return false;
   }).length;
@@ -6630,7 +6682,7 @@ function rWorkout(){
           ${sym?(()=>{
             const col=sym.score>=90?'var(--pass)':sym.score>=80?'var(--warn)':'var(--red)';
             const msg=sym.score>=90?'Balanced across sides':`${PL[sym.worst.pid]} ${sym.worst.weakSide==='L'?'left':'right'} lagging ${sym.worst.pct}%`;
-            return`<div class="home-insight-card" style="grid-column:span 2">
+            return`<div class="home-insight-card" onclick="openSymmetryBreakdown()" style="grid-column:span 2;cursor:pointer">
               <div class="home-insight-eyebrow">Symmetry · ${sym.patterns} pattern${sym.patterns>1?'s':''} tracked</div>
               <div class="home-insight-val" style="color:${col}">${sym.score}<span style="font-size:12px;color:var(--mt)">/100</span></div>
               <div class="home-insight-sub" style="${sym.score<90?`color:${col}`:''}">${msg}</div>
@@ -7403,6 +7455,7 @@ async function uploadSessionPhoto(input){
       {onConflict:'athlete_id,session_date'});
     if(dbErr)throw dbErr;
     SESSION_PHOTOS[dateISO]=url;
+    try{rProfile();}catch(e){}
     if(btn){btn.textContent='✓ Photo added';btn.style.color='var(--pass)';btn.style.borderColor='var(--pass-border)';}
     toast('📷 Session photo added to your spotlight','ok');
   }catch(err){
@@ -7481,11 +7534,31 @@ if(typeof window!=='undefined')window.addEventListener('online',()=>flushSetQueu
 
 // Manual end — allowed mid-session; partial work is still work.
 function finishSession(early){
-  if(early&&!confirm('End session and save? Logged sets are kept.'))return;
+  if(early){openEndSessionConfirm();return;}
   clearRestTimer();
   clearPersistedSession();
   markSessionDone();
   showSessionComplete();
+}
+function openEndSessionConfirm(){
+  let ov=document.getElementById('end-confirm-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='end-confirm-overlay';
+    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:270;align-items:center;justify-content:center;padding:24px';
+    ov.onclick=e=>{if(e.target===ov)ov.style.display='none';};
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML=`<div style="width:100%;max-width:320px;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s4);text-align:center" onclick="event.stopPropagation()">
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gm);margin-bottom:10px">[RADAR]</div>
+    <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:6px">End session?</div>
+    <div style="font-size:12px;color:var(--mt);line-height:1.5;margin-bottom:18px">Everything you've logged is saved. Unfinished circuits stay open.</div>
+    <div style="display:flex;gap:var(--s2)">
+      <button onclick="document.getElementById('end-confirm-overlay').style.display='none'" style="flex:1;padding:12px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt);cursor:pointer">Keep going</button>
+      <button onclick="document.getElementById('end-confirm-overlay').style.display='none';finishSession(false)" style="flex:1;padding:12px;background:var(--gm);border:none;border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--bg);cursor:pointer">End &amp; save</button>
+    </div>
+  </div>`;
+  ov.style.display='flex';
 }
 // Re-open a finished session for extra volume
 function reopenSession(){
@@ -7749,12 +7822,19 @@ function _advanceFromCircuit(ci,day){
   const nextCi=ci+1;
   if(nextCi<day.circuits.length){
     setWorkoutTab(`c${nextCi}`);
-  } else {
-    // All main circuits done
-    updateSessionProgress();
-    checkSessionComplete();
-    rWorkout();
+    return;
   }
+  // Main circuits done — accessories are next, then benchmark, then wrap
+  const accs=(curDay<4?ACCESSORY_CIRCUITS[curDay]:null)||[];
+  const nextAcc=accs.findIndex((_,i)=>!isAccLogged(`acc-d${curDay}-${i}`));
+  if(nextAcc>=0){
+    setWorkoutTab(`acc${nextAcc}`);
+    return;
+  }
+  if(curDay===4&&getBenchmarkDay5()){setWorkoutTab('bm');return;}
+  updateSessionProgress();
+  checkSessionComplete();
+  rWorkout();
 }
 
 async function logCircuit(ck){
@@ -7864,6 +7944,11 @@ function showSessionComplete(){
     </div>
   </div>`;
 
+  window._SC={
+    dayName:curDay===4?'Benchmark Day':['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'][curDay]||`Day ${curDay+1}`,
+    date:new Date(),sets:totalSets,exercises:totalExercises,mins:elapsed,vol:totalVol,tot,
+    prs:(SESSION.prs||[]).slice(0,3),
+  };
   const overlay=document.getElementById('session-complete-overlay');
   if(!overlay)return;
   overlay.innerHTML=`
@@ -7885,6 +7970,7 @@ function closeSessionComplete(){
   SESSION.active=false;
   sessOpen=false;
   rWorkout();rHome();
+  try{rProfile();}catch(e){}
 }
 
 async function shareSession(){
@@ -7900,17 +7986,73 @@ async function shareSession(){
 }
 
 async function saveSessionCard(){
-  // Use html2canvas if available, otherwise prompt screenshot
-  if(typeof html2canvas!=='undefined'){
-    const card=document.getElementById('sc-share-card');
-    const canvas=await html2canvas(card,{backgroundColor:'#0A0A0A',scale:2});
+  // Draw the share card natively — no libraries, always on-brand.
+  const d=window._SC;
+  if(!d){toast('Nothing to save','err');return;}
+  const W=1080,H=1350;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const x=cv.getContext('2d');
+  const mono=(px,w)=>`${w||700} ${px}px "Space Mono",monospace`;
+
+  // Background
+  x.fillStyle='#080808';x.fillRect(0,0,W,H);
+  // Cyan top edge
+  const grad=x.createLinearGradient(0,0,W,0);
+  grad.addColorStop(0,'#00E5FF');grad.addColorStop(1,'rgba(0,229,255,0)');
+  x.fillStyle=grad;x.fillRect(0,0,W,6);
+  // Wordmark
+  x.font=mono(44);x.fillStyle='#00E5FF';x.textAlign='center';
+  x.fillText('[RADAR]',W/2,140);
+  // Day + date
+  x.font=mono(88);x.fillStyle='#FFFFFF';
+  x.fillText(d.dayName,W/2,300);
+  x.font=mono(30,400);x.fillStyle='#8A8A8A';
+  x.fillText(d.date.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}).toUpperCase(),W/2,360);
+  // Stats row
+  const stats=[[String(d.sets),'SETS'],[String(d.exercises),'EXERCISES'],[`${d.mins}m`,'DURATION'],[d.vol>999?Math.round(d.vol/1000)+'k':String(Math.round(d.vol)),'VOL KG']];
+  const cw=W/4;
+  stats.forEach(([v,l],i)=>{
+    const cx=cw*i+cw/2;
+    x.font=mono(72);x.fillStyle='#FFFFFF';x.fillText(v,cx,560);
+    x.font=mono(22,400);x.fillStyle='#666666';x.fillText(l,cx,605);
+  });
+  x.strokeStyle='rgba(255,255,255,0.08)';x.lineWidth=2;
+  x.beginPath();x.moveTo(80,460);x.lineTo(W-80,460);x.stroke();
+  x.beginPath();x.moveTo(80,665);x.lineTo(W-80,665);x.stroke();
+  // PRs
+  let y=760;
+  (d.prs||[]).forEach(pr=>{
+    x.font=mono(32);x.fillStyle='#00FF94';x.textAlign='center';
+    x.fillText(`▲ ${typeof pr==='string'?pr:pr.text||pr.name||'New PB'}`,W/2,y);
+    y+=56;
+  });
+  // Score bar
+  const barY=H-330,barW=W-160,pct=Math.max(0.02,d.tot/40);
+  x.font=mono(28,400);x.fillStyle='#8A8A8A';
+  x.fillText(`MOVEMENT SCORE — ${d.tot} / 40`,W/2,barY-28);
+  x.fillStyle='rgba(255,255,255,0.08)';
+  x.fillRect(80,barY,barW,14);
+  x.fillStyle='#00E5FF';
+  x.fillRect(80,barY,barW*pct,14);
+  // Footer
+  x.font=mono(26,400);x.fillStyle='#555555';
+  x.fillText('standards-app.vercel.app',W/2,H-160);
+  x.font=mono(34);x.fillStyle='#00E5FF';
+  x.fillText('KNOW YOUR LEVEL',W/2,H-100);
+
+  cv.toBlob(async blob=>{
+    if(!blob){toast('Could not render card','err');return;}
+    const file=new File([blob],'radar-session.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file]});return;}catch(e){/* user cancelled → fall through */}
+    }
     const link=document.createElement('a');
     link.download='radar-session.png';
-    link.href=canvas.toDataURL();
+    link.href=URL.createObjectURL(blob);
     link.click();
-  } else {
-    toast('Screenshot the card to save','ok');
-  }
+    setTimeout(()=>URL.revokeObjectURL(link.href),5000);
+    toast('✓ Card saved','ok');
+  },'image/png');
 }
 
 // ── Exercise history panel ──
@@ -8320,6 +8462,8 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   const body=`<div class="prof-shell" style="${isCoach?'height:auto;':''}">
     <div class="train-dash" style="${isCoach?'overflow:visible;':''}">
 
+      ${buildActivitySpotlight(sets,needsSwap?(profContext.photos||{}):SESSION_PHOTOS,needsSwap?null:undefined)}
+
       ${!isCoach?`<div class="prof-radar-card" style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
         <div class="prof-radar-compact" onclick="toggleProfileRadar()">
@@ -8347,13 +8491,11 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
         <div class="preview-stat"><div class="preview-stat-val" style="color:var(--pass)">${totalVol>999?Math.round(totalVol/1000)+'k':Math.round(totalVol)}</div><div class="preview-stat-label">Total kg</div></div>
         <div class="preview-stat"><div class="preview-stat-val">${setsThisWeek}</div><div class="preview-stat-label">Sets/wk</div></div>
       </div>
-      ${sym?`<div class="home-insight-card" style="margin-top:var(--s1)">
+      ${sym?`<div class="home-insight-card" onclick="openSymmetryBreakdown()" style="margin-top:var(--s1);cursor:pointer">
         <div class="home-insight-eyebrow">Symmetry</div>
         <div class="home-insight-val" style="color:${sym.score>=90?'var(--pass)':sym.score>=80?'var(--warn)':'var(--red)'}">${sym.score}<span style="font-size:12px;color:var(--mt)">/100</span></div>
         <div class="home-insight-sub">${sym.score>=90?'Balanced across sides':`${PL[sym.worst.pid]} ${sym.worst.weakSide==='L'?'left':'right'} lagging ${sym.worst.pct}%`}</div>
       </div>`:''}
-
-      ${buildActivitySpotlight(sets,needsSwap?(profContext.photos||{}):SESSION_PHOTOS,needsSwap?null:undefined)}
 
       <div class="home-section-label" style="margin-top:var(--s3)">More</div>
       <div class="prof-action-row">${actionTiles}</div>
