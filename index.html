@@ -2192,8 +2192,9 @@ function getProgressionLoad(exId,intent,pid){
   if(!prev.length||!prev[0].load_kg)return null;
   const lastLoad=prev[0].load_kg;
   const sig=getProgressionSignal(exId,intent,pid);
-  const isLower=['HPush','VPush'].includes(pid)===false; // lower body gets bigger jumps
-  const increment=isLower?5:2.5;
+  // Upper body (all pushes AND pulls) progresses at 2.5kg; lower/loaded-trunk at 5kg
+  const isUpper=['HPush','VPush','HPull','VPull'].includes(pid);
+  const increment=isUpper?2.5:5;
   if(sig.signal==='progress')return Math.round((lastLoad+increment)*2)/2;
   if(sig.signal==='regress')return Math.round(lastLoad*0.9*2)/2;
   if(sig.signal==='deload')return Math.round(lastLoad*0.6*2)/2;
@@ -2203,9 +2204,12 @@ function getProgressionLoad(exId,intent,pid){
 function suggestedLoad(exId,intent,pid){
   const base=getProgressionLoad(exId,intent,pid);
   if(base==null)return base;
-  const r=readiness();
-  if(r.loadMult===1)return base;
-  return Math.round(base*r.loadMult*2)/2; // nearest 0.5kg
+  let mult=readiness().loadMult;
+  // Calendar deload (W4): −10% load on top of the set reduction — a deload
+  // that only trims sets still accumulates intensity fatigue.
+  if(weekInBlock()===4)mult*=0.9;
+  if(mult===1)return base;
+  return Math.round(base*mult*2)/2; // nearest 0.5kg
 }
 
 // ── ASYMMETRY ENGINE ──
@@ -6150,6 +6154,10 @@ function getSlotExercise(pid, exType, slotIntent, usedNames){
     }
   }
   const pools=[...needPools,
+    // LEVEL OUTRANKS INTENT. An athlete must never be prescribed above (or far
+    // below) their level to satisfy a bilateral/unilateral preference — the
+    // right-level exercise with flipped intent is always safer than the
+    // wrong-level exercise with matched intent.
     // 1. Exact: pattern, level, type, intent
     EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType&&intentMatch(e)),
     // 2. Pattern, level, intent — any type
@@ -6158,14 +6166,20 @@ function getSlotExercise(pid, exType, slotIntent, usedNames){
     EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1&&e.type===exType&&intentMatch(e)),
     // 4. Pattern, adjacent level (±1), intent — any type
     EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1&&intentMatch(e)),
-    // 5. Pattern, any level, intent — sorted by level proximity
-    EX.filter(e=>e.pattern_id===pid&&intentMatch(e)).sort((a,b)=>Math.abs((a.level_focus||0)-lv)-Math.abs((b.level_focus||0)-lv)),
-    // 6. Intent abandoned: pattern + level + type
+    // 5. Intent flipped at exact level + type — level correctness beats intent
     EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv&&e.type===exType),
-    // 7. Pattern + level, anything
+    // 6. Intent flipped at exact level, any type
     EX.filter(e=>e.pattern_id===pid&&e.level_focus===lv),
-    // 8. Last resort: anything for this pattern
-    EX.filter(e=>e.pattern_id===pid),
+    // 7. Intent flipped at ±1
+    EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===1),
+    // 8. Intent matched, ±2 — controlled stretch, nearest level first
+    EX.filter(e=>e.pattern_id===pid&&Math.abs((e.level_focus||0)-lv)===2&&intentMatch(e)).sort((a,b)=>(a.level_focus||0)-(b.level_focus||0)),
+    // 9. Anything for this pattern, nearest level first, below before above
+    EX.filter(e=>e.pattern_id===pid).sort((a,b)=>{
+      const da=Math.abs((a.level_focus||0)-lv),db=Math.abs((b.level_focus||0)-lv);
+      if(da!==db)return da-db;
+      return (a.level_focus||0)-(b.level_focus||0); // prefer easier when equidistant
+    }),
   ];
 
   for(const pool of pools){
