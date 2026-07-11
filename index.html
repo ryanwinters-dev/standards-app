@@ -1182,7 +1182,8 @@
 
 <style>
 /* ── LANDING PAGE ── */
-#landing{display:none;min-height:100vh;font-family:var(--sans,'DM Sans',sans-serif);background:var(--bg)}
+#landing{display:none;position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:40;font-family:var(--sans,'DM Sans',sans-serif);background:var(--bg)}
+@media(max-width:640px){.lp-anchor{display:none}.lp-nav-links{gap:4px}}
 .lp-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 20px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:10px;justify-content:space-between;background:var(--bg2);backdrop-filter:blur(12px);border-bottom:1px solid var(--br);transition:border-color .3s}
 .lp-nav.scrolled{border-color:rgba(255,255,255,0.08)}
 .lp-wordmark{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--dk);padding-bottom:2px}
@@ -1361,9 +1362,9 @@
   <nav class="lp-nav" id="lp-nav">
     <div class="lp-wordmark"><span class="bracket">[</span>RADAR<span class="bracket">]</span></div>
     <div class="lp-nav-links">
-      <button class="lp-nav-link" onclick="lpScroll('lp-how')">How it works</button>
-      <button class="lp-nav-link" onclick="lpScroll('lp-coach')">For coaches</button>
-      <button class="lp-nav-link" onclick="lpScroll('lp-pricing')">Pricing</button>
+      <button class="lp-nav-link lp-anchor" onclick="lpScroll('lp-how')">How it works</button>
+      <button class="lp-nav-link lp-anchor" onclick="lpScroll('lp-coach')">For coaches</button>
+      <button class="lp-nav-link lp-anchor" onclick="lpScroll('lp-pricing')">Pricing</button>
       <button class="lp-nav-link" onclick="openAuthModal('login')">Sign in</button>
       <button class="lp-nav-cta" onclick="openAuthModal('signup')">Get started</button>
     </div>
@@ -5589,7 +5590,52 @@ function openAssessment(){
   assessData={};
   PATS.forEach(p=>{assessData[p]={videoFile:null,videoUrl:null,notes:'',uploaded:false};});
   document.getElementById('assessment-overlay').style.display='flex';
-  renderAssessSlide();
+  renderAssessModeChooser();
+}
+
+// Two ways in: with the coach (zero friction — the beta default) or remote video.
+function renderAssessModeChooser(){
+  const target=document.getElementById('assessment-body');
+  if(!target)return;
+  const pb=document.getElementById('assessment-progress-bar');
+  if(pb)pb.style.width='0%';
+  target.innerHTML=`<div style="max-width:440px;margin:0 auto;padding:32px 20px;text-align:center">
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gm);margin-bottom:10px">Assessment</div>
+    <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-bottom:8px">How are we setting<br>your levels?</div>
+    <div style="font-size:13px;color:var(--mt);line-height:1.55;margin-bottom:24px">Your 8 pattern levels are the foundation of every session — they have to be right.</div>
+
+    <div onclick="requestInPersonAssessment()" style="background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--gml);border-radius:var(--rl);padding:18px 16px;margin-bottom:12px;cursor:pointer;text-align:left;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
+      <div style="font-size:14px;font-weight:700;color:var(--dk);margin-bottom:3px">With my coach <span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;color:var(--gm);margin-left:6px">RECOMMENDED</span></div>
+      <div style="font-size:12px;color:var(--mt);line-height:1.5">One tap. Your coach assesses you in person and sets your levels — usually your first session together.</div>
+    </div>
+
+    <div onclick="assessStep=0;renderAssessSlide()" style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:18px 16px;cursor:pointer;text-align:left">
+      <div style="font-size:14px;font-weight:700;color:var(--dk);margin-bottom:3px">Film & submit myself</div>
+      <div style="font-size:12px;color:var(--mt);line-height:1.5">Record the 8 patterns and upload for review. Skip any — your coach can assess those in person.</div>
+    </div>
+    <div id="assess-mode-msg" class="msg" style="margin-top:12px"></div>
+  </div>`;
+}
+
+async function requestInPersonAssessment(){
+  const msg=document.getElementById('assess-mode-msg');
+  if(msg)msg.textContent='Requesting…';
+  const today=new Date().toISOString();
+  let ok=0;
+  for(const pid of PATS){
+    const{error}=await sb.from('assessments').insert({
+      athlete_id:CU.id,pattern_id:pid,level_tested:1,passed:null,
+      notes:'In-person assessment requested',video_url:null,assessed_at:today,
+    });
+    if(!error)ok++;
+  }
+  if(ok>0){
+    document.getElementById('assessment-overlay').style.display='none';
+    toast('✓ Assessment requested — your coach will set your levels in person','ok');
+    LOGS.unshift(...PATS.map(p=>({pattern_id:p,passed:null,assessed_at:today})));
+    rWorkout();rHome();
+  } else if(msg){msg.textContent='Could not submit — check connection.';msg.className='msg err';}
 }
 function closeAssessment(){
   document.getElementById('assessment-overlay').style.display='none';
@@ -5756,11 +5802,12 @@ async function submitFullAssessment(){
   msg.textContent='Uploading videos and submitting…';msg.className='msg';
 
   const today=new Date().toISOString();
-  let successCount=0;
+  let successCount=0,videosAttempted=0,videosUploaded=0;
 
   for(const pid of PATS){
     const data=assessData[pid];
     let videoUrl=null;
+    if(data.videoFile)videosAttempted++;
 
     // Upload video if present
     if(data.videoFile){
@@ -5771,6 +5818,7 @@ async function submitFullAssessment(){
         if(!upErr){
           const{data:urlData}=sb.storage.from('test-videos').getPublicUrl(path);
           videoUrl=urlData?.publicUrl||path;
+          videosUploaded++;
         }
       }catch(e){console.warn('Video upload failed for',pid,e);}
     }
@@ -5791,7 +5839,9 @@ async function submitFullAssessment(){
   }
 
   if(successCount>0){
-    msg.textContent='✓ Assessment submitted! Your coach will review your videos and assign your levels.';
+    msg.textContent=videosAttempted>0&&videosUploaded<videosAttempted
+      ?`✓ Submitted — ${videosUploaded}/${videosAttempted} videos uploaded. Your coach can assess the rest in person.`
+      :'✓ Assessment submitted! Your coach will review and assign your levels.';
     msg.className='msg ok';
     // Reload logs
     const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
@@ -9206,10 +9256,66 @@ function rLB(){
     return;
   }
 
+  // Rank movement since last visit (per filter)
+  let prevRanks={};
+  try{prevRanks=JSON.parse(localStorage.getItem(`lb_prev_${CU.id}_${lbF}`))||{};}catch(e){}
+  const curRanks={};
+  aths.forEach((a,i)=>{curRanks[a.id]=i+1;});
+  const deltaBadge=id=>{
+    const prev=prevRanks[id],cur=curRanks[id];
+    if(!prev||prev===cur)return'';
+    const up=prev>cur,n=Math.abs(prev-cur);
+    return`<span style="font-size:9px;font-weight:700;font-family:var(--mono);color:${up?'var(--pass)':'var(--warn)'};margin-left:5px">${up?'▲':'▼'}${n}</span>`;
+  };
+  try{localStorage.setItem(`lb_prev_${CU.id}_${lbF}`,JSON.stringify(curRanks));}catch(e){}
+
+  // My-rank hero
+  const myIdx=aths.findIndex(a=>a.id===CU.id);
+  if(myIdx>=0){
+    const me=aths[myIdx];
+    const above=myIdx>0?aths[myIdx-1]:null;
+    const gap=above?above.ds-me.ds:0;
+    const myPrev=prevRanks[CU.id];
+    const moved=myPrev&&myPrev!==myIdx+1?(myPrev>myIdx+1?`▲${myPrev-(myIdx+1)} since last visit`:`▼${(myIdx+1)-myPrev} since last visit`):'';
+    h+=`<div class="train-next-tile" style="margin-bottom:var(--s3);cursor:default">
+      <div style="text-align:center;min-width:52px">
+        <div style="font-size:26px;font-weight:700;font-family:var(--mono);color:var(--gm);line-height:1">#${myIdx+1}</div>
+        <div style="font-size:7px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">of ${aths.length}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--dk)">Your rank · ${me.ds}/${me.ms}${moved?` <span style="font-size:10px;font-family:var(--mono);color:${moved.startsWith('▲')?'var(--pass)':'var(--warn)'}">${moved}</span>`:''}</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:2px">${myIdx===0?'Top of the board — defend it.':gap===0?`Tied with ${above.name} — one level takes it.`:`${gap} level${gap===1?'':'s'} behind ${above.name}.`}</div>
+      </div>
+    </div>`;
+  }
+
   if(!aths.length){
     h+=`<div class="empty"><div class="ei">🏆</div>No athletes yet.</div>`;
   } else {
-    aths.forEach((a,i)=>{
+    // Podium — top 3
+    if(aths.length>=3&&lbF==='all'){
+      const podium=[aths[1],aths[0],aths[2]];
+      const heights=[64,84,52];
+      const rings=['var(--md)','var(--gm)','var(--warn)'];
+      const places=[2,1,3];
+      h+=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:var(--s2);margin-bottom:var(--s3);padding-top:var(--s2)">
+        ${podium.map((a,i)=>{
+          const c=AVC[a.ci];const me2=a.id===CU.id;
+          const canTap=a.isPublic||me2||IS_COACH;
+          return`<div ${canTap&&!me2?`onclick="openPubProfile('${a.id}')"`:''} style="flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:5px;${canTap&&!me2?'cursor:pointer':''}">
+            <div style="width:${i===1?48:40}px;height:${i===1?48:40}px;border-radius:50%;background:${c.bg};color:${c.fg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${i===1?15:12}px;border:2px solid ${rings[i]}">${gi(a.name)}</div>
+            <div style="font-size:11px;font-weight:700;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${a.name.split(' ')[0]}${me2?' ·you':''}</div>
+            <div style="width:100%;height:${heights[i]}px;background:linear-gradient(180deg,var(--bg3),var(--bg2));border:1px solid ${i===1?'var(--gml)':'var(--br)'};border-bottom:none;border-radius:var(--r) var(--r) 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
+              <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${rings[i]}">${a.ds}</div>
+              <div style="font-size:8px;font-weight:700;font-family:var(--mono);color:var(--mt)">#${places[i]}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+    const startIdx=(aths.length>=3&&lbF==='all')?3:0;
+    aths.slice(startIdx).forEach((a,i0)=>{
+      const i=i0+startIdx;
       const rc=i===0?'r1':i===1?'r2':i===2?'r3':'';
       const me=a.id===CU.id;
       const c=AVC[a.ci];
@@ -9231,7 +9337,7 @@ function rLB(){
         <div class="lbrk ${rc}">${i+1}</div>
         <div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div>
         <div class="lbi">
-          <div class="lbn">${a.name}${me?` <span style="font-size:10px;color:var(--gm);font-family:var(--mono)">(you)</span>`:''}${coachBadge}${lockIcon}</div>
+          <div class="lbn">${a.name}${deltaBadge(a.id)}${me?` <span style="font-size:10px;color:var(--gm);font-family:var(--mono)">(you)</span>`:''}${coachBadge}${lockIcon}</div>
           <div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>
           ${mb}
         </div>
