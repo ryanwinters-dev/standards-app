@@ -747,6 +747,8 @@
     .circuit-tab-strip::-webkit-scrollbar{display:none}
     .circuit-tab{padding:8px 14px;border-radius:0;font-size:10px;font-weight:700;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;transition:all .2s;color:var(--mt);white-space:nowrap;flex-shrink:0}
     .circuit-tab.act{color:var(--gm);border-bottom-color:var(--gm)}
+.circuit-tab.done{color:var(--pass)}
+.circuit-tab.done.act{border-bottom-color:var(--pass)}
     /* ══════════════════════════════════════
        PROFILE — FITNESS PASSPORT
     ══════════════════════════════════════ */
@@ -6165,7 +6167,7 @@ function buildAccessories(dayIndex){
           <button class="add-set-btn" onclick="addAccSet('${ck}','${exKey}')">+ Add set</button>
         </div>`;
       });
-      h+=`<button class="log-circuit-btn" id="lcb-${ck}" onclick="logAccCircuit('${ck}',${dayIndex},${ci})" style="margin-top:10px">Log accessory circuit</button>
+      h+=`<button class="log-circuit-btn" id="lcb-${ck}" onclick="logCircuit('${ck}')" style="margin-top:10px">Log accessory circuit</button>
           <div class="circuit-log-msg" id="clm-${ck}"></div>
       </div>`;
     }
@@ -6174,65 +6176,7 @@ function buildAccessories(dayIndex){
   return h;
 }
 
-async function logAccCircuit(ck,dayIndex,ci){
-  const circuit=ACCESSORY_CIRCUITS[dayIndex]?.[ci];
-  if(!circuit)return;
-  const inserts=[];
-  const today=new Date().toISOString().split('T')[0];
-  circuit.exercises.forEach(ex=>{
-    // MUST mirror buildAccCircuitPage exactly: exKey is built from circuit.id
-    const exKey=`${circuit.id}-${ex.name.replace(/\s+/g,'')}`;
-    const extra=extraSets[ck]?.[exKey]||0;
-    for(let s=1;s<=3+extra;s++){
-      const uid=`${ck}-${exKey}-${s}`;
-      const rEl=document.getElementById(`r-${uid}`);
-      const lEl=document.getElementById(`l-${uid}`);
-      if(rEl?.disabled)continue; // already saved via tick
-      const reps=parseInt(rEl?.value);
-      if(!reps)continue;
-      inserts.push({
-        athlete_id:CU.id,
-        exercise_id:null, // accessories aren't library exercises — a string here breaks the integer FK
-        exercise_key:exKey, // text identity for non-library exercises: prefill + done-detection
-        pattern_id:ex.pattern||null,
-        set_number:s,
-        reps_achieved:reps,
-        load_kg:parseFloat(lEl?.value)||null,
-        week_number:curWeek,
-        day_index:dayIndex,
-        session_date:today,
-        logged_at:new Date().toISOString(),
-        reps_target_low:12,
-        reps_target_high:15,
-      });
-    }
-  });
-  if(!inserts.length){toast('Enter reps first','err');return;}
-  const{error}=await sb.from('workout_sets').insert(inserts);
-  if(error){toast('Error: '+error.message,'err');return;}
-  SETS.unshift(...inserts);
-  try{localStorage.setItem(`accdone_${CU.id}_w${curWeek}_${ck}`,'1');}catch(e){}
-  toast(`✓ Accessories logged`,'ok');
-  updateSessionProgress();
-  // Smart advance: next unlogged accessory, else the session summary
-  const accs=ACCESSORY_CIRCUITS[dayIndex]||[];
-  const nextAcc=accs.findIndex((ac,i)=>!isAccCircuitLogged(`acc-d${dayIndex}-${i}`,ac));
-  if(nextAcc>=0){
-    setWorkoutTab(`acc${nextAcc}`);
-    return;
-  }
-  const day=buildDay(dayIndex);
-  const mainDone=!day||day.circuits.every((c,i)=>isCircuitLogged(`d${dayIndex}c${i}`,c.exercises,c.circuitSets));
-  if(mainDone){
-    // Everything logged — summary screen with the prompt to end
-    clearRestTimer();
-    markSessionDone();
-    showSessionComplete();
-  } else {
-    rWorkout();
-    toast('Accessories done — main circuits still open','ok');
-  }
-}
+
 function isAccLogged(ck){
   try{return localStorage.getItem(`accdone_${CU.id}_w${curWeek}_${ck}`)==='1';}catch(e){return false;}
 }
@@ -6431,15 +6375,63 @@ function buildDay(di){
 
   return{label:`Day ${di+1}`,circuits};
 }
-function isCircuitLogged(ck,exercises,sets){
-  return exercises.every(item=>{
-    if(!item.ex?.id)return false;
-    for(let s=1;s<=sets;s++){
-      if(!SETS.find(ws=>ws.exercise_id===item.ex.id&&ws.set_number===s&&ws.week_number===curWeek))return false;
+// ═══ CANONICAL SESSION LAYER ═══
+// ONE definition of a logged set, ONE circuit resolver, used by every
+// reader and writer. Nothing in the session flow matches sets any other way.
+function findLoggedSet(exKey,setNum,side){
+  return SETS.find(ws=>
+    (ws.exercise_id==exKey||ws.exercise_key===exKey)
+    &&ws.set_number===setNum
+    &&ws.week_number===curWeek
+    &&(ws.day_index==null||ws.day_index===curDay)
+    &&(side===undefined?true:(side?ws.side===side:!ws.side))
+  );
+}
+function accExKey(circuit,ex){return`${circuit.id}-${ex.name.replace(/\s+/g,'')}`;}
+// Resolve any circuit key — main "d{d}c{i}" or accessory "acc-d{d}-{i}" —
+// into a uniform description the whole machine consumes.
+function resolveCk(ck){
+  let m=ck.match(/^d(\d+)c(\d+)$/);
+  if(m){
+    const di=+m[1],ci=+m[2];
+    const circuit=buildDay(di)?.circuits[ci];
+    if(!circuit)return null;
+    return{type:'main',di,ci,circuit,letter:circuit.letter,
+      exList:circuit.exercises.map((item,xi)=>{
+        const exKey=item.ex?.id||`${ck}-${xi}`;
+        const rs=repStr(item.scheme||'mod',circuit.circuitSets,curWeek);
+        return{exKey,item,rs,sides:item.intent==='unilateral'?['L','R']:[''],
+          totalSets:rs.sets+(extraSets[ck]?.[exKey]||0),pid:item.pid,
+          exId:Number.isFinite(+(item.ex?.id))?+item.ex.id:null};
+      })};
+  }
+  m=ck.match(/^acc-d(\d+)-(\d+)$/);
+  if(m){
+    const di=+m[1],ci=+m[2];
+    const circuit=ACCESSORY_CIRCUITS[di]?.[ci];
+    if(!circuit)return null;
+    return{type:'acc',di,ci,circuit,letter:circuit.letter||String.fromCharCode(69+ci),
+      exList:circuit.exercises.map(ex=>{
+        const exKey=accExKey(circuit,ex);
+        return{exKey,item:ex,rs:{sets:3,lo:12,hi:15},sides:[''],
+          totalSets:3+(extraSets[ck]?.[exKey]||0),pid:ex.pattern||null,exId:null};
+      })};
+  }
+  return null;
+}
+function circuitDone(ck){
+  const r=resolveCk(ck);
+  if(!r)return false;
+  return r.exList.every(e=>{
+    for(let s=1;s<=Math.min(e.totalSets,e.rs.sets);s++){
+      if(!findLoggedSet(e.exKey,s))return false;
     }
     return true;
   });
 }
+// Legacy signature kept — every old call site now flows through the canon.
+function isCircuitLogged(ck,exercises,sets){return circuitDone(ck);}
+function isAccCircuitLogged(ck,circuit){return isAccLogged(ck)||circuitDone(ck);}
 
 // ── WORKOUT ──
 function rWorkout(){
@@ -6522,7 +6514,11 @@ function rWorkout(){
           <button onclick="clearRestTimer()" style="font-size:10px;font-family:var(--mono);color:var(--mt);background:none;border:none;cursor:pointer">Done</button>
         </div>
         <div class="circuit-tab-strip">
-          ${tabs.map(t=>`<button class="circuit-tab${activeTab===t.id?' act':''}" onclick="setWorkoutTab('${t.id}')">${t.label}</button>`).join('')}
+          ${tabs.map(t=>{
+            const ckOf=t.id.startsWith('acc')?`acc-d${curDay}-${t.id.replace('acc','')}`:t.id.startsWith('c')?`d${curDay}c${t.id.replace('c','')}`:null;
+            const tabDone=ckOf?circuitDone(ckOf):false;
+            return`<button class="circuit-tab${activeTab===t.id?' act':''}${tabDone?' done':''}" onclick="setWorkoutTab('${t.id}')">${tabDone?'✓ ':''}${t.label}</button>`;
+          }).join('')}
         </div>
       </div>`;
     h+=buildWorkoutTab(activeTab,day,accCircuits,bmDay5);
@@ -6974,7 +6970,7 @@ function buildWorkoutTab(tabId,day,accCircuits,bmDay5){
 
 function buildMainCircuitPage(circuit,ci){
   const ck=`d${curDay}c${ci}`;
-  const logged=isCircuitLogged(ck,circuit.exercises,circuit.circuitSets);
+  const logged=circuitDone(ck);
   const schemeLabel=SCHEMES[circuit.scheme]?.label||'';
   const isHeavy=circuit.scheme==='heavy';
   const isUni=circuit.exercises.some(e=>e.intent==='unilateral');
@@ -7106,7 +7102,7 @@ function buildExerciseCard(item,xi,ck,circuitSets,ci){
   h+=`<div class="set-rows" id="setrows-${ck}-${xi}">`;
   for(let s=1;s<=totalSets;s++){
     for(const side of sides){
-      const prev=SETS.find(ws=>ws.exercise_id==ex?.id&&ws.set_number===s&&ws.week_number===curWeek&&(isUni?ws.side===side:!ws.side));
+      const prev=findLoggedSet(exKey,s,isUni?side:null);
       const done=!!prev;
       const uid=`${ck}-${exKey}-${s}${side}`;
       const fillLoad=done?prev.load_kg||'':(!done&&sugLoad?sugLoad:'');
@@ -7207,8 +7203,9 @@ function toggleWuPhase(phase){
 function buildAccCircuitPage(circuit,i){
   if(!circuit)return`<div class="circuit-page"><div class="empty">No circuit.</div></div>`;
   const ck=`acc-d${curDay}-${i}`;
-  const letter=circuit.letter||String.fromCharCode(69+i);
-  const logged=isCircuitLogged(ck,circuit.exercises,3);
+  const r=resolveCk(ck);
+  const letter=r?.letter||String.fromCharCode(69+i);
+  const logged=circuitDone(ck);
 
   let h=`<div class="circuit-page">
     <div class="circuit-page-hdr">
@@ -7219,20 +7216,19 @@ function buildAccCircuitPage(circuit,i){
       </div>
     </div>`;
 
-  circuit.exercises.forEach((ex,xi)=>{
-    const exKey=`${circuit.id}-${ex.name.replace(/\s+/g,'')}`;
-    const extra=extraSets[ck]?.[exKey]||0;
-    const totalSets=3+extra;
-    const prevSets=SETS.filter(s=>(s.exercise_key===exKey||s.exercise_id===exKey)&&s.week_number===curWeek-1);
+  (r?.exList||[]).forEach((e,xi)=>{
+    const ex=e.item;
+    const prevSets=SETS.filter(s=>(s.exercise_key===e.exKey||s.exercise_id===e.exKey)&&s.week_number===curWeek-1);
     const lastWeight=prevSets.length?Math.max(...prevSets.map(s=>s.load_kg||0)):null;
     const lastReps=prevSets.length?prevSets[0].reps_achieved:null;
+    const allTimeBest=0;
 
     h+=`<div class="ex-card">
       <div class="ex-card-hdr">
         <div class="ex-card-name">${ex.name}</div>
         <div class="ex-card-meta">
-          <span class="ex-tag limiter">${ex.pattern}</span>
-          <span class="ex-prescription">3 × 12–15</span>
+          <span class="ex-tag limiter">${ex.pattern||'Accessory'}</span>
+          <span class="ex-prescription">3 × ${e.rs.lo}–${e.rs.hi}</span>
         </div>
       </div>
       ${lastWeight||lastReps?`<div class="last-session-strip">
@@ -7240,33 +7236,39 @@ function buildAccCircuitPage(circuit,i){
         <span class="last-session-val">${lastReps?lastReps+' reps':''}${lastWeight&&lastReps?' · ':''}${lastWeight?lastWeight+'kg':''}</span>
       </div>`:''}
       <div class="set-rows">`;
-    for(let s=1;s<=totalSets;s++){
-      const prev=SETS.find(ws=>ws.exercise_id===exKey&&ws.set_number===s&&ws.week_number===curWeek);
+    for(let s=1;s<=e.totalSets;s++){
+      const prev=findLoggedSet(e.exKey,s,null);
       const done=!!prev;
-      const uid=`${ck}-${exKey}-${s}`;
-      h+=`<div class="set-row">
+      const uid=`${ck}-${e.exKey}-${s}`;
+      h+=`<div class="set-row" id="set-row-${uid}">
         <span class="set-num">${s}</span>
-        <input class="set-input${done?' done':''}" type="number" id="r-${uid}" placeholder="12–15"
-          value="${done?prev.reps_achieved:''}" min="1" max="50" inputmode="numeric" ${done?'disabled':''}>
+        <input class="set-input${done?' done':''}" type="number" id="r-${uid}"
+          placeholder="${e.rs.lo}–${e.rs.hi}" value="${done?prev.reps_achieved:''}"
+          min="1" max="50" inputmode="numeric" ${done?'disabled':''}
+          onchange="onSetChange('${uid}','${ck}','${e.exKey}','-1',${allTimeBest})">
         <span class="set-sep">×</span>
-        <input class="set-input${done?' done':''}${!done&&lastWeight?' prefill':''}" type="number" id="l-${uid}"
-          placeholder="kg" value="${done?prev.load_kg||'':(!done&&lastWeight?lastWeight:'')}"
+        <input class="set-input${done?' done':''}" type="number" id="l-${uid}"
+          placeholder="kg" value="${done?(prev.load_kg||''):''}"
           min="0" max="500" step="0.5" inputmode="decimal" ${done?'disabled':''}
-          onfocus="if(this.classList.contains('prefill')){this.value='';this.classList.remove('prefill')}">
-        <button class="set-tick${done?' done':''}" id="tick-${uid}" ${done?'disabled':''} onclick="tickAccSet('${uid}','${ck}','${exKey}','${s}')">
+          onchange="onSetChange('${uid}','${ck}','${e.exKey}','-1',${allTimeBest})">
+        ${done&&prev.rpe?`<span style="font-size:9px;font-family:var(--mono);color:var(--mt);flex-shrink:0">RPE ${prev.rpe}</span>`:''}
+        <button class="set-tick${done?' done':''}" id="tick-${uid}"
+          onclick="tickSet('${uid}','${ck}','${e.exKey}','${s}','-1',${allTimeBest},'Accessory','')"
+          ${done?'disabled':''}>
           ${done?'✓':'○'}
         </button>
       </div>`;
     }
     h+=`</div>
-      <button class="set-add-btn" onclick="addAccSet('${ck}','${exKey}');rWorkout()">+ Add set</button>
+      <button class="add-set-btn" onclick="addSet('${ck}','${e.exKey}')">+ Add set</button>
     </div>`;
   });
 
   h+=`<div style="height:80px"></div></div>`;
   h+=`<div class="circuit-cta">
-    <button class="circuit-cta-btn${logged?' logged':''}" onclick="${logged?'':` logAccCircuit('${ck}',${curDay},${i})`}" ${logged?'disabled':''}>
-      ${logged?'✓ Done':'Log Accessory '+letter+' →'}
+    <button class="circuit-cta-btn${logged?' logged':''}"
+      onclick="${logged?`_advanceFromCircuit('${ck}')`:`logCircuit('${ck}')`}">
+      ${logged?'✓ Done — Next →':'Log Circuit '+letter+' →'}
     </button>
   </div>`;
   return h;
@@ -7712,8 +7714,10 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
   SETS.unshift(row);
   updateSessionProgress();
   _checkCircuitComplete(ck);
-  // exercise_id column is integer — coerce, never send a non-numeric string
+  // exercise_id column is integer — coerce; non-library exercises carry
+  // their identity in exercise_key instead.
   row.exercise_id=Number.isFinite(+exKey)?+exKey:null;
+  row.exercise_key=row.exercise_id==null?String(exKey):null;
   persistSession();
   sb.from('workout_sets').insert(row).then(({error})=>{
     if(error){
@@ -7729,6 +7733,18 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
       console.error('Set save failed:',error);
       const m=error.message||'';
       let hint;
+      if(/schema cache|column .* does not exist|PGRST204/i.test(m)){
+        // Infra problem, not a data problem: KEEP the athlete's work,
+        // queue it, and say what to run. The UI never blanks for this.
+        SETS.unshift(row);
+        enqueueSet(row);
+        updateSessionProgress();
+        if(!window._schemaHintShown){
+          window._schemaHintShown=true;
+          toast('⚠ DB column missing — set kept locally. Run the pending SQL + NOTIFY pgrst','err');
+        }
+        return;
+      }
       if(/foreign key/i.test(m)){
         // Stale cached exercise ids after a library reseed — heal automatically
         try{localStorage.removeItem(CACHE_VERSION);}catch(e){}
@@ -7839,109 +7855,102 @@ function markWuPhaseDone(wuKey,today){
 // ── Log circuit (main) — now just records and advances tab ──
 // Called after each tick to see if circuit is now fully logged
 function _checkCircuitComplete(ck){
-  if(curDay>=4)return; // Day 5 handled separately
-  const di=parseInt(ck[1]),ci=parseInt(ck[3]);
-  const day=buildDay(di);
-  const circuit=day?.circuits[ci];
-  if(!circuit)return;
-  if(!isCircuitLogged(ck,circuit.exercises,circuit.circuitSets))return;
-
-  toast(`✓ Circuit ${circuit.letter} complete`,'ok');
-
-  // Update the CTA button without full re-render
+  if(curDay>=4)return;
+  if(!circuitDone(ck))return;
+  const r=resolveCk(ck);
+  toast(`✓ Circuit ${r?.letter||''} complete`,'ok');
   const ctaBtn=document.querySelector('.circuit-cta-btn');
   if(ctaBtn&&!ctaBtn.classList.contains('logged')){
     ctaBtn.classList.add('logged');
-    ctaBtn.textContent='✓ Done — next circuit →';
+    ctaBtn.textContent='✓ Done — next →';
     ctaBtn.disabled=false;
-    ctaBtn.onclick=()=>_advanceFromCircuit(ci,day);
+    ctaBtn.onclick=()=>_advanceFromCircuit(ck);
   }
 }
 
-function _advanceFromCircuit(ci,day){
-  const nextCi=ci+1;
-  if(nextCi<day.circuits.length){
-    setWorkoutTab(`c${nextCi}`);
+function _advanceFromCircuit(ck){
+  // Accept legacy (ci,day) calls too
+  if(typeof ck==='number')ck=`d${curDay}c${ck}`;
+  const order=[];
+  const day=buildDay(curDay);
+  if(day)day.circuits.forEach((c,i)=>order.push(`d${curDay}c${i}`));
+  ((curDay<4?ACCESSORY_CIRCUITS[curDay]:null)||[]).forEach((_,i)=>order.push(`acc-d${curDay}-${i}`));
+  const next=order.find(k=>k!==ck&&!circuitDone(k));
+  if(next){
+    setWorkoutTab(next.startsWith('acc')?`acc${next.split('-')[2]}`:`c${next[3]}`);
     return;
   }
-  // Main circuits done — accessories are next, then benchmark, then wrap
-  const accs=(curDay<4?ACCESSORY_CIRCUITS[curDay]:null)||[];
-  const nextAcc=accs.findIndex((_,i)=>!isAccLogged(`acc-d${curDay}-${i}`));
-  if(nextAcc>=0){
-    setWorkoutTab(`acc${nextAcc}`);
-    return;
-  }
-  if(curDay===4&&getBenchmarkDay5()){setWorkoutTab('bm');return;}
-  updateSessionProgress();
-  checkSessionComplete();
-  rWorkout();
+  // Everything logged — the summary, with save + photo + end
+  clearRestTimer();
+  markSessionDone();
+  showSessionComplete();
 }
 
 async function logCircuit(ck){
   const btn=document.querySelector('.circuit-cta-btn');
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
-
-  // Parse ck format "d{day}c{circuit}"
-  const match=ck.match(/^d(\d+)c(\d+)$/);
-  if(!match)return;
-  const di=parseInt(match[1]),ci=parseInt(match[2]);
-  const circuit=buildDay(di)?.circuits[ci];
-  if(!circuit){return;}
+  const r=resolveCk(ck);
+  if(!r){if(btn){btn.disabled=false;}return;}
 
   const inserts=[];
   const today=new Date().toISOString().split('T')[0];
-  circuit.exercises.forEach((item)=>{
-    const ex=item.ex,exKey=ex?.id||`${ck}-${circuit.exercises.indexOf(item)}`;
-    const intent=ex?.intent||'Force',rs=repStr(intent,circuit.circuitSets,curWeek);
-    const extra=extraSets[ck]?.[exKey]||0,totalSets=rs.sets+extra;
-    for(let s=1;s<=totalSets;s++){
-      const uid=`${ck}-${exKey}-${s}`;
-      const rEl=document.getElementById('r-'+uid),lEl=document.getElementById('l-'+uid);
-      if(!rEl||rEl.disabled)continue; // already saved via tick
-      const reps=parseInt(rEl.value),load=parseFloat(lEl?.value)||null;
-      if(!reps||reps<1)continue;
-      inserts.push({athlete_id:CU.id,exercise_id:ex?.id?parseInt(ex.id):null,pattern_id:item.pid,session_date:today,set_number:s,reps_achieved:reps,load_kg:load,week_number:curWeek,logged_at:new Date().toISOString(),reps_target_low:rs.lo,reps_target_high:rs.hi});
+  r.exList.forEach(e=>{
+    for(let s=1;s<=e.totalSets;s++){
+      for(const side of e.sides){
+        const uid=`${ck}-${e.exKey}-${s}${side}`;
+        const rEl=document.getElementById('r-'+uid),lEl=document.getElementById('l-'+uid);
+        if(!rEl||rEl.disabled)continue; // already saved via tick
+        const reps=parseInt(rEl.value),load=parseFloat(lEl?.value)||null;
+        if(!reps||reps<1)continue;
+        inserts.push({
+          athlete_id:CU.id,
+          exercise_id:e.exId,
+          exercise_key:e.exId==null?String(e.exKey):null,
+          pattern_id:e.pid,
+          set_number:s,reps_achieved:reps,load_kg:load,
+          side:side||null,
+          week_number:curWeek,day_index:r.di,
+          session_date:today,logged_at:new Date().toISOString(),
+          reps_target_low:e.rs.lo,reps_target_high:e.rs.hi,
+        });
+      }
     }
   });
-  if(inserts.length){
-    const{error}=await sb.from('workout_sets').insert(inserts);
-    if(!error)SETS.unshift(...inserts.map(i=>({...i,logged_at:new Date().toISOString()})));
-  }
 
-  toast(`✓ Circuit ${circuit.letter} logged`,'ok');
+  if(inserts.length){
+    // Optimistic — same contract as single-set saves: work never blanks.
+    SETS.unshift(...inserts);
+    const{error}=await sb.from('workout_sets').insert(inserts);
+    if(error){
+      if(/fetch|network|timeout|load failed|connection|schema cache|column/i.test(error.message||'')){
+        inserts.forEach(row=>enqueueSet(row));
+        toast('📶 Saved locally — will sync','ok');
+      } else {
+        inserts.forEach(row=>{const i=SETS.indexOf(row);if(i>-1)SETS.splice(i,1);});
+        toast('⚠ Not saved — '+(error.message||'').slice(0,70),'err');
+        rWorkout();
+        return;
+      }
+    }
+  }
+  toast(`✓ Circuit ${r.letter} logged`,'ok');
   updateSessionProgress();
-  _advanceFromCircuit(ci,buildDay(di));
+  _advanceFromCircuit(ck);
 }
 
 function checkSessionComplete(){
   if(curDay>=4)return;
   const day=buildDay(curDay);
   if(!day)return;
-  const mainDone=day.circuits.every((c,i)=>isCircuitLogged(`d${curDay}c${i}`,c.exercises,c.circuitSets));
-  if(!mainDone)return;
-  // Check accessories — only block if they exist and none are logged yet
-  const accCircuits=ACCESSORY_CIRCUITS[curDay]||[];
-  const accDone=accCircuits.length===0||accCircuits.every((ac,i)=>isAccCircuitLogged(`acc-d${curDay}-${i}`,ac));
-  if(mainDone&&accDone){
-    clearRestTimer();
-    markSessionDone();
-    setTimeout(()=>showSessionComplete(),500);
-  } else if(mainDone&&!accDone){
-    // Advance to first unlogged accessory tab
-    const firstAcc=accCircuits.findIndex((ac,i)=>!isAccCircuitLogged(`acc-d${curDay}-${i}`,ac));
-    if(firstAcc>=0)setWorkoutTab(`acc${firstAcc}`);
-    toast('Main work done — finish accessories!','ok');
-  }
+  const mains=day.circuits.map((_,i)=>`d${curDay}c${i}`);
+  const accs=((ACCESSORY_CIRCUITS[curDay])||[]).map((_,i)=>`acc-d${curDay}-${i}`);
+  if(![...mains,...accs].every(circuitDone))return;
+  clearRestTimer();
+  markSessionDone();
+  setTimeout(()=>showSessionComplete(),400);
 }
 
-function isAccCircuitLogged(ck,circuit){
-  if(!circuit?.exercises?.length)return true;
-  if(isAccLogged(ck))return true;
-  return circuit.exercises.some(ex=>{
-    const exKey=`${circuit.id||ck}-${ex.name.replace(/\s+/g,'')}`;
-    return SETS.some(s=>(s.exercise_key===exKey||s.exercise_id===exKey)&&s.week_number===curWeek&&(s.day_index==null||s.day_index===curDay));
-  });
-}
+
 
 // ── Session Complete ──
 function showSessionComplete(){
