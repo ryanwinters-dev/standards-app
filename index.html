@@ -4646,7 +4646,7 @@ async function openPubProfile(athleteId){
       sb.from('workout_sets').select('exercise_id,session_date,reps_achieved,load_kg,side').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(400),
       sb.from('profiles').select('full_name,email,is_public,avatar_url').eq('id',athleteId).maybeSingle(),
       sb.from('benchmark_results').select('benchmark_id,score_seconds').eq('athlete_id',athleteId),
-      sb.from('session_photos').select('session_date,photo_url').eq('athlete_id',athleteId),
+      sb.from('session_photos').select('session_date,photo_url,week_number,day_index').eq('athlete_id',athleteId),
     ]);
 
     if(profRes.data?.is_public===false){
@@ -4662,7 +4662,10 @@ async function openPubProfile(athleteId){
     const scores={};
     (apRes.data||[]).forEach(r=>{scores[r.pattern_id]=r.current_level;});
     const photos={};
-    (photoRes.data||[]).forEach(r=>{photos[r.session_date]=r.photo_url;});
+    (photoRes.data||[]).forEach(r=>{
+      const key=(r.week_number!=null&&r.day_index!=null)?`w${r.week_number}d${r.day_index}`:r.session_date;
+      photos[key]=r.photo_url;
+    });
 
     body.innerHTML=buildPubProfileBody(name,scores,setsRes.data||[],bmRes.data||[],photos,profRes.data?.avatar_url||null,athleteId);
   }catch(err){
@@ -6146,7 +6149,7 @@ function buildAccessories(dayIndex){
         const totalSets=3+extra;
         let setRows=`<table class="set-table"><thead><tr><th>Set</th><th>Reps</th><th>kg</th><th>Target</th></tr></thead><tbody>`;
         for(let s=1;s<=totalSets;s++){
-          const prev=SETS.find(ws=>ws.exercise_id===exKey&&ws.set_number===s&&ws.week_number===curWeek);
+          const prev=SETS.find(ws=>(ws.exercise_key===exKey||ws.exercise_id===exKey)&&ws.set_number===s&&ws.week_number===curWeek&&(ws.day_index==null||ws.day_index===curDay));
           const done=!!prev,uid=`${ck}-${exKey}-${s}`;
           setRows+=`<tr><td class="set-num-cell">${s}</td><td><input class="set-inp${done?' done':''}" type="number" id="r-${uid}" placeholder="—" value="${done?prev.reps_achieved:''}" min="1" max="50" ${done?'disabled':''}/></td><td><input class="set-inp${done?' done':''}" type="number" id="l-${uid}" placeholder="—" value="${done&&prev.load_kg?prev.load_kg:''}" min="0" max="500" step="0.5" ${done?'disabled':''}/></td><td class="set-target">12–15</td></tr>`;
         }
@@ -6190,6 +6193,7 @@ async function logAccCircuit(ck,dayIndex,ci){
       inserts.push({
         athlete_id:CU.id,
         exercise_id:null, // accessories aren't library exercises — a string here breaks the integer FK
+        exercise_key:exKey, // text identity for non-library exercises: prefill + done-detection
         pattern_id:ex.pattern||null,
         set_number:s,
         reps_achieved:reps,
@@ -6210,8 +6214,24 @@ async function logAccCircuit(ck,dayIndex,ci){
   try{localStorage.setItem(`accdone_${CU.id}_w${curWeek}_${ck}`,'1');}catch(e){}
   toast(`✓ Accessories logged`,'ok');
   updateSessionProgress();
-  checkSessionComplete();
-  rWorkout();
+  // Smart advance: next unlogged accessory, else the session summary
+  const accs=ACCESSORY_CIRCUITS[dayIndex]||[];
+  const nextAcc=accs.findIndex((ac,i)=>!isAccCircuitLogged(`acc-d${dayIndex}-${i}`,ac));
+  if(nextAcc>=0){
+    setWorkoutTab(`acc${nextAcc}`);
+    return;
+  }
+  const day=buildDay(dayIndex);
+  const mainDone=!day||day.circuits.every((c,i)=>isCircuitLogged(`d${dayIndex}c${i}`,c.exercises,c.circuitSets));
+  if(mainDone){
+    // Everything logged — summary screen with the prompt to end
+    clearRestTimer();
+    markSessionDone();
+    showSessionComplete();
+  } else {
+    rWorkout();
+    toast('Accessories done — main circuits still open','ok');
+  }
 }
 function isAccLogged(ck){
   try{return localStorage.getItem(`accdone_${CU.id}_w${curWeek}_${ck}`)==='1';}catch(e){return false;}
@@ -7203,7 +7223,7 @@ function buildAccCircuitPage(circuit,i){
     const exKey=`${circuit.id}-${ex.name.replace(/\s+/g,'')}`;
     const extra=extraSets[ck]?.[exKey]||0;
     const totalSets=3+extra;
-    const prevSets=SETS.filter(s=>s.exercise_id===exKey&&s.week_number===curWeek-1);
+    const prevSets=SETS.filter(s=>(s.exercise_key===exKey||s.exercise_id===exKey)&&s.week_number===curWeek-1);
     const lastWeight=prevSets.length?Math.max(...prevSets.map(s=>s.load_kg||0)):null;
     const lastReps=prevSets.length?prevSets[0].reps_achieved:null;
 
@@ -7375,10 +7395,10 @@ function buildActivitySpotlight(sets,photos,ownerName){
   if(!sessions.length)return'';
   const cards=sessions.map(([sk,r])=>{
     const key='sp_'+sk.replace(/-/g,'')+'_'+Math.abs((ownerName||'me').charCodeAt(0));
-    window._SPOT[key]={date:r.date,rows:r.rows,photo:(photos||{})[r.date]||null,name:ownerName||null,week:r.week,day:r.day};
+    const photo=(photos||{})[sk]??((r.week==null)?(photos||{})[r.date]:null);
+    window._SPOT[key]={date:r.date,rows:r.rows,photo:photo||null,name:ownerName||null,week:r.week,day:r.day};
     const d=new Date(r.date+'T12:00');
     const vol=r.vol>999?(r.vol/1000).toFixed(1)+'k':Math.round(r.vol);
-    const photo=(photos||{})[r.date];
     const sessLabel=(r.week!=null&&r.day!=null)?(r.day===4?`W${r.week} · BM`:`W${r.week} · D${r.day+1}`):d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
     return`<div class="spot-card" onclick="openSpotlightDetail('${key}')" style="${photo?`background-image:url('${photo}');background-size:cover;background-position:center;`:''}">
       ${!photo?`<div class="spot-fallback">
@@ -7448,9 +7468,12 @@ function openSpotlightDetail(key){
 let SESSION_PHOTOS={};
 async function loadSessionPhotos(){
   try{
-    const{data}=await sb.from('session_photos').select('session_date,photo_url').eq('athlete_id',CU.id);
+    const{data}=await sb.from('session_photos').select('session_date,photo_url,week_number,day_index').eq('athlete_id',CU.id);
     SESSION_PHOTOS={};
-    (data||[]).forEach(r=>{SESSION_PHOTOS[r.session_date]=r.photo_url;});
+    (data||[]).forEach(r=>{
+      const key=(r.week_number!=null&&r.day_index!=null)?`w${r.week_number}d${r.day_index}`:r.session_date;
+      SESSION_PHOTOS[key]=r.photo_url;
+    });
   }catch(e){/* table may not exist yet — spotlight degrades gracefully */}
 }
 async function uploadSessionPhoto(input){
@@ -7467,10 +7490,10 @@ async function uploadSessionPhoto(input){
     const{data:urlData}=sb.storage.from('session-photos').getPublicUrl(path);
     const url=urlData?.publicUrl;
     const{error:dbErr}=await sb.from('session_photos').upsert(
-      {athlete_id:CU.id,session_date:dateISO,photo_url:url},
-      {onConflict:'athlete_id,session_date'});
+      {athlete_id:CU.id,session_date:dateISO,photo_url:url,week_number:curWeek,day_index:curDay},
+      {onConflict:'athlete_id,week_number,day_index'});
     if(dbErr)throw dbErr;
-    SESSION_PHOTOS[dateISO]=url;
+    SESSION_PHOTOS[`w${curWeek}d${curDay}`]=url;
     try{rProfile();}catch(e){}
     if(btn){btn.textContent='✓ Photo added';btn.style.color='var(--pass)';btn.style.borderColor='var(--pass-border)';}
     toast('📷 Session photo added to your spotlight','ok');
@@ -7913,9 +7936,10 @@ function checkSessionComplete(){
 
 function isAccCircuitLogged(ck,circuit){
   if(!circuit?.exercises?.length)return true;
+  if(isAccLogged(ck))return true;
   return circuit.exercises.some(ex=>{
     const exKey=`${circuit.id||ck}-${ex.name.replace(/\s+/g,'')}`;
-    return SETS.some(s=>s.exercise_id===exKey);
+    return SETS.some(s=>(s.exercise_key===exKey||s.exercise_id===exKey)&&s.week_number===curWeek&&(s.day_index==null||s.day_index===curDay));
   });
 }
 
