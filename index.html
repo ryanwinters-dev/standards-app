@@ -6195,6 +6195,7 @@ async function logAccCircuit(ck,dayIndex,ci){
         reps_achieved:reps,
         load_kg:parseFloat(lEl?.value)||null,
         week_number:curWeek,
+        day_index:dayIndex,
         session_date:today,
         logged_at:new Date().toISOString(),
         reps_target_low:12,
@@ -6532,7 +6533,13 @@ function rWorkout(){
 
     if(doneRec){
       // Completed session — record view with logged sets
-      const daySets=SETS.filter(s=>s.session_date===doneRec.date);
+      // Filter by session identity, not date — two sessions logged the same
+      // real day must not merge. Date remains the legacy fallback.
+      const daySets=SETS.filter(s=>
+        s.day_index!=null
+          ?(s.week_number===curWeek&&s.day_index===curDay)
+          :s.session_date===doneRec.date
+      );
       const byEx={};
       daySets.forEach(s=>{(byEx[s.exercise_id]=byEx[s.exercise_id]||[]).push(s);});
       const exBlocks=Object.entries(byEx).map(([eid,ss])=>{
@@ -7349,29 +7356,38 @@ function markSessionDone(){
 // into a highlight sheet. Powers both the personal profile and public profiles.
 window._SPOT={};
 function buildActivitySpotlight(sets,photos,ownerName){
-  const byDate={};
+  // A "session" is identified by (week, day) when stamped — so five sessions
+  // logged on the same real date stay five distinct cards. Date is the
+  // fallback for legacy rows without day_index.
+  const bySess={};
   (sets||[]).forEach(s=>{
     if(!s.session_date)return;
-    const r=byDate[s.session_date]=byDate[s.session_date]||{sets:0,vol:0,rows:[]};
+    const key=(s.week_number!=null&&s.day_index!=null)?`w${s.week_number}d${s.day_index}`:s.session_date;
+    const r=bySess[key]=bySess[key]||{sets:0,vol:0,rows:[],date:s.session_date,week:s.week_number,day:s.day_index};
     r.sets++;r.vol+=(s.reps_achieved||0)*(s.load_kg||0);
+    if(s.session_date>r.date)r.date=s.session_date;
     r.rows.push(s);
   });
-  const days=Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8);
-  if(!days.length)return'';
-  const cards=days.map(([ds,r],i)=>{
-    const key='sp_'+ds.replace(/-/g,'')+'_'+Math.abs((ownerName||'me').charCodeAt(0));
-    window._SPOT[key]={date:ds,rows:r.rows,photo:(photos||{})[ds]||null,name:ownerName||null};
-    const d=new Date(ds+'T12:00');
+  const sessions=Object.entries(bySess).sort((a,b)=>{
+    if(a[1].date!==b[1].date)return b[1].date.localeCompare(a[1].date);
+    return (b[1].day??-1)-(a[1].day??-1);
+  }).slice(0,8);
+  if(!sessions.length)return'';
+  const cards=sessions.map(([sk,r])=>{
+    const key='sp_'+sk.replace(/-/g,'')+'_'+Math.abs((ownerName||'me').charCodeAt(0));
+    window._SPOT[key]={date:r.date,rows:r.rows,photo:(photos||{})[r.date]||null,name:ownerName||null,week:r.week,day:r.day};
+    const d=new Date(r.date+'T12:00');
     const vol=r.vol>999?(r.vol/1000).toFixed(1)+'k':Math.round(r.vol);
-    const photo=(photos||{})[ds];
+    const photo=(photos||{})[r.date];
+    const sessLabel=(r.week!=null&&r.day!=null)?(r.day===4?`W${r.week} · BM`:`W${r.week} · D${r.day+1}`):d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
     return`<div class="spot-card" onclick="openSpotlightDetail('${key}')" style="${photo?`background-image:url('${photo}');background-size:cover;background-position:center;`:''}">
       ${!photo?`<div class="spot-fallback">
         <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--gm)">${vol}</div>
         <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">kg moved</div>
       </div>`:''}
       <div class="spot-meta">
-        <div style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--dk)">${d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
-        <div style="font-size:8px;font-family:var(--mono);color:${photo?'var(--dk)':'var(--mt)'}">${r.sets} sets${photo?` · ${vol}kg`:''}</div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--dk)">${sessLabel}</div>
+        <div style="font-size:8px;font-family:var(--mono);color:${photo?'var(--dk)':'var(--mt)'}">${d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${r.sets} sets</div>
       </div>
     </div>`;
   }).join('');
@@ -7410,7 +7426,7 @@ function openSpotlightDetail(key){
     <div style="padding:var(--s4)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s2)">
         <div>
-          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">${d.name?d.name.split(' ')[0]+"'s session":'Session'}</div>
+          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">${d.name?d.name.split(' ')[0]+"'s session":'Session'}${(d.week!=null&&d.day!=null)?` · W${d.week} ${d.day===4?'BM':'D'+(d.day+1)}`:''}</div>
           <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--dk)">${dt.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
         </div>
         <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
@@ -7665,7 +7681,8 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
     athlete_id:CU.id,exercise_id:exKey,pattern_id:null,
     set_number:s,reps_achieved:reps,load_kg:load,rpe:rpe||null,
     side:side||null,
-    week_number:curWeek,session_date:today,logged_at:new Date().toISOString(),
+    week_number:curWeek,day_index:curDay,
+    session_date:today,logged_at:new Date().toISOString(),
     reps_target_low:null,reps_target_high:null,
   };
   // Optimistic: the set exists locally the moment it's ticked.
@@ -9236,6 +9253,7 @@ async function logCoachCircuit(ck,dayIndex,exercises){
             reps_achieved:reps,
             load_kg:load,
             side:side||null,
+            day_index:dayIndex,
             reps_target_low:rs.lo,
             reps_target_high:rs.hi,
             week_number:curWeek,
