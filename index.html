@@ -1872,7 +1872,7 @@
 </div>
 
 <!-- PUBLIC PROFILE OVERLAY -->
-<div id="pub-profile" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:165;flex-direction:column">
+<div id="pub-profile" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:168;flex-direction:column">
   <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0">
     <button class="back-btn" onclick="closePubProfile()">← Back</button>
     <span id="pub-profile-title" style="font-size:14px;font-weight:700;font-family:var(--mono);flex:1"></span>
@@ -1933,7 +1933,7 @@
 </div>
 
 <!-- PATTERN DETAIL PAGE -->
-<div id="pattern-page" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:160;overflow-y:auto">
+<div id="pattern-page" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:190;overflow-y:auto">
   <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;position:sticky;top:0;z-index:10">
     <button id="pp-back" style="padding:5px 10px;border:0.5px solid var(--br);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--md);font-family:var(--fn)" onclick="closePatternPage()">← Back</button>
     <span id="pp-title" style="font-size:16px;font-weight:700;flex:1"></span>
@@ -4212,7 +4212,7 @@ function openCoachDashboard(){
   if(!overlay){
     overlay=document.createElement('div');
     overlay.id='coach-overlay';
-    overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:160;display:flex;flex-direction:column;overflow:hidden';
+    overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:190;display:flex;flex-direction:column;overflow:hidden';
     const topbar=document.createElement('div');
     topbar.style.cssText='background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top));display:flex;align-items:flex-end;padding-bottom:8px;gap:12px;flex-shrink:0';
     topbar.innerHTML=`<button class="back-btn" onclick="closeCoachDashboard()">← Back</button>
@@ -4617,7 +4617,7 @@ async function signUp(){
   if(!n||!e||!p)return sm('Please fill in all fields.','err');
   if(p.length<6)return sm('Password must be at least 6 characters.','err');
   sm('Creating account…','');
-  const{data,error}=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});
+  const{data,error}=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n},emailRedirectTo:location.origin}});
   if(error)return sm(/already registered/i.test(error.message)?'That email already has an account — sign in instead.':error.message,'err');
   if(!data?.session){
     // Email confirmation required — replace the auth form with a branded state
