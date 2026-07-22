@@ -172,6 +172,7 @@
     }
     .nav-tab svg,.nav-tab .nav-icon{font-size:18px;line-height:1;transition:transform .2s}
     .nav-tab.active{color:var(--gm)}
+    body.kb-open .nav-dock{display:none}
     .nav-tab.active .nav-icon{transform:translateY(-1px)}
 
     /* ── SHARED COMPONENTS ── */
@@ -7364,6 +7365,27 @@ function buildDay5Tab(bmDay5){
   <div style="height:80px"></div></div>`;
   return h;
 }
+
+// ── KEYBOARD-AWARE NAV DOCK ──
+// When any text/number input focuses (mobile keyboard up), the bottom nav
+// hides so it can't ride the keyboard to mid-screen. Restores on blur.
+// The 120ms delay stops a flicker when focus hops between set inputs.
+let _kbTimer=null;
+document.addEventListener('focusin',e=>{
+  if(e.target.matches('input,textarea,select')){
+    clearTimeout(_kbTimer);
+    document.body.classList.add('kb-open');
+  }
+});
+document.addEventListener('focusout',e=>{
+  if(e.target.matches('input,textarea,select')){
+    clearTimeout(_kbTimer);
+    _kbTimer=setTimeout(()=>{
+      if(!document.activeElement||!document.activeElement.matches('input,textarea,select'))
+        document.body.classList.remove('kb-open');
+    },120);
+  }
+});
 
 // ── Session management ──
 function startSession(){
