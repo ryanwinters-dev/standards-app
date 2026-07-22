@@ -8532,8 +8532,8 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   if(isCoach){
     actionTiles=`
       <div class="prof-action-tile" onclick="openWorkoutBuilder()"><div class="prof-action-icon">🛠</div><div class="prof-action-label">Programme</div></div>
-      <div class="prof-action-tile" onclick="openCoachTestModal()"><div class="prof-action-icon">✓</div><div class="prof-action-label">Log Test</div></div>
-      <div class="prof-action-tile" onclick="openCoachWorkout()"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Log Workout</div></div>
+      <div class="prof-action-tile" onclick="openCoachTestModal(null,null,'${athleteId}')"><div class="prof-action-icon">✓</div><div class="prof-action-label">Log Test</div></div>
+      <div class="prof-action-tile" onclick="openCoachWorkout('${athleteId}')"><div class="prof-action-icon">⊕</div><div class="prof-action-label">Log Workout</div></div>
       <div class="prof-action-tile" onclick="openProfileOverlay('calendar','History',buildCalendarPage)"><div class="prof-action-icon">📅</div><div class="prof-action-label">History</div></div>
       ${checkins&&checkins.length?`<div class="prof-action-tile" onclick="openProfileOverlay('checkins','Wellness',buildCheckinProfilePage)"><div class="prof-action-icon">❤</div><div class="prof-action-label">Wellness</div></div>`:''}`;
   } else {
@@ -9014,8 +9014,19 @@ async function openClientPage(athleteId){
   if(_clientPageOpening)return;
   _clientPageOpening=true;
   try{
-    const a=ALL_ATHLETES.find(x=>x.id===athleteId);
-    if(!a){_clientPageOpening=false;return;} // release lock on early exit
+    let a=ALL_ATHLETES.find(x=>x.id===athleteId);
+    if(!a){
+      // Cache-miss race: coach data still loading, or roster changed under us.
+      // Direct-fetch the athlete rather than silently failing — that's what
+      // caused "open on second tap": first tap raced the async coach load,
+      // returned nothing, second tap found a populated cache.
+      const{data:prof}=await sb.from('profiles').select('id,full_name,email').eq('id',athleteId).maybeSingle();
+      if(!prof){toast('Athlete not found','err');return;}
+      const{data:aps}=await sb.from('athlete_profiles').select('pattern_id,current_level').eq('athlete_id',athleteId);
+      const scores={};(aps||[]).forEach(r=>{scores[r.pattern_id]=r.current_level;});
+      a={id:prof.id,name:prof.full_name||prof.email?.split('@')[0]||'Athlete',scores};
+      ALL_ATHLETES.push(a); // warm the cache so retries hit
+    }
     const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
     document.getElementById('cp-name').textContent=a.name;
     const scoreEl=document.getElementById('cp-score');
@@ -9093,9 +9104,12 @@ let coachWorkoutOpenCircuits={};
 
 function openCoachTestForPattern(pid,lvl){openCoachTestModal(pid,lvl);}
 
-function openCoachTestModal(seedPid,seedLvl){
-  const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
-  if(!a)return;
+function openCoachTestModal(seedPid,seedLvl,athleteIdOverride){
+  // Prefer the explicit id (from the tile in the client page) over profContext,
+  // which can be stale if the page hasn't fully rendered its coach lens yet.
+  const targetId=athleteIdOverride||profContext.athleteId;
+  const a=ALL_ATHLETES.find(x=>x.id===targetId);
+  if(!a){toast('Open a client first','err');return;}
   coachLogClientId=a.id;
   coachLogClientName=a.name;
   coachLogClientScores=a.scores||{};
