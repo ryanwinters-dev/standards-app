@@ -1944,16 +1944,6 @@
   <div id="pp-body" style="padding:16px;max-width:640px;margin:0 auto"></div>
 </div>
 
-<!-- CLIENT PROFILE PAGE -->
-<div class="client-page" id="client-page">
-  <div class="client-page-topbar">
-    <button class="back-btn" onclick="closeClientPage()">← Back</button>
-    <span class="client-page-name" id="cp-name"></span>
-    <span class="client-page-score" id="cp-score"></span>
-  </div>
-  <div class="client-page-body" id="cp-body"></div>
-</div>
-
 <!-- COACH WORKOUT MODAL -->
 <div id="coach-workout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;overflow-y:auto">
   <div style="background:var(--bg);min-height:100%;padding:0 0 40px">
@@ -4776,7 +4766,7 @@ function closePubProfile(){
 async function signOut(){
   // Close any open overlays first
   closeSettings();
-  document.getElementById('client-page')?.classList.remove('active');
+  document.querySelectorAll('#client-page').forEach(el=>el.remove());
   document.getElementById('settings-page')?.classList.remove('active');
   document.querySelectorAll('[id^="prof-overlay-"]').forEach(el=>el.style.display='none');
 
@@ -9053,26 +9043,31 @@ async function openClientPage(athleteId){
   // where they are now, what's next.
   if(_clientPageOpening)return;
   _clientPageOpening=true;
-  const page=document.getElementById('client-page');
+
+  // ═══ NUCLEAR RENDER ═══
+  // The static #client-page element repeatedly failed to paint on first tap
+  // for reasons that survived: inline-style clears, body reparenting, forced
+  // reflow, overlay sweeps, and z-index fixes. So the page is now BUILT FRESH
+  // on every open: a new element with pure inline styles, z-index above every
+  // stacking context, appended directly to <body>. Nothing that exists before
+  // the tap can break an element created by the tap.
+  document.querySelectorAll('#client-page').forEach(el=>el.remove());
+  const page=document.createElement('div');
+  page.id='client-page';
+  page.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column';
+  page.innerHTML=`
+    <div class="client-page-topbar">
+      <button class="back-btn" onclick="closeClientPage()">← Back</button>
+      <span class="client-page-name" id="cp-name"></span>
+      <span class="client-page-score" id="cp-score"></span>
+    </div>
+    <div class="client-page-body" id="cp-body"></div>`;
+  document.body.appendChild(page);
   const body=document.getElementById('cp-body');
   const nameEl=document.getElementById('cp-name');
   const scoreEl=document.getElementById('cp-score');
 
   try{
-    // TEMP DIAGNOSTIC (remove after the ghost is confirmed dead): proves the
-    // tap reached this function. If Ryan taps and sees no toast, the failure
-    // is in the event layer; toast without page = paint layer.
-    toast('Opening…','ok');
-    // Belt-and-braces rendering guarantees, all at once:
-    // 1. Clear ANY inline style residue — inline display beats the .active class.
-    page.style.cssText='';
-    // 2. Reparent to the END of <body>: escapes any transformed/filtered
-    //    ancestor (which silently breaks position:fixed) AND wins source-order
-    //    stacking against equal z-indexes.
-    if(page.parentElement!==document.body||page.nextElementSibling)document.body.appendChild(page);
-    // 3. Activate + force a synchronous reflow so the paint commits now.
-    page.classList.add('active');
-    void page.offsetHeight;
     body.scrollTop=0;
     body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px">
       <div style="width:22px;height:22px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div>
@@ -9360,9 +9355,9 @@ function buildClientPage(client){
   </div>`;
 }
 function closeClientPage(){
-  document.getElementById('client-page').classList.remove('active');
+  document.querySelectorAll('#client-page').forEach(el=>el.remove());
   openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
-  _clientPageOpening=false; // belt & braces: always releasable via close
+  _clientPageOpening=false;
   rCoach();
 }
 
