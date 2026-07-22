@@ -2159,20 +2159,23 @@ function getProgressionSignal(exId,intent,pid){
   const wib=weekInBlock();
   if(wib===4)return{signal:'deload',reason:'Deload week — reduced volume'};
 
-  // Get last 3 sessions worth of sets for this exercise
-  const byDate={};
-  SETS.filter(s=>s.exercise_id==exId).forEach(s=>{
+  // Last 3 SESSIONS for this exercise — identified by (week,day), never
+  // by date, so compressed weeks score correctly. exercise_key covers
+  // non-library (accessory) work.
+  const bySess={};
+  SETS.filter(s=>s.exercise_id==exId||s.exercise_key===exId).forEach(s=>{
     const d=s.session_date||s.logged_at?.split('T')[0];
     if(!d)return;
-    if(!byDate[d])byDate[d]=[];
-    byDate[d].push(s);
+    const k=(s.week_number!=null&&s.day_index!=null)?`${String(s.week_number).padStart(3,'0')}-${s.day_index}`:d;
+    if(!bySess[k])bySess[k]={date:d,sets:[]};
+    bySess[k].sets.push(s);
   });
-  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).slice(0,3);
-  if(!dates.length)return{signal:'maintain',reason:'No history yet'};
+  const keys=Object.keys(bySess).sort((a,b)=>b.localeCompare(a)).slice(0,3);
+  if(!keys.length)return{signal:'maintain',reason:'No history yet'};
 
-  // Score each session
-  const outcomes=dates.map(d=>{
-    const sets=byDate[d];
+  // Score each session, most recent first
+  const outcomes=keys.map(k=>{
+    const sets=bySess[k].sets;
     const scores=sets.map(s=>getSetOutcome(s.reps_achieved||0,rs.lo,rs.hi,s.rpe||null));
     if(scores.every(o=>o==='exceeded'))return'exceeded';
     if(scores.some(o=>o==='grinded'))return'grinded';
@@ -2190,6 +2193,9 @@ function getProgressionSignal(exId,intent,pid){
     if(lv>0&&lv<5)return{signal:'test_ready',reason:`Consistently exceeding targets — ready to test Level ${lv+1}`};
     return{signal:'progress',reason:'Consistently strong — add load'};
   }
+  // True double progression: fill the rep range at controllable effort
+  // (RIR-gated in getSetOutcome) → earn the load jump NEXT session.
+  if(outcomes[0]==='exceeded')return{signal:'progress',reason:'Range filled at RPE ≤7 — load earned'};
   if(exceededCount>=2)return{signal:'progress',reason:'Strong sessions — increase load'};
   if(grindedCount>=2)return{signal:'maintain',reason:'High effort — hold load, focus on quality'};
   if(missedCount>=2)return{signal:'regress',reason:'Missed targets — reduce load 10%'};
@@ -2198,7 +2204,7 @@ function getProgressionSignal(exId,intent,pid){
 
 function getProgressionLoad(exId,intent,pid){
   if(!exId)return null;
-  const prev=SETS.filter(s=>s.exercise_id==exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
+  const prev=SETS.filter(s=>s.exercise_id==exId||s.exercise_key===exId).sort((a,b)=>new Date(b.logged_at)-new Date(a.logged_at));
   if(!prev.length||!prev[0].load_kg)return null;
   const lastLoad=prev[0].load_kg;
   const sig=getProgressionSignal(exId,intent,pid);
@@ -6317,18 +6323,23 @@ function getMainExercise(pid,usedNames){return getSlotExercise(pid,'Main','bilat
 function getExercise(pid,type,usedNames){return getSlotExercise(pid,type,'bilateral',usedNames);}
 
 function repStr(intentOrScheme,sets,week){
+  // Block-over-block overload: from Block 2, secondary work (mod/backoff)
+  // carries one extra set on loading weeks. Mains hold set count — their
+  // overload lives in the load line. Capped at +1 to respect the 10–20
+  // weekly-sets-per-pattern evidence band. Deload weeks are never ramped.
+  const block=Math.floor(((week||1)-1)/4)+1;
+  const wib=((week-1)%4)+1;
+  const ramp=(block>=2&&wib!==4&&(intentOrScheme==='mod'||intentOrScheme==='backoff'))?1:0;
   if(SCHEMES[intentOrScheme]){
     const sc=SCHEMES[intentOrScheme];
-    const wib=((week-1)%4)+1;
-    let lo=sc.lo,hi=sc.hi,s=sc.sets;
+    let lo=sc.lo,hi=sc.hi,s=sc.sets+ramp;
     if(wib===2)hi++;
     if(wib===3)hi+=2;
     if(wib===4){s=Math.max(2,s-1);}
     return{str:`${s}×${lo}–${hi}`,sets:s,lo,hi};
   }
   const r=RR[intentOrScheme]||RR.Control;
-  const wib=((week-1)%4)+1;
-  let lo=r.lo,hi=r.hi,s=sets;
+  let lo=r.lo,hi=r.hi,s=sets+ramp;
   if(wib===2)hi++;
   if(wib===3)hi+=2;
   if(wib===4){s=Math.max(2,s-1);}
@@ -7718,8 +7729,13 @@ async function saveRpe(rpe,uid,exKey,setNum,ck,ci,reps,load,side){
 
   const today=new Date().toISOString().split('T')[0];
   const s=parseInt(setNum);
+  // Dataset foundation: every set carries its pattern and the athlete's
+  // level in that pattern at log time — the raw material for validating
+  // the standards against real training data.
+  const _pid=EX.find(e=>e.id==exKey)?.pattern_id||null;
   const row={
-    athlete_id:CU.id,exercise_id:exKey,pattern_id:null,
+    athlete_id:CU.id,exercise_id:exKey,pattern_id:_pid,
+    level_at_log:_pid?(AP[_pid]||null):null,
     set_number:s,reps_achieved:reps,load_kg:load,rpe:rpe||null,
     side:side||null,
     week_number:curWeek,day_index:curDay,
@@ -7923,6 +7939,7 @@ async function logCircuit(ck){
           exercise_id:e.exId,
           exercise_key:e.exId==null?String(e.exKey):null,
           pattern_id:e.pid,
+          level_at_log:e.pid?(AP[e.pid]||null):null,
           set_number:s,reps_achieved:reps,load_kg:load,
           side:side||null,
           week_number:curWeek,day_index:r.di,
