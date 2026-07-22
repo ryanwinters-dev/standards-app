@@ -9432,7 +9432,25 @@ function openPatternPage(pid,athleteId,isCoach){
   }
 
   // ── LEVEL CARDS ──
-  h+=`<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px">Level Ladder</div>`;
+  // Coach lens: point directly at the ONE relevant test — no ambiguity
+  // in the room. Pending review still lives in its banner above; this is
+  // the "here's what to assess next" surface. The full ladder is available
+  // below as reference, not as the primary action.
+  if(isCoach&&!pending){
+    const nextLv=Math.min(5,(lv||0)+1);
+    const passedTop=lv>=5;
+    const nextStd=STD.find(s=>s.pattern_id===pid&&s.level===nextLv);
+    h+=`<div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--gml);border-radius:var(--rl);padding:14px;margin-bottom:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:6px">${passedTop?'All levels passed':'Next test · Level '+nextLv}</div>
+      ${passedTop?`<div style="font-size:13px;color:var(--mt);margin-bottom:0">Athlete is at the top of the ladder for this pattern.</div>`
+      :`<div style="font-size:15px;font-weight:700;color:var(--dk);margin-bottom:4px">${nextStd?.test_exercise||'—'}</div>
+        <div style="font-size:12px;color:var(--mt);line-height:1.5;margin-bottom:10px">${nextStd?.pass_criteria||''}</div>
+        <button class="btn-pass" style="width:100%" onclick="openCoachTestForPattern('${pid}',${nextLv})">Log Level ${nextLv} test →</button>`}
+    </div>`;
+  }
+
+  h+=`<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:10px">${isCoach?'Full ladder · reference':'Level Ladder'}</div>`;
 
   for(let lvl=1;lvl<=5;lvl++){
     const std=STD.find(s=>s.pattern_id===pid&&s.level===lvl);
