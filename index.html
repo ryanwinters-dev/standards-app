@@ -9011,76 +9011,249 @@ function toggleInviteForm(){
 // ── CLIENT PROFILE PAGE ──
 let _clientPageOpening=false;
 async function openClientPage(athleteId){
+  // ═══ CLIENT PAGE — canonical rebuild ═══
+  // ONE function. ONE identity (athleteId). Reads no globals for render data —
+  // fetches directly, passes state explicitly to every child interaction.
+  // No cache races, no stale profContext, no rProfile branching.
+  // Three surfaces in coaching order: what they've been up to,
+  // where they are now, what's next.
   if(_clientPageOpening)return;
   _clientPageOpening=true;
+  const page=document.getElementById('client-page');
+  const body=document.getElementById('cp-body');
+  const nameEl=document.getElementById('cp-name');
+  const scoreEl=document.getElementById('cp-score');
+
   try{
-    let a=ALL_ATHLETES.find(x=>x.id===athleteId);
-    if(!a){
-      // Cache-miss race: coach data still loading, or roster changed under us.
-      // Direct-fetch the athlete rather than silently failing — that's what
-      // caused "open on second tap": first tap raced the async coach load,
-      // returned nothing, second tap found a populated cache.
-      const{data:prof}=await sb.from('profiles').select('id,full_name,email').eq('id',athleteId).maybeSingle();
-      if(!prof){toast('Athlete not found','err');return;}
-      const{data:aps}=await sb.from('athlete_profiles').select('pattern_id,current_level').eq('athlete_id',athleteId);
-      const scores={};(aps||[]).forEach(r=>{scores[r.pattern_id]=r.current_level;});
-      a={id:prof.id,name:prof.full_name||prof.email?.split('@')[0]||'Athlete',scores};
-      ALL_ATHLETES.push(a); // warm the cache so retries hit
-    }
-    const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
-    document.getElementById('cp-name').textContent=a.name;
-    const scoreEl=document.getElementById('cp-score');
-    if(scoreEl)scoreEl.textContent=`${total}/40`;
-    document.getElementById('cp-body').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:13px;color:var(--mt)">Loading…</div></div>`;
-    document.getElementById('client-page').classList.add('active');
+    page.classList.add('active');
+    body.scrollTop=0;
+    body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px">
+      <div style="width:22px;height:22px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div>
+      <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Loading athlete</div>
+    </div>`;
 
-    const[pendingRes,allTestsRes,checkinsRes,setsRes]=await Promise.all([
+    // Everything the three surfaces need, in one round trip
+    const[profRes,apsRes,pendingRes,allTestsRes,setsRes,checkinsRes,photosRes]=await Promise.all([
+      sb.from('profiles').select('id,full_name,email,avatar_url').eq('id',athleteId).maybeSingle(),
+      sb.from('athlete_profiles').select('pattern_id,current_level,updated_at').eq('athlete_id',athleteId),
       sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
-      sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}),
-      sb.from('checkins').select('*').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(30),
+      sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}).limit(60),
       sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(500),
+      sb.from('checkins').select('checkin_date,sleep_hours,stress,energy,session').eq('athlete_id',athleteId).order('checkin_date',{ascending:false}).limit(14),
+      sb.from('session_photos').select('session_date,photo_url,week_number,day_index').eq('athlete_id',athleteId),
     ]);
-    const clientPending=pendingRes.data||[];
-    const allTests=allTestsRes.data||[];
-    const clientCheckins=checkinsRes.data||[];
-    const clientSets=setsRes.data||[];
 
-    openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
-
-    let banner='';
-    if(clientPending.length>0){
-      // The review hub — every pending test actionable right here.
-      const cards=clientPending.map(p=>{
-        const pStd=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
-        return`<div style="background:var(--bg2);border:1px solid var(--warn-border);border-radius:var(--rl);padding:14px;margin-bottom:8px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <span style="font-size:12px;font-weight:700;font-family:var(--mono);color:var(--dk)">${PF[p.pattern_id]||p.pattern_id} · Level ${p.level_tested}</span>
-            <span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--warn)">⏳ Pending</span>
-          </div>
-          <div style="font-size:12px;color:var(--mt);margin-bottom:${p.notes||p.video_url?'6px':'10px'}">${pStd?.test_exercise||'—'}</div>
-          ${p.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:8px">"${p.notes}"</div>`:''}
-          ${p.video_url?`<video style="width:100%;border-radius:var(--r);margin-bottom:10px;max-height:200px;background:#000" src="${p.video_url}" controls playsinline preload="metadata"></video>`:''}
-          <div style="display:flex;gap:8px">
-            <button class="btn-pass" style="flex:1" onclick="judgeTest('${p.id}','${athleteId}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button>
-            <button class="btn-fail" style="flex:1" onclick="judgeTest('${p.id}','${athleteId}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button>
-          </div>
-        </div>`;
-      }).join('');
-      banner=`<div style="margin-bottom:var(--s2)">
-        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--warn);margin-bottom:8px">⏳ ${clientPending.length} test${clientPending.length>1?'s':''} awaiting review</div>
-        ${cards}
-      </div>`;
+    if(!profRes.data){
+      body.innerHTML=`<div class="empty" style="padding:60px 20px"><div class="ei">⚠️</div>Athlete not found.</div>`;
+      return;
     }
-    document.getElementById('cp-body').innerHTML=banner;
-    rProfile(a.scores,allTests,clientSets,true,clientPending,athleteId,clientCheckins);
-    document.getElementById('cp-body').scrollTop=0;
+
+    const client={
+      id:athleteId,
+      name:profRes.data.full_name||profRes.data.email?.split('@')[0]||'Athlete',
+      email:profRes.data.email,
+      avatar:profRes.data.avatar_url||null,
+      scores:Object.fromEntries((apsRes.data||[]).map(r=>[r.pattern_id,r.current_level])),
+      pending:pendingRes.data||[],
+      tests:allTestsRes.data||[],
+      sets:setsRes.data||[],
+      checkins:checkinsRes.data||[],
+      photos:Object.fromEntries((photosRes.data||[]).map(r=>[
+        (r.week_number!=null&&r.day_index!=null)?`w${r.week_number}d${r.day_index}`:r.session_date,
+        r.photo_url,
+      ])),
+    };
+    coachLogClientId=client.id;
+    coachLogClientName=client.name;
+    coachLogClientScores={...client.scores};
+
+    // Warm the roster cache for future taps
+    const existing=ALL_ATHLETES.findIndex(x=>x.id===client.id);
+    const rosterEntry={id:client.id,name:client.name,email:client.email,scores:client.scores};
+    if(existing>=0)ALL_ATHLETES[existing]=rosterEntry;else ALL_ATHLETES.push(rosterEntry);
+
+    nameEl.textContent=client.name;
+    const total=PATS.reduce((s,p)=>s+(client.scores[p]||0),0);
+    if(scoreEl)scoreEl.textContent=`${total}/40`;
+    // Feed the pattern page's log store from THIS client's tests, so the
+    // level ladder and its video badges reflect the client, not whoever
+    // was viewed before.
+    PATS.forEach(pid=>{
+      patternPageLogs[pid]=client.tests.filter(t=>t.pattern_id===pid)
+        .sort((a,b)=>new Date(b.assessed_at)-new Date(a.assessed_at));
+    });
+    // profContext must reflect the client so openPatternPage reads the
+    // right scores + pending list when the coach drills into a pattern.
+    profContext={scores:client.scores,logs:client.tests,sets:client.sets,isCoach:true,pendingTests:client.pending,athleteId:client.id,checkins:client.checkins,photos:client.photos};
+
+    body.innerHTML=buildClientPage(client);
+
   }catch(err){
-    console.error('openClientPage error:',err);
-    const body=document.getElementById('cp-body');
-    if(body)body.innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}</div>`;
+    console.error('openClientPage:',err);
+    body.innerHTML=`<div class="empty" style="padding:60px 20px"><div class="ei">⚠️</div>${(err.message||'Something went wrong').slice(0,120)}</div>`;
   }finally{
     _clientPageOpening=false;
   }
+}
+
+// Pure renderer — every interaction carries client.id explicitly so nothing
+// depends on profContext, ALL_ATHLETES, or any global being current.
+function buildClientPage(client){
+  const total=PATS.reduce((s,p)=>s+(client.scores[p]||0),0);
+  const assessedCount=PATS.filter(p=>(client.scores[p]||0)>0).length;
+
+  // Radar in client's shape (swap AP, draw, restore)
+  const savedAP={...AP};
+  Object.keys(AP).forEach(k=>delete AP[k]);
+  Object.assign(AP,client.scores);
+  const radarSvg=drawSpider();
+  Object.keys(AP).forEach(k=>delete AP[k]);
+  Object.assign(AP,savedAP);
+
+  // ═══ 1. RECENT — what they've been up to ═══
+  const sessKey=s=>(s.week_number!=null&&s.day_index!=null)?`w${s.week_number}d${s.day_index}`:s.session_date;
+  const sessions={};
+  client.sets.forEach(s=>{
+    if(!s.session_date)return;
+    const k=sessKey(s);
+    if(!sessions[k])sessions[k]={date:s.session_date,rows:[],vol:0,week:s.week_number,day:s.day_index};
+    sessions[k].rows.push(s);
+    sessions[k].vol+=(s.reps_achieved||0)*(s.load_kg||0);
+  });
+  const sessList=Object.values(sessions).sort((a,b)=>b.date.localeCompare(a.date));
+  const lastSess=sessList[0];
+  const weekAgo=new Date(Date.now()-7*864e5);
+  const setsThisWeek=client.sets.filter(s=>new Date(s.logged_at||s.session_date)>=weekAgo).length;
+  const sessionsThisWeek=sessList.filter(s=>new Date(s.date)>=weekAgo).length;
+
+  const latestAM=client.checkins.find(c=>c.session==='am');
+  let readinessLine='No check-ins yet';
+  let readinessCol='var(--mt)';
+  if(latestAM){
+    const sleep=latestAM.sleep_hours,stress=latestAM.stress,energy=latestAM.energy;
+    const flags=(sleep!=null&&sleep<5?1:0)+(stress!=null&&stress>=8?1:0)+(energy!=null&&energy<=5?1:0);
+    if(flags>=2){readinessLine='Under-recovered — go easy';readinessCol='var(--warn)';}
+    else if(flags===1){readinessLine='Slight fatigue — modest load';readinessCol='var(--warn)';}
+    else{readinessLine='Ready to train';readinessCol='var(--pass)';}
+  }
+
+  const lastSessCard=lastSess?(()=>{
+    const daysAgo=Math.round((Date.now()-new Date(lastSess.date))/864e5);
+    const when=daysAgo===0?'Today':daysAgo===1?'Yesterday':`${daysAgo} days ago`;
+    const label=(lastSess.week!=null&&lastSess.day!=null)?(lastSess.day===4?`W${lastSess.week} · BM`:`W${lastSess.week} · D${lastSess.day+1}`):new Date(lastSess.date+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    const vol=lastSess.vol>999?(lastSess.vol/1000).toFixed(1)+'k':Math.round(lastSess.vol);
+    return`<div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Last session</div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--gm)">${label}</div>
+      </div>
+      <div style="font-size:15px;font-weight:700;font-family:var(--mono);color:var(--dk)">${when} · ${lastSess.rows.length} sets · ${vol}kg</div>
+    </div>`;
+  })():`<div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3);text-align:center">
+    <div style="font-size:11px;color:var(--mt);font-family:var(--mono)">No training logged yet</div>
+  </div>`;
+
+  const weekCard=`<div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">This week</div>
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);color:${sessionsThisWeek>=3?'var(--pass)':sessionsThisWeek>=1?'var(--gm)':'var(--warn)'}">${sessionsThisWeek}/4</div>
+    </div>
+    <div style="font-size:15px;font-weight:700;font-family:var(--mono);color:var(--dk)">${setsThisWeek} sets logged</div>
+  </div>`;
+
+  const readinessCard=`<div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3);grid-column:span 2">
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Readiness</div>
+    <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:${readinessCol}">${readinessLine}</div>
+  </div>`;
+
+  // ═══ 2. OVERVIEW — where they are now ═══
+  const patternBars=PATS.map(pid=>{
+    const lv=client.scores[pid]||0;
+    const col=LC[lv]||'var(--mt)';
+    const pct=Math.round((lv/5)*100);
+    return`<div class="prof-radar-bar-row" onclick="openPatternPage('${pid}','${client.id}',true)" style="cursor:pointer">
+      <span class="prof-radar-bar-label">${PL[pid]}</span>
+      <div class="prof-radar-bar-track"><div class="prof-radar-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <span class="prof-radar-bar-val" style="color:${col}">${lv}</span>
+    </div>`;
+  }).join('');
+
+  const overview=`<div style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
+    <div class="prof-radar-compact" style="cursor:default">
+      <div class="prof-radar-compact-svg">${radarSvg}</div>
+      <div class="prof-radar-compact-info">
+        <div class="prof-radar-compact-title">Movement Score — ${total}/40</div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--mt);margin-bottom:6px">${assessedCount}/8 patterns assessed · tap a pattern to drill in</div>
+        <div class="prof-radar-bars">${patternBars}</div>
+      </div>
+    </div>
+  </div>`;
+
+  // ═══ 3. NEXT — what's next ═══
+  let nextSection='';
+  if(client.pending.length>0){
+    const cards=client.pending.map(p=>{
+      const pStd=STD.find(s=>s.pattern_id===p.pattern_id&&s.level===p.level_tested);
+      return`<div style="background:var(--bg2);border:1px solid var(--warn-border);border-radius:var(--rl);padding:var(--s3);margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:700;font-family:var(--mono);color:var(--dk)">${PF[p.pattern_id]||p.pattern_id} · Level ${p.level_tested}</span>
+          <span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--warn)">⏳ Pending</span>
+        </div>
+        <div style="font-size:12px;color:var(--mt);margin-bottom:${p.notes||p.video_url?'6px':'10px'}">${pStd?.test_exercise||'—'}</div>
+        ${p.notes?`<div style="font-size:11px;color:var(--mt);font-style:italic;margin-bottom:8px">"${p.notes}"</div>`:''}
+        ${p.video_url?`<video style="width:100%;border-radius:var(--r);margin-bottom:10px;max-height:200px;background:#000" src="${p.video_url}" controls playsinline preload="metadata"></video>`:''}
+        <div style="display:flex;gap:8px">
+          <button class="btn-pass" style="flex:1" onclick="judgeTest('${p.id}','${client.id}','${p.pattern_id}',${p.level_tested},true)">✓ Pass</button>
+          <button class="btn-fail" style="flex:1" onclick="judgeTest('${p.id}','${client.id}','${p.pattern_id}',${p.level_tested},false)">✕ Fail</button>
+        </div>
+      </div>`;
+    }).join('');
+    nextSection+=`<div>
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--warn);margin-bottom:8px">⏳ ${client.pending.length} awaiting review</div>
+      ${cards}
+    </div>`;
+  } else {
+    const firstIncomplete=PATS.find(p=>(client.scores[p]||0)<5);
+    if(firstIncomplete){
+      const nextLv=(client.scores[firstIncomplete]||0)+1;
+      const nextStd=STD.find(s=>s.pattern_id===firstIncomplete&&s.level===nextLv);
+      nextSection+=`<div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--gml);border-radius:var(--rl);padding:var(--s3);position:relative;overflow:hidden;margin-bottom:8px">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:6px">Suggested next test</div>
+        <div style="font-size:15px;font-weight:700;color:var(--dk);margin-bottom:2px">${PF[firstIncomplete]} · Level ${nextLv}</div>
+        <div style="font-size:12px;color:var(--mt);line-height:1.5;margin-bottom:10px">${nextStd?.test_exercise||'—'}${nextStd?.pass_criteria?' — '+nextStd.pass_criteria:''}</div>
+        <button class="btn-pass" style="width:100%" onclick="openCoachTestModal('${firstIncomplete}',${nextLv},'${client.id}')">Log this test →</button>
+      </div>`;
+    }
+  }
+
+  const actionRow=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+    <button onclick="openCoachTestModal(null,null,'${client.id}')" style="padding:14px 10px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dk);cursor:pointer;text-align:left">
+      <div style="font-size:16px;margin-bottom:4px">✓</div>
+      Log a test
+    </button>
+    <button onclick="openCoachWorkout('${client.id}')" style="padding:14px 10px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dk);cursor:pointer;text-align:left">
+      <div style="font-size:16px;margin-bottom:4px">⊕</div>
+      Log a workout
+    </button>
+  </div>`;
+
+  return`<div style="max-width:640px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:var(--s3)">
+      ${lastSessCard}
+      ${weekCard}
+      ${readinessCard}
+    </div>
+
+    <div style="margin-bottom:var(--s3)">${overview}</div>
+
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">What's next</div>
+    ${nextSection}
+    ${actionRow}
+
+    ${buildActivitySpotlight(client.sets,client.photos,client.name)}
+  </div>`;
 }
 
 
@@ -9427,6 +9600,37 @@ let patternPageFrom=null;
 let patternPageOpenLevel=null;
 let patternPagePid=null;
 
+function openTestVideo(url,patternLabel,level,passed){
+  let ov=document.getElementById('test-video-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='test-video-overlay';
+    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:220;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
+    ov.onclick=e=>{if(e.target===ov)closeTestVideo();};
+    document.body.appendChild(ov);
+  }
+  const badge=passed?'<span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--pass);background:rgba(0,255,148,0.08);border:1px solid var(--pass-border);padding:3px 8px;border-radius:99px">✓ Passed</span>':'<span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--warn);background:var(--warn-dim);border:1px solid var(--warn-border);padding:3px 8px;border-radius:99px">⏳ Under review</span>';
+  ov.innerHTML=`<div style="max-width:520px;margin:auto;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--s3);border-bottom:1px solid var(--br)">
+      <div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:4px">${patternLabel} · Level ${level}</div>
+        <div style="margin-top:2px">${badge}</div>
+      </div>
+      <button onclick="closeTestVideo()" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
+    </div>
+    <video src="${url}" controls playsinline autoplay style="width:100%;background:#000;display:block;max-height:70vh"></video>
+  </div>`;
+  ov.style.display='block';
+}
+function closeTestVideo(){
+  const ov=document.getElementById('test-video-overlay');
+  if(!ov)return;
+  // Pause any playing video before hiding — audio can otherwise linger
+  const v=ov.querySelector('video');
+  if(v){try{v.pause();}catch(e){}}
+  ov.style.display='none';
+}
+
 function openPatternPage(pid,athleteId,isCoach){
   const logs=patternPageLogs[pid]||[];
   const lv=profContext.scores?profContext.scores[pid]||0:AP[pid]||0;
@@ -9498,6 +9702,13 @@ function openPatternPage(pid,athleteId,isCoach){
           <div style="font-size:11px;color:var(--mt);margin-top:1px">${std?.quality_focus||''} ${std?.load_standard?'· '+std.load_standard:''}</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          ${(()=>{
+            // Any attempt at this level with a video? (Coach-logged auto-passes carry video too.)
+            const attempts=(patternPageLogs[pid]||[]).filter(l=>l.level_tested===lvl&&l.video_url);
+            if(!attempts.length)return'';
+            const latest=attempts[0]; // logs are pre-sorted desc
+            return`<button onclick="event.stopPropagation();openTestVideo('${latest.video_url.replace(/'/g,"\\'")}','${PF[pid]}',${lvl},${latest.passed===true?1:0})" style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;color:var(--gm);background:rgba(0,229,255,0.08);border:0.5px solid var(--gml);padding:3px 8px;border-radius:99px;cursor:pointer;flex-shrink:0">▶ Video</button>`;
+          })()}
           ${current?`<span style="font-size:10px;font-weight:600;color:${lvlCol};background:rgba(0,0,0,0.4);padding:2px 7px;border-radius:99px;border:0.5px solid ${lvlCol}">Current</span>`:''}
           <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
         </div>
