@@ -8910,8 +8910,14 @@ function openTestModal(pid){
 function closeTestModal(e){
   if(e&&e.target!==e.currentTarget)return;
   const modal=document.getElementById('test-modal');
+  if(!modal)return;
   modal.classList.remove('sheet-in');
-  setTimeout(()=>{modal.style.display='none';},220);
+  setTimeout(()=>{
+    // FULLY reset — an inline cssText from open() will otherwise keep the
+    // overlay taking the viewport at display:flex with pointer-events
+    // active, silently swallowing every click behind it.
+    modal.style.cssText='display:none';
+  },220);
 }
 function handleVideoSelect(input){
   const file=input.files[0];if(!file)return;
@@ -8950,6 +8956,16 @@ async function inviteAthlete(){
 
 function rCoach(){
   if(!IS_COACH){document.getElementById('v-coach').innerHTML='';return;}
+  // Defensive: any lingering overlay silently steals clicks from the roster.
+  // Every overlay that could sit above the coach view gets a hard reset here.
+  ['test-modal','bm-log-overlay','coach-workout-modal','end-confirm-overlay','spotlight-overlay','test-video-overlay'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.classList.remove('open','sheet-in','active');
+    // The inline cssText path is the one that bites: display:flex survives
+    // classList changes because inline styles win the cascade.
+    if(el.style.display==='flex')el.style.cssText='display:none';
+  });
   const pendingCount=ALL_PENDING.length;
   let h='';
 
@@ -9219,22 +9235,40 @@ function buildClientPage(client){
     </div>`;
   }).join('');
 
-  // Collapse defaults to OPEN — a coach opens the client to see this. Toggle
-  // is per-page-instance via a data attribute + tiny inline script.
-  const overview=`<div id="cp-overview" data-open="1" style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden">
+  // ═══ 2. OVERVIEW — 8 pattern tiles primary, radar as collapsible view below ═══
+  // Tiles are the way in: tap → pattern ladder → previous tests, videos, ladder.
+  // The radar sits below as a summary, collapsed by default so the tiles carry
+  // the action and the score header carries the headline.
+  const patternTiles=PATS.map(pid=>{
+    const lv=client.scores[pid]||0;
+    const col=LC[lv]||'var(--mt)';
+    return`<div onclick="openPatternPage('${pid}','${client.id}',true)"
+      style="background:var(--bg2);border:1px solid ${lv>0?col:'var(--br)'};border-radius:var(--rl);padding:12px 10px;text-align:center;cursor:pointer;position:relative;overflow:hidden">
+      ${lv>0?`<div style="position:absolute;top:0;left:0;right:0;height:2px;background:${col}"></div>`:''}
+      <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:${lv>0?col:'var(--mt)'};line-height:1">${lv}</div>
+      <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);margin-top:4px">${PL[pid]}</div>
+    </div>`;
+  }).join('');
+
+  const overview=`<div style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden">
     <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--s3) var(--s3) 0;cursor:pointer" onclick="(()=>{const e=document.getElementById('cp-overview');const open=e.dataset.open==='1';e.dataset.open=open?'0':'1';document.getElementById('cp-overview-body').style.display=open?'none':'';document.getElementById('cp-overview-chev').textContent=open?'▼':'▲';})()">
-      <div>
-        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">Movement Score</div>
-        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk)">${total}<span style="font-size:12px;color:var(--mt);font-weight:400"> / 40</span></div>
+    <div style="padding:var(--s3)">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">Movement Score</div>
+          <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk)">${total}<span style="font-size:12px;color:var(--mt);font-weight:400"> / 40</span></div>
+        </div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--mt)">${assessedCount}/8 assessed</div>
       </div>
-      <span id="cp-overview-chev" style="font-size:12px;color:var(--mt)">▲</span>
-    </div>
-    <div id="cp-overview-body" class="prof-radar-compact" style="cursor:default">
-      <div class="prof-radar-compact-svg">${radarSvg}</div>
-      <div class="prof-radar-compact-info">
-        <div style="font-size:10px;font-family:var(--mono);color:var(--mt);margin-bottom:6px">${assessedCount}/8 patterns assessed · tap a pattern to drill in</div>
-        <div class="prof-radar-bars">${patternBars}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">${patternTiles}</div>
+      <div id="cp-radar" data-open="0" style="border-top:1px solid var(--br);padding-top:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="(function(){var e=document.getElementById('cp-radar');var open=e.dataset.open==='1';e.dataset.open=open?'0':'1';document.getElementById('cp-radar-body').style.display=open?'none':'flex';document.getElementById('cp-radar-chev').textContent=open?'▼':'▲';})()">
+          <span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Radar view</span>
+          <span id="cp-radar-chev" style="font-size:12px;color:var(--mt)">▼</span>
+        </div>
+        <div id="cp-radar-body" style="display:none;justify-content:center;padding:16px 0 4px">
+          <div style="max-width:220px;width:100%">${radarSvg}</div>
+        </div>
       </div>
     </div>
   </div>`;
@@ -9262,20 +9296,8 @@ function buildClientPage(client){
       <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--warn);margin-bottom:8px">⏳ ${client.pending.length} awaiting review</div>
       ${cards}
     </div>`;
-  } else {
-    const firstIncomplete=PATS.find(p=>(client.scores[p]||0)<5);
-    if(firstIncomplete){
-      const nextLv=(client.scores[firstIncomplete]||0)+1;
-      const nextStd=STD.find(s=>s.pattern_id===firstIncomplete&&s.level===nextLv);
-      nextSection+=`<div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--gml);border-radius:var(--rl);padding:var(--s3);position:relative;overflow:hidden;margin-bottom:8px">
-        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
-        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:6px">Suggested next test</div>
-        <div style="font-size:15px;font-weight:700;color:var(--dk);margin-bottom:2px">${PF[firstIncomplete]} · Level ${nextLv}</div>
-        <div style="font-size:12px;color:var(--mt);line-height:1.5;margin-bottom:10px">${nextStd?.test_exercise||'—'}${nextStd?.pass_criteria?' — '+nextStd.pass_criteria:''}</div>
-        <button class="btn-pass" style="width:100%" onclick="openCoachTestModal('${firstIncomplete}',${nextLv},'${client.id}')">Log this test →</button>
-      </div>`;
-    }
   }
+
 
   // Three actions, not two — workout builder restored to first-class status
   const actionRow=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
@@ -9329,74 +9351,132 @@ let coachWorkoutDay=0;
 let coachWorkoutExtraSets={};
 let coachWorkoutOpenCircuits={};
 
-function openCoachTestForPattern(pid,lvl){openCoachTestModal(pid,lvl);}
 
 function openCoachTestModal(seedPid,seedLvl,athleteIdOverride){
+  // Coach Log Test — a pattern picker sheet, same rhythm as the athlete's
+  // openMovementTestLog. Tap a pattern → its ladder opens → tap the level →
+  // the traditional test-modal form appears pre-seeded. Never a scrollable
+  // list of 40 combinations.
   try{
-  // Resolve athlete without depending on ALL_ATHLETES being current — a
-  // fresh client page might not be in the roster cache yet.
-  const targetId=athleteIdOverride||profContext.athleteId||coachLogClientId;
-  if(!targetId){toast('Open a client first','err');return;}
-  let a=ALL_ATHLETES.find(x=>x.id===targetId);
-  // Fallback: profContext IS the current client's world — use it
-  if(!a&&profContext&&profContext.athleteId===targetId){
-    a={id:targetId,name:coachLogClientName||'Athlete',scores:profContext.scores||{}};
-  }
-  // Final fallback: coach-log state has the id + name
-  if(!a&&coachLogClientId===targetId){
-    a={id:targetId,name:coachLogClientName||'Athlete',scores:coachLogClientScores||{}};
-  }
-  if(!a){toast('Athlete not found — reopen the client','err');return;}
-  coachLogClientId=a.id;
-  coachLogClientName=a.name;
-  coachLogClientScores=a.scores||{};
-  testModalPat=null;selectedVideoFile=null;
-  // Default seed: FIRST unpassed pattern's next level — the athlete's
-  // most likely next test. In-room coaches almost never pick from all 40.
-  if(!seedPid){
-    const scores=a.scores||{};
-    const firstIncomplete=PATS.find(p=>(scores[p]||0)<5);
-    if(firstIncomplete){
-      seedPid=firstIncomplete;
-      seedLvl=(scores[firstIncomplete]||0)+1;
+    const targetId=athleteIdOverride||profContext.athleteId||coachLogClientId;
+    if(!targetId){toast('Open a client first','err');return;}
+    let a=ALL_ATHLETES.find(x=>x.id===targetId);
+    if(!a&&profContext&&profContext.athleteId===targetId){
+      a={id:targetId,name:coachLogClientName||'Athlete',scores:profContext.scores||{}};
     }
-  }
-  document.getElementById('test-modal-title').textContent=`Log Test — ${a.name}`;
-  document.getElementById('tm-submit').textContent=`✓ Pass & log test`;
-  document.getElementById('tm-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('tm-notes').value='';
-  document.getElementById('tm-msg').textContent='';
-  document.getElementById('tm-video-text').textContent='Tap to upload video (optional)';
-  document.getElementById('tm-video-preview').style.display='none';
-  document.getElementById('tm-progress-wrap').style.display='none';
-  document.getElementById('tm-video-input').value='';
-  const sel=document.getElementById('tm-level');
-  const seedKey=(seedPid&&seedLvl)?`${seedPid}|${seedLvl}`:'';
-  sel.innerHTML='<option value="">Select pattern and level…</option>';
-  PATS.forEach(pid=>{
-    STD.filter(s=>s.pattern_id===pid).forEach(s=>{
-      const val=`${pid}|${s.level}`;
-      sel.innerHTML+=`<option value="${val}"${val===seedKey?' selected':''}>${PF[pid]} — Level ${s.level} (${s.test_exercise})</option>`;
-    });
-  });
-  if(seedKey)testModalPat=seedPid;
-  // Bottom-sheet: display first, force a reflow, THEN animate. A single
-  // requestAnimationFrame isn't enough — the initial paint hasn't committed
-  // when the class is added, so the transition never fires and the modal
-  // opens invisibly (opacity 0 from .test-modal's base state). This was
-  // the "completely dead" symptom — the sheet WAS open, just transparent.
-  const modal=document.getElementById('test-modal');
-  modal.style.cssText='display:flex;align-items:flex-end;justify-content:center';
-  void modal.offsetHeight; // force layout — commits the display change
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>modal.classList.add('sheet-in'));
-  });
+    if(!a&&coachLogClientId===targetId){
+      a={id:targetId,name:coachLogClientName||'Athlete',scores:coachLogClientScores||{}};
+    }
+    if(!a){toast('Athlete not found — reopen the client','err');return;}
+    coachLogClientId=a.id;
+    coachLogClientName=a.name;
+    coachLogClientScores=a.scores||{};
+
+    // Fast path: caller specified pattern + level → go straight to the form.
+    if(seedPid&&seedLvl){
+      _openCoachTestForm(a,seedPid,seedLvl);
+      return;
+    }
+
+    // Otherwise: bottom-sheet pattern picker
+    const overlay=document.getElementById('bm-log-overlay');
+    const body=document.getElementById('bm-log-sheet-body');
+    if(!overlay||!body)return;
+    body.innerHTML=`
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
+      <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Log Test — ${a.name}</div>
+      <div style="font-size:11px;color:var(--mt);margin-bottom:8px">Tap a pattern to choose the level</div>
+      ${PATS.map(pid=>{
+        const lv=a.scores[pid]||0;
+        const nextLv=Math.min(lv+1,5);
+        const std=(STD||[]).find(s=>s.pattern_id===pid&&s.level===nextLv);
+        const atMax=lv>=5;
+        const col=LC[lv]||'var(--mt)';
+        return`<div onclick="closeBenchmarkLogSheet();openCoachTestForPattern('${pid}',${atMax?5:nextLv},'${a.id}')"
+          style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--br);cursor:pointer">
+          <span style="font-size:16px;font-weight:700;font-family:var(--mono);color:${col};width:24px;text-align:center;flex-shrink:0">${lv}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:600;color:var(--dk)">${PF[pid]||pid}</div>
+            <div style="font-size:11px;color:var(--mt);font-family:var(--mono);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${atMax?'Level 5 — max standard held':std?`Test L${nextLv}: ${std.test_exercise}`:`Level ${lv} of 5`}</div>
+          </div>
+          <span style="font-size:18px;color:var(--mt);flex-shrink:0">›</span>
+        </div>`;
+      }).join('')}`;
+    overlay.classList.add('open');
   }catch(err){
     console.error('openCoachTestModal:',err);
     toast('Log test failed to open: '+(err.message||'').slice(0,60),'err');
   }
 }
 
+// Coach test picker for a chosen pattern — opens a small level picker sheet
+// (levels 1–5) so the coach can confirm or override the next level.
+function openCoachTestForPattern(pid,seedLvl,athleteIdOverride){
+  const targetId=athleteIdOverride||coachLogClientId||profContext.athleteId;
+  const a=ALL_ATHLETES.find(x=>x.id===targetId)||{id:targetId,name:coachLogClientName||'Athlete',scores:coachLogClientScores||profContext.scores||{}};
+  const lv=a.scores[pid]||0;
+  const overlay=document.getElementById('bm-log-overlay');
+  const body=document.getElementById('bm-log-sheet-body');
+  if(!overlay||!body){_openCoachTestForm(a,pid,seedLvl);return;}
+  body.innerHTML=`
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <button onclick="closeBenchmarkLogSheet();openCoachTestModal(null,null,'${a.id}')" style="background:transparent;border:none;color:var(--gm);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;padding:0">← Patterns</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">${PF[pid]||pid}</div>
+    <div style="font-size:11px;color:var(--mt);margin-bottom:8px">Current level ${lv} · pick the level being tested</div>
+    ${[1,2,3,4,5].map(l=>{
+      const std=(STD||[]).find(s=>s.pattern_id===pid&&s.level===l);
+      const passed=lv>=l;
+      const isNext=l===seedLvl;
+      const col=LC[l]||'var(--mt)';
+      return`<div onclick="closeBenchmarkLogSheet();_openCoachTestForm({id:'${a.id}',name:'${(a.name||'').replace(/'/g,"\\'")}',scores:${JSON.stringify(a.scores).replace(/"/g,'&quot;').replace(/'/g,"\\'")}},'${pid}',${l})"
+        style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--br);cursor:pointer;${isNext?'background:rgba(0,229,255,0.04)':''}">
+        <span style="font-size:14px;font-weight:700;font-family:var(--mono);color:${passed?'var(--pass)':col};width:24px;text-align:center;flex-shrink:0">${passed?'✓':l}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--dk)">Level ${l}${isNext?' <span style="font-size:9px;font-weight:700;font-family:var(--mono);color:var(--gm);letter-spacing:.08em">· NEXT</span>':''}</div>
+          <div style="font-size:11px;color:var(--mt);font-family:var(--mono);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${std?.test_exercise||'—'}</div>
+        </div>
+        <span style="font-size:18px;color:var(--mt);flex-shrink:0">›</span>
+      </div>`;
+    }).join('')}`;
+  overlay.classList.add('open');
+}
+
+// Actually open the traditional test-modal form, pre-seeded with pattern + level.
+function _openCoachTestForm(a,pid,lvl){
+  try{
+    coachLogClientId=a.id;coachLogClientName=a.name;coachLogClientScores=a.scores||{};
+    testModalPat=pid;selectedVideoFile=null;
+    document.getElementById('test-modal-title').textContent=`Log Test — ${a.name}`;
+    document.getElementById('tm-submit').textContent=`✓ Pass & log test`;
+    document.getElementById('tm-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('tm-notes').value='';
+    document.getElementById('tm-msg').textContent='';
+    document.getElementById('tm-video-text').textContent='Tap to upload video (optional)';
+    document.getElementById('tm-video-preview').style.display='none';
+    document.getElementById('tm-progress-wrap').style.display='none';
+    document.getElementById('tm-video-input').value='';
+    const sel=document.getElementById('tm-level');
+    const seedKey=`${pid}|${lvl}`;
+    sel.innerHTML='';
+    PATS.forEach(p=>{
+      STD.filter(s=>s.pattern_id===p).forEach(s=>{
+        const val=`${p}|${s.level}`;
+        sel.innerHTML+=`<option value="${val}"${val===seedKey?' selected':''}>${PF[p]} — Level ${s.level} (${s.test_exercise})</option>`;
+      });
+    });
+    const modal=document.getElementById('test-modal');
+    modal.style.cssText='display:flex;align-items:flex-end;justify-content:center';
+    void modal.offsetHeight;
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>modal.classList.add('sheet-in'));
+    });
+  }catch(err){
+    console.error('_openCoachTestForm:',err);
+    toast('Test form failed to open: '+(err.message||'').slice(0,60),'err');
+  }
+}
 async function submitTest(){
   // Determine if coach logging for client or athlete logging for self
   const forClient=!!coachLogClientId&&document.getElementById('test-modal-title').textContent.includes('—')&&!document.getElementById('test-modal-title').textContent.includes('Log Test —')||
