@@ -1080,7 +1080,7 @@
     .assessment-upload.has-video{border-color:var(--gm);background:var(--gl)}
     .assessment-status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600}
     .assessment-status.done{background:var(--gl);color:var(--gd)}
-    .assessment-status.pending{background:#FFF8EC;color:var(--amber)}
+    .assessment-status.pending{background:var(--warn-dim);color:var(--amber)}
     .assessment-status.empty{background:var(--bg);color:var(--mt);border:0.5px solid var(--br)}
     .assessment-nav{display:flex;gap:10px;margin-top:8px;padding-bottom:20px}
     .assessment-skip{padding:11px 16px;border:0.5px solid var(--br);border-radius:8px;background:transparent;cursor:pointer;font-size:14px;color:var(--mt);font-family:var(--fn);transition:all .15s}
@@ -1114,7 +1114,7 @@
     .ccc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
     .ccc-score{font-size:22px;font-weight:700;color:var(--gm);line-height:1}
     .ccc-arrow{font-size:16px;color:var(--mt)}
-    .ccc-pending-dot{font-size:11px;font-weight:600;color:var(--amber);background:#FFF8EC;padding:2px 7px;border-radius:99px;border:0.5px solid var(--amber)}
+    .ccc-pending-dot{font-size:11px;font-weight:600;color:var(--amber);background:var(--warn-dim);padding:2px 7px;border-radius:99px;border:0.5px solid var(--amber)}
 
     /* Client profile page */
     .client-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:165;flex-direction:column}
@@ -1139,7 +1139,7 @@
     .cp-bar{height:3px;background:var(--br);border-radius:2px;margin-bottom:5px;overflow:hidden}
     .cp-bar-fill{height:100%;border-radius:2px}
     .cp-pat-ex{font-size:11px;color:var(--mt)}
-    .cp-pending{margin-top:8px;padding:8px;background:#FFF8EC;border:0.5px solid var(--amber);border-radius:6px}
+    .cp-pending{margin-top:8px;padding:8px;background:var(--warn-dim);border:0.5px solid var(--amber);border-radius:6px}
     .cp-pending-label{font-size:11px;font-weight:600;color:var(--amber);margin-bottom:3px}
     .cp-pending-ex{font-size:11px;color:var(--mt);margin-bottom:6px}
     .cp-pending-actions{display:flex;gap:5px}
@@ -1293,7 +1293,7 @@
 .lp-mock-info{flex:1}
 .lp-mock-name{font-size:13px;font-weight:600}
 .lp-mock-score{font-size:11px;color:var(--mt)}
-.lp-mock-badge{font-size:11px;font-weight:600;color:var(--amber);background:#FFF8EC;padding:2px 8px;border-radius:99px;border:0.5px solid var(--amber)}
+.lp-mock-badge{font-size:11px;font-weight:600;color:var(--amber);background:var(--warn-dim);padding:2px 8px;border-radius:99px;border:0.5px solid var(--amber)}
 
 /* Pricing */
 .lp-pricing{background:var(--bg)}
@@ -1648,7 +1648,7 @@
             </div>
           </div>
           <div class="lp-mock-athlete">
-            <div class="lp-mock-av" style="background:#FFF8EC;color:#E8830A">SR</div>
+            <div class="lp-mock-av" style="background:var(--warn-dim);color:var(--amber)">SR</div>
             <div class="lp-mock-info">
               <div class="lp-mock-name">Sarah Reeves</div>
               <div class="lp-mock-score">12 / 40 · 6 patterns active</div>
@@ -5896,7 +5896,7 @@ function renderAssessSummary(){
 
   h+=`</div>
 
-    ${submittedCount===0?`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--amber)">⚠ No videos attached. Your coach will still be notified but won't be able to assess your movement remotely. Add at least one video to get the most from your assessment.</div>`:''}
+    ${submittedCount===0?`<div style="background:var(--warn-dim);border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--amber)">⚠ No videos attached. Your coach will still be notified but won't be able to assess your movement remotely. Add at least one video to get the most from your assessment.</div>`:''}
 
     <button class="btn btn-full btn-gm" id="submit-assess-btn" onclick="submitFullAssessment()" style="margin-bottom:10px">Submit Assessment →</button>
     <div class="msg" id="assess-submit-msg"></div>
@@ -6635,6 +6635,19 @@ function rWorkout(){
               <span class="preview-ex-name">${item.ex?.name||PF[item.pid]}</span>
               ${item.intent==='unilateral'?`<span class="preview-ex-uni">L/R</span>`:''}
               <span class="preview-ex-pattern">${PL[item.pid]||item.pid}</span>
+            </div>`).join('')}
+          </div>`;
+        }).join(''):''}
+        ${(curDay<4&&(ACCESSORY_CIRCUITS[curDay]||[]).length)?(ACCESSORY_CIRCUITS[curDay]||[]).map((ac,i)=>{
+          return`<div class="preview-circuit" style="border-left:2px solid var(--br)">
+            <div class="preview-circuit-hdr">
+              <span class="preview-circuit-letter" style="color:var(--mt)">${ac.letter||String.fromCharCode(69+i)}</span>
+              <span class="preview-circuit-name">${ac.name}</span>
+              <span class="preview-circuit-scheme" style="color:var(--mt)">Accessory · 3×12–15</span>
+            </div>
+            ${ac.exercises.map(ex=>`<div class="preview-ex-row">
+              <span class="preview-ex-name">${ex.name}</span>
+              <span class="preview-ex-pattern">${PL[ex.pattern]||ex.pattern||''}</span>
             </div>`).join('')}
           </div>`;
         }).join(''):''}
@@ -9046,7 +9059,20 @@ async function openClientPage(athleteId){
   const scoreEl=document.getElementById('cp-score');
 
   try{
+    // TEMP DIAGNOSTIC (remove after the ghost is confirmed dead): proves the
+    // tap reached this function. If Ryan taps and sees no toast, the failure
+    // is in the event layer; toast without page = paint layer.
+    toast('Opening…','ok');
+    // Belt-and-braces rendering guarantees, all at once:
+    // 1. Clear ANY inline style residue — inline display beats the .active class.
+    page.style.cssText='';
+    // 2. Reparent to the END of <body>: escapes any transformed/filtered
+    //    ancestor (which silently breaks position:fixed) AND wins source-order
+    //    stacking against equal z-indexes.
+    if(page.parentElement!==document.body||page.nextElementSibling)document.body.appendChild(page);
+    // 3. Activate + force a synchronous reflow so the paint commits now.
     page.classList.add('active');
+    void page.offsetHeight;
     body.scrollTop=0;
     body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px">
       <div style="width:22px;height:22px;border:2px solid var(--br);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite"></div>
@@ -9348,6 +9374,7 @@ let coachLogClientId=null;
 let coachLogClientName='';
 let coachLogClientScores={};
 let coachWorkoutDay=0;
+let coachWorkoutTab='c0';
 let coachWorkoutExtraSets={};
 let coachWorkoutOpenCircuits={};
 
@@ -9581,83 +9608,103 @@ function closeCoachWorkout(){
 }
 
 function renderCoachWorkout(){
-  // Swap AP to client scores so buildDay selects for THEIR levels
+  // ═══ COACH WORKOUT — athlete-flow structure ═══
+  // Same rhythm the athlete sees: day chips → circuit tab strip → ONE
+  // circuit page at a time, mains then accessories. No expanding layers.
   const savedAP={...AP};
   const savedSETS=[...SETS];
   Object.keys(AP).forEach(k=>delete AP[k]);
   Object.assign(AP,coachLogClientScores);
   SETS=ALL_CLIENT_SETS[coachLogClientId]||[];
 
+  try{
   const wib=weekInBlock();
   const wl=['','Base','Build','Overreach','Deload'];
   const schemeMeta={heavy:{label:'Heavy',col:'var(--warn)'},mod:{label:'Volume',col:'var(--gm)'},backoff:{label:'Backoff',col:'var(--mt)'}};
   const dayNames=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge'];
 
-  let h=`<div style="display:flex;gap:var(--s1);margin-bottom:var(--s3);overflow-x:auto">`;
+  let h=`<div style="display:flex;gap:var(--s1);margin-bottom:var(--s2);overflow-x:auto">`;
   for(let d=0;d<4;d++){
     h+=`<button onclick="setCoachWorkoutDay(${d})" style="flex-shrink:0;padding:7px 14px;border:1px solid ${coachWorkoutDay===d?'var(--gm)':'var(--br)'};background:${coachWorkoutDay===d?'var(--gl)':'var(--bg2)'};color:${coachWorkoutDay===d?'var(--gm)':'var(--mt)'};border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;cursor:pointer">D${d+1}</button>`;
   }
   h+=`</div>
-  <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:var(--s3)">Week ${curWeek} · ${wl[wib]} · ${dayNames[coachWorkoutDay]}</div>`;
+  <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:var(--s2)">Week ${curWeek} · ${wl[wib]} · ${dayNames[coachWorkoutDay]}</div>`;
 
   const day=buildDay(coachWorkoutDay);
-  day.circuits.forEach((circuit,ci)=>{
-    const ck=`coach-d${coachWorkoutDay}c${ci}`;
-    const isOpen=!!coachWorkoutOpenCircuits[ck];
-    const sm=schemeMeta[circuit.scheme]||schemeMeta.mod;
-    h+=`<div class="preview-circuit">
-      <div class="preview-circuit-hdr" onclick="toggleCoachCircuit('${ck}')" style="cursor:pointer">
-        <span class="preview-circuit-letter">${circuit.letter}</span>
-        <span class="preview-circuit-name">${circuit.name}</span>
-        <span class="preview-circuit-scheme" style="color:${sm.col}">${sm.label} · ${circuit.circuitSets}×</span>
-        <span style="font-size:10px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
-      </div>`;
+  const accs=(coachWorkoutDay<4?ACCESSORY_CIRCUITS[coachWorkoutDay]:null)||[];
 
-    if(isOpen){
-      h+=`<div style="padding:var(--s2) var(--s3) var(--s3)">`;
-      circuit.exercises.forEach((item,xi)=>{
-        const ex=item.ex;
-        // scheme drives rep targets — the athlete-app engine's contract
-        const rs=repStr(item.scheme||'mod',circuit.circuitSets,curWeek);
-        const exKey=ex?.id||`coach-${ck}-${xi}`;
-        const extra=coachWorkoutExtraSets[ck]?.[exKey]||0;
-        const totalSets=rs.sets+extra;
-        const isUni=item.intent==='unilateral';
-        const sides=isUni?['L','R']:[''];
-        h+=`<div style="margin-top:var(--s2)">
-          <div style="display:flex;align-items:center;gap:var(--s2);margin-bottom:5px">
-            <span style="font-size:9px;font-weight:700;font-family:var(--mono);color:var(--gm)">${circuit.letter}${xi+1}</span>
-            <span style="font-size:13px;font-weight:600;color:var(--dk);flex:1">${ex?.name||PF[item.pid]}</span>
-            ${isUni?`<span class="preview-ex-uni">L/R</span>`:''}
-            <span style="font-size:10px;font-family:var(--mono);color:var(--mt)">${rs.lo}–${rs.hi} reps</span>
-          </div>`;
-        for(let s=1;s<=totalSets;s++){
-          for(const side of sides){
-            const uid=`coach-${ck}-${exKey}-${s}${side}`;
-            h+=`<div class="set-row">
-              <span class="set-num${side?' set-num-side':''}">${s}${side?`<span class="set-side ${side==='L'?'sl':'sr'}">${side}</span>`:''}</span>
-              <input class="set-input" type="number" id="r-${uid}" placeholder="${rs.lo}–${rs.hi}" min="1" max="50" inputmode="numeric"/>
-              <span class="set-sep">×</span>
-              <input class="set-input" type="number" id="l-${uid}" placeholder="kg" min="0" max="500" step="0.5" inputmode="decimal"/>
-            </div>`;
-          }
-        }
-        h+=`<button class="add-set-btn" onclick="addCoachSet('${ck}','${exKey}')">+ Add set</button>
+  // Circuit tab strip — mains A–D then accessories, athlete-style
+  const tabs=[];
+  (day?.circuits||[]).forEach((c,i)=>tabs.push({id:`c${i}`,label:c.letter,circuit:c,ci:i,type:'main'}));
+  accs.forEach((ac,i)=>tabs.push({id:`a${i}`,label:`+${ac.letter||String.fromCharCode(69+i)}`,circuit:ac,ci:i,type:'acc'}));
+  if(!tabs.find(t=>t.id===coachWorkoutTab))coachWorkoutTab=tabs[0]?.id||'c0';
+
+  h+=`<div class="circuit-tab-strip" style="margin-bottom:var(--s2)">
+    ${tabs.map(t=>`<button class="circuit-tab${coachWorkoutTab===t.id?' act':''}" onclick="setCoachWorkoutTab('${t.id}')">${t.label}</button>`).join('')}
+  </div>`;
+
+  // ONE circuit page
+  const active=tabs.find(t=>t.id===coachWorkoutTab);
+  if(active){
+    const circuit=active.circuit;
+    const isAcc=active.type==='acc';
+    const ck=isAcc?`coach-accd${coachWorkoutDay}-${active.ci}`:`coach-d${coachWorkoutDay}c${active.ci}`;
+    const sm=isAcc?{label:'Accessory',col:'var(--mt)'}:(schemeMeta[circuit.scheme]||schemeMeta.mod);
+    const cSets=isAcc?3:circuit.circuitSets;
+
+    h+=`<div class="preview-circuit" style="border-left:2px solid ${isAcc?'var(--br)':'var(--gml)'}">
+      <div class="preview-circuit-hdr">
+        <span class="preview-circuit-letter">${circuit.letter||active.label.replace('+','')}</span>
+        <span class="preview-circuit-name">${circuit.name}</span>
+        <span class="preview-circuit-scheme" style="color:${sm.col}">${sm.label} · ${cSets}×</span>
+      </div>
+      <div style="padding:var(--s2) var(--s3) var(--s3)">`;
+
+    const exItems=isAcc
+      ?circuit.exercises.map((ex,xi)=>({exId:null,pid:ex.pattern||null,scheme:'mod',intent:'bilateral',name:ex.name,rs:{sets:3,lo:12,hi:15}}))
+      :circuit.exercises.map(item=>({exId:item.ex?.id||null,pid:item.pid,scheme:item.scheme,intent:item.intent,name:item.ex?.name||PF[item.pid],rs:repStr(item.scheme||'mod',circuit.circuitSets,curWeek)}));
+
+    exItems.forEach((item,xi)=>{
+      const exKey=item.exId||`coach-${ck}-${xi}`;
+      const extra=coachWorkoutExtraSets[ck]?.[exKey]||0;
+      const totalSets=item.rs.sets+extra;
+      const isUni=item.intent==='unilateral';
+      const sides=isUni?['L','R']:[''];
+      h+=`<div style="margin-top:var(--s2)">
+        <div style="display:flex;align-items:center;gap:var(--s2);margin-bottom:5px">
+          <span style="font-size:9px;font-weight:700;font-family:var(--mono);color:var(--gm)">${(circuit.letter||active.label.replace('+',''))}${xi+1}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--dk);flex:1">${item.name}</span>
+          ${isUni?`<span class="preview-ex-uni">L/R</span>`:''}
+          <span style="font-size:10px;font-family:var(--mono);color:var(--mt)">${item.rs.lo}–${item.rs.hi} reps</span>
         </div>`;
-      });
-      h+=`<button class="train-start-btn" style="margin-top:var(--s2);padding:11px" onclick="logCoachCircuit('${ck}',${coachWorkoutDay},${JSON.stringify(circuit.exercises.map(it=>({exId:it.ex?.id||null,pid:it.pid,scheme:it.scheme,intent:it.intent}))).replace(/"/g,'&quot;')})">Log Circuit ✓</button>
-      <div class="circuit-log-msg" id="clm-${ck}"></div>
+      for(let s=1;s<=totalSets;s++){
+        for(const side of sides){
+          const uid=`coach-${ck}-${exKey}-${s}${side}`;
+          h+=`<div class="set-row">
+            <span class="set-num${side?' set-num-side':''}">${s}${side?`<span class="set-side ${side==='L'?'sl':'sr'}">${side}</span>`:''}</span>
+            <input class="set-input" type="number" id="r-${uid}" placeholder="${item.rs.lo}–${item.rs.hi}" min="1" max="50" inputmode="numeric"/>
+            <span class="set-sep">×</span>
+            <input class="set-input" type="number" id="l-${uid}" placeholder="kg" min="0" max="500" step="0.5" inputmode="decimal"/>
+          </div>`;
+        }
+      }
+      h+=`<button class="add-set-btn" onclick="addCoachSet('${ck}','${exKey}')">+ Add set</button>
       </div>`;
-    }
-    h+=`</div>`;
-  });
+    });
+
+    h+=`<button class="train-start-btn" style="margin-top:var(--s2);padding:11px" onclick="logCoachCircuit('${ck}',${coachWorkoutDay},${JSON.stringify(exItems.map(it=>({exId:it.exId,pid:it.pid,scheme:it.scheme,intent:it.intent}))).replace(/"/g,'&quot;')})">Log Circuit ✓</button>
+    <div class="circuit-log-msg" id="clm-${ck}"></div>
+    </div></div>`;
+  }
 
   document.getElementById('cwm-body').innerHTML=h;
-
-  Object.keys(AP).forEach(k=>delete AP[k]);
-  Object.assign(AP,savedAP);
-  SETS=savedSETS;
+  }finally{
+    Object.keys(AP).forEach(k=>delete AP[k]);
+    Object.assign(AP,savedAP);
+    SETS=savedSETS;
+  }
 }
+function setCoachWorkoutTab(id){coachWorkoutTab=id;renderCoachWorkout();}
 
 function setCoachWorkoutDay(d){coachWorkoutDay=d;coachWorkoutOpenCircuits={};renderCoachWorkout();}
 function toggleCoachCircuit(ck){coachWorkoutOpenCircuits[ck]=!coachWorkoutOpenCircuits[ck];renderCoachWorkout();}
@@ -9946,11 +9993,11 @@ function openPatternPage(pid,athleteId,isCoach){
 
       // Common fails
       if(std?.common_fails){
-        h+=`<div style="background:#FFF8EC;border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+        h+=`<div style="background:var(--warn-dim);border:0.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:12px">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--amber);margin-bottom:8px">Common Fails</div>`;
         std.common_fails.split('.').filter(s=>s.trim().length>3).forEach(fail=>{
           h+=`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px">
-            <div style="width:18px;height:18px;border-radius:50%;background:#FFF8EC;color:var(--amber);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">✕</div>
+            <div style="width:18px;height:18px;border-radius:50%;background:var(--warn-dim);color:var(--amber);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">✕</div>
             <div style="font-size:13px;color:var(--dk);line-height:1.4">${fail.trim()}</div>
           </div>`;
         });
