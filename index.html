@@ -730,6 +730,8 @@
 
     /* ── TEST MODAL ── */
     .test-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:220;display:none;align-items:flex-end;justify-content:center}
+    .test-modal{transform:translateY(24px);opacity:0;transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .2s ease}
+    .test-overlay.sheet-in .test-modal{transform:translateY(0);opacity:1}
     .test-modal{background:var(--bg2);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
     .video-upload{border:2px dashed var(--br);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px}
     .video-upload:hover{border-color:var(--gm);background:var(--gl)}
@@ -8901,9 +8903,10 @@ function openTestModal(pid){
   document.getElementById('test-modal').style.cssText='display:flex;align-items:flex-end;justify-content:center';
 }
 function closeTestModal(e){
-  if(e&&e.target!==document.getElementById('test-modal'))return;
-  document.getElementById('test-modal').style.cssText='display:none';
-  testModalPat=null;selectedVideoFile=null;
+  if(e&&e.target!==e.currentTarget)return;
+  const modal=document.getElementById('test-modal');
+  modal.classList.remove('sheet-in');
+  setTimeout(()=>{modal.style.display='none';},220);
 }
 function handleVideoSelect(input){
   const file=input.files[0];if(!file)return;
@@ -9012,7 +9015,7 @@ async function openClientPage(athleteId){
   _clientPageOpening=true;
   try{
     const a=ALL_ATHLETES.find(x=>x.id===athleteId);
-    if(!a)return;
+    if(!a){_clientPageOpening=false;return;} // release lock on early exit
     const total=PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
     document.getElementById('cp-name').textContent=a.name;
     const scoreEl=document.getElementById('cp-score');
@@ -9073,6 +9076,7 @@ async function openClientPage(athleteId){
 function closeClientPage(){
   document.getElementById('client-page').classList.remove('active');
   openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
+  _clientPageOpening=false; // belt & braces: always releasable via close
   rCoach();
 }
 
@@ -9087,21 +9091,25 @@ let coachWorkoutDay=0;
 let coachWorkoutExtraSets={};
 let coachWorkoutOpenCircuits={};
 
-function openCoachTestForPattern(pid,lvl){
-  openCoachTestModal();
-  setTimeout(()=>{
-    const sel=document.getElementById('tm-level');
-    if(sel){sel.value=`${pid}|${lvl}`;}
-  },50);
-}
+function openCoachTestForPattern(pid,lvl){openCoachTestModal(pid,lvl);}
 
-function openCoachTestModal(){
+function openCoachTestModal(seedPid,seedLvl){
   const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
   if(!a)return;
   coachLogClientId=a.id;
   coachLogClientName=a.name;
   coachLogClientScores=a.scores||{};
   testModalPat=null;selectedVideoFile=null;
+  // Default seed: FIRST unpassed pattern's next level — the athlete's
+  // most likely next test. In-room coaches almost never pick from all 40.
+  if(!seedPid){
+    const scores=a.scores||{};
+    const firstIncomplete=PATS.find(p=>(scores[p]||0)<5);
+    if(firstIncomplete){
+      seedPid=firstIncomplete;
+      seedLvl=(scores[firstIncomplete]||0)+1;
+    }
+  }
   document.getElementById('test-modal-title').textContent=`Log Test — ${a.name}`;
   document.getElementById('tm-submit').textContent=`✓ Pass & log test`;
   document.getElementById('tm-date').value=new Date().toISOString().split('T')[0];
@@ -9112,13 +9120,19 @@ function openCoachTestModal(){
   document.getElementById('tm-progress-wrap').style.display='none';
   document.getElementById('tm-video-input').value='';
   const sel=document.getElementById('tm-level');
+  const seedKey=(seedPid&&seedLvl)?`${seedPid}|${seedLvl}`:'';
   sel.innerHTML='<option value="">Select pattern and level…</option>';
   PATS.forEach(pid=>{
     STD.filter(s=>s.pattern_id===pid).forEach(s=>{
-      sel.innerHTML+=`<option value="${pid}|${s.level}">${PF[pid]} — Level ${s.level} (${s.test_exercise})</option>`;
+      const val=`${pid}|${s.level}`;
+      sel.innerHTML+=`<option value="${val}"${val===seedKey?' selected':''}>${PF[pid]} — Level ${s.level} (${s.test_exercise})</option>`;
     });
   });
-  document.getElementById('test-modal').style.cssText='display:flex;align-items:flex-end;justify-content:center';
+  if(seedKey){testModalPat=seedPid;renderTestModalForPattern?.(seedPid,seedLvl);}
+  // Bottom-sheet animation — matches the athlete log sheet's motion
+  const modal=document.getElementById('test-modal');
+  modal.style.cssText='display:flex;align-items:flex-end;justify-content:center';
+  requestAnimationFrame(()=>modal.classList.add('sheet-in'));
 }
 
 async function submitTest(){
