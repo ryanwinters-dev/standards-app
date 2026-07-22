@@ -2223,8 +2223,8 @@ function suggestedLoad(exId,intent,pid){
 // ── ASYMMETRY ENGINE ──
 // Compares L vs R output on unilateral work over the last 28 days.
 // Output per side = avg(load × reps). Asymmetry % = (strong − weak) / strong.
-function getPatternAsymmetry(pid){
-  const cutoff=new Date(Date.now()-28*864e5);
+function getPatternAsymmetry(pid,windowDays){
+  const cutoff=new Date(Date.now()-(windowDays||28)*864e5);
   const exIds=new Set(EX.filter(e=>e.pattern_id===pid).map(e=>e.id));
   const uniSets=SETS.filter(s=>s.side&&exIds.has(s.exercise_id)&&new Date(s.logged_at||s.session_date)>=cutoff);
   if(!uniSets.length)return null;
@@ -2350,7 +2350,17 @@ function openSymmetryBreakdown(){
 // Overall symmetry score: 100 − mean asymmetry across patterns with data.
 // ≥90 balanced (green) · 80–90 monitor (amber) · <80 flag (red)
 function getSymmetryScore(){
-  const results=PATS.map(p=>({pid:p,a:getPatternAsymmetry(p)})).filter(r=>r.a);
+  // 28-day window first; if a bilateral-heavy phase or deload empties it,
+  // fall back to 90 days and flag the score as from earlier training rather
+  // than silently vanishing. Symmetry doesn't stop existing because this
+  // month's programme happened to be bilateral.
+  let windowDays=28;
+  let results=PATS.map(p=>({pid:p,a:getPatternAsymmetry(p,28)})).filter(r=>r.a);
+  let stale=false;
+  if(!results.length){
+    results=PATS.map(p=>({pid:p,a:getPatternAsymmetry(p,90)})).filter(r=>r.a);
+    stale=true;windowDays=90;
+  }
   if(!results.length)return null;
   const avgAsym=results.reduce((s,r)=>s+r.a.pct,0)/results.length;
   const worst=results.reduce((a,b)=>b.a.pct>a.a.pct?b:a);
@@ -2358,6 +2368,7 @@ function getSymmetryScore(){
     score:Math.max(0,Math.round(100-avgAsym)),
     worst:{pid:worst.pid,pct:Math.round(worst.a.pct),weakSide:worst.a.weakSide},
     patterns:results.length,
+    stale,windowDays,
   };
 }
 // ── PROGRAMME ENGINE ──
@@ -7431,7 +7442,17 @@ function buildActivitySpotlight(sets,photos,ownerName){
     if(a[1].date!==b[1].date)return b[1].date.localeCompare(a[1].date);
     return (b[1].day??-1)-(a[1].day??-1);
   }).slice(0,8);
-  if(!sessions.length)return'';
+  if(!sessions.length){
+    // Never vanish silently — an empty feature reads as a broken feature.
+    // Own profile gets a prompt into training; viewing someone else's gets
+    // a passive placeholder.
+    const own=!ownerName;
+    return`<div class="home-section-label" style="margin-top:var(--s3)">Activity</div>
+    <div style="background:var(--bg2);border:1px dashed var(--br);border-radius:var(--rl);padding:18px 16px;text-align:center">
+      <div style="font-size:12px;color:var(--mt);font-family:var(--mono);margin-bottom:${own?'10px':'0'}">${own?'No sessions yet — your activity cards appear here after your first logged session':'No sessions logged yet — activity will appear here'}</div>
+      ${own?`<button onclick="showTab('workout',document.querySelectorAll('.nav-tab')[1])" style="padding:9px 18px;background:var(--gl);border:1px solid var(--gml);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gm);cursor:pointer">Start training →</button>`:''}
+    </div>`;
+  }
   const cards=sessions.map(([sk,r])=>{
     const key='sp_'+sk.replace(/-/g,'')+'_'+Math.abs((ownerName||'me').charCodeAt(0));
     const photo=(photos||{})[sk]??((r.week==null)?(photos||{})[r.date]:null);
