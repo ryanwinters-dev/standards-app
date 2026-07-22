@@ -3154,9 +3154,14 @@ function toggleCircuitPattern(circuitKey,pid){
   }
   renderWorkoutBuilder();
 }
-async function openWorkoutBuilder(){
-  const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
-  if(!a){toast('No athlete selected','err');return;}
+async function openWorkoutBuilder(athleteIdOverride){
+  const targetId=athleteIdOverride||profContext.athleteId||coachLogClientId;
+  if(!targetId){toast('Open a client first','err');return;}
+  let a=ALL_ATHLETES.find(x=>x.id===targetId);
+  if(!a&&profContext&&profContext.athleteId===targetId){
+    a={id:targetId,name:coachLogClientName||'Athlete',scores:profContext.scores||{}};
+  }
+  if(!a){toast('Athlete not found — reopen the client','err');return;}
   wbAthleteId=a.id;
   wbAthleteScores=a.scores||{};
   wbDay=0;
@@ -9166,7 +9171,43 @@ function buildClientPage(client){
     <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:${readinessCol}">${readinessLine}</div>
   </div>`;
 
-  // ═══ 2. OVERVIEW — where they are now ═══
+  // ═══ 1b. WELLNESS BAR — 7-day check-in strip, coach lens ═══
+  // Same shape as the home strip but READ-ONLY: coach can see the pattern,
+  // not tap into a check-in for someone else.
+  const today=new Date();
+  const days7=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    const amDone=client.checkins.some(c=>c.checkin_date===ds&&c.session==='am');
+    const pmDone=client.checkins.some(c=>c.checkin_date===ds&&c.session==='pm');
+    days7.push({ds,amDone,pmDone,isToday:i===0,dow:['S','M','T','W','T','F','S'][d.getDay()]});
+  }
+  let streak=0;
+  for(let i=6;i>=0;i--){if(days7[i].amDone||days7[i].pmDone)streak++;else if(i<6)break;}
+  const wellnessBar=`<div style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:var(--s3);margin-bottom:var(--s3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Check-Ins · last 7 days</div>
+        <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk);margin-top:2px">${streak?streak+' day streak':'No active streak'}</div>
+      </div>
+      ${streak>0?`<div style="display:flex;align-items:center;gap:5px;background:var(--gl);padding:3px 9px;border-radius:99px"><span style="font-size:14px">🔥</span><span style="font-size:12px;font-weight:700;color:var(--gm);font-family:var(--mono)">${streak}</span></div>`:''}
+    </div>
+    <div style="display:flex;gap:6px">
+      ${days7.map(d=>{
+        const both=d.amDone&&d.pmDone;
+        const one=d.amDone||d.pmDone;
+        const col=both?'var(--pass)':one?'var(--gm)':'var(--br)';
+        const bg=both?'rgba(0,255,148,0.1)':one?'rgba(0,229,255,0.08)':'transparent';
+        return`<div style="flex:1;text-align:center;padding:6px 0;border:1px solid ${col};background:${bg};border-radius:var(--r)">
+          <div style="font-size:9px;font-weight:700;font-family:var(--mono);color:${one?col:'var(--mt)'};margin-bottom:2px">${d.dow}</div>
+          <div style="font-size:11px;font-weight:700;font-family:var(--mono);color:${one?col:'var(--mt)'}">${both?'●●':one?'●':'—'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  // ═══ 2. OVERVIEW — collapsible movement score, matching profile pattern ═══
   const patternBars=PATS.map(pid=>{
     const lv=client.scores[pid]||0;
     const col=LC[lv]||'var(--mt)';
@@ -9178,12 +9219,20 @@ function buildClientPage(client){
     </div>`;
   }).join('');
 
-  const overview=`<div style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden">
+  // Collapse defaults to OPEN — a coach opens the client to see this. Toggle
+  // is per-page-instance via a data attribute + tiny inline script.
+  const overview=`<div id="cp-overview" data-open="1" style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);position:relative;overflow:hidden">
     <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
-    <div class="prof-radar-compact" style="cursor:default">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--s3) var(--s3) 0;cursor:pointer" onclick="(()=>{const e=document.getElementById('cp-overview');const open=e.dataset.open==='1';e.dataset.open=open?'0':'1';document.getElementById('cp-overview-body').style.display=open?'none':'';document.getElementById('cp-overview-chev').textContent=open?'▼':'▲';})()">
+      <div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">Movement Score</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--dk)">${total}<span style="font-size:12px;color:var(--mt);font-weight:400"> / 40</span></div>
+      </div>
+      <span id="cp-overview-chev" style="font-size:12px;color:var(--mt)">▲</span>
+    </div>
+    <div id="cp-overview-body" class="prof-radar-compact" style="cursor:default">
       <div class="prof-radar-compact-svg">${radarSvg}</div>
       <div class="prof-radar-compact-info">
-        <div class="prof-radar-compact-title">Movement Score — ${total}/40</div>
         <div style="font-size:10px;font-family:var(--mono);color:var(--mt);margin-bottom:6px">${assessedCount}/8 patterns assessed · tap a pattern to drill in</div>
         <div class="prof-radar-bars">${patternBars}</div>
       </div>
@@ -9228,14 +9277,19 @@ function buildClientPage(client){
     }
   }
 
-  const actionRow=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-    <button onclick="openCoachTestModal(null,null,'${client.id}')" style="padding:14px 10px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dk);cursor:pointer;text-align:left">
+  // Three actions, not two — workout builder restored to first-class status
+  const actionRow=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
+    <button onclick="openCoachTestModal(null,null,'${client.id}')" style="padding:14px 8px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dk);cursor:pointer;text-align:left">
       <div style="font-size:16px;margin-bottom:4px">✓</div>
-      Log a test
+      Log test
     </button>
-    <button onclick="openCoachWorkout('${client.id}')" style="padding:14px 10px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dk);cursor:pointer;text-align:left">
+    <button onclick="openCoachWorkout('${client.id}')" style="padding:14px 8px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dk);cursor:pointer;text-align:left">
       <div style="font-size:16px;margin-bottom:4px">⊕</div>
-      Log a workout
+      Log workout
+    </button>
+    <button onclick="openWorkoutBuilder('${client.id}')" style="padding:14px 8px;background:var(--bg2);border:1px solid var(--gml);border-radius:var(--rl);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--gm);cursor:pointer;text-align:left">
+      <div style="font-size:16px;margin-bottom:4px">◆</div>
+      Programme
     </button>
   </div>`;
 
@@ -9246,6 +9300,8 @@ function buildClientPage(client){
       ${readinessCard}
     </div>
 
+    ${wellnessBar}
+
     <div style="margin-bottom:var(--s3)">${overview}</div>
 
     <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">What's next</div>
@@ -9255,8 +9311,6 @@ function buildClientPage(client){
     ${buildActivitySpotlight(client.sets,client.photos,client.name)}
   </div>`;
 }
-
-
 function closeClientPage(){
   document.getElementById('client-page').classList.remove('active');
   openPatHist={};calListOpen=false;selPat=null;selectedCalDay=null;
@@ -9278,11 +9332,21 @@ let coachWorkoutOpenCircuits={};
 function openCoachTestForPattern(pid,lvl){openCoachTestModal(pid,lvl);}
 
 function openCoachTestModal(seedPid,seedLvl,athleteIdOverride){
-  // Prefer the explicit id (from the tile in the client page) over profContext,
-  // which can be stale if the page hasn't fully rendered its coach lens yet.
-  const targetId=athleteIdOverride||profContext.athleteId;
-  const a=ALL_ATHLETES.find(x=>x.id===targetId);
-  if(!a){toast('Open a client first','err');return;}
+  try{
+  // Resolve athlete without depending on ALL_ATHLETES being current — a
+  // fresh client page might not be in the roster cache yet.
+  const targetId=athleteIdOverride||profContext.athleteId||coachLogClientId;
+  if(!targetId){toast('Open a client first','err');return;}
+  let a=ALL_ATHLETES.find(x=>x.id===targetId);
+  // Fallback: profContext IS the current client's world — use it
+  if(!a&&profContext&&profContext.athleteId===targetId){
+    a={id:targetId,name:coachLogClientName||'Athlete',scores:profContext.scores||{}};
+  }
+  // Final fallback: coach-log state has the id + name
+  if(!a&&coachLogClientId===targetId){
+    a={id:targetId,name:coachLogClientName||'Athlete',scores:coachLogClientScores||{}};
+  }
+  if(!a){toast('Athlete not found — reopen the client','err');return;}
   coachLogClientId=a.id;
   coachLogClientName=a.name;
   coachLogClientScores=a.scores||{};
@@ -9315,11 +9379,22 @@ function openCoachTestModal(seedPid,seedLvl,athleteIdOverride){
       sel.innerHTML+=`<option value="${val}"${val===seedKey?' selected':''}>${PF[pid]} — Level ${s.level} (${s.test_exercise})</option>`;
     });
   });
-  if(seedKey){testModalPat=seedPid;renderTestModalForPattern?.(seedPid,seedLvl);}
-  // Bottom-sheet animation — matches the athlete log sheet's motion
+  if(seedKey)testModalPat=seedPid;
+  // Bottom-sheet: display first, force a reflow, THEN animate. A single
+  // requestAnimationFrame isn't enough — the initial paint hasn't committed
+  // when the class is added, so the transition never fires and the modal
+  // opens invisibly (opacity 0 from .test-modal's base state). This was
+  // the "completely dead" symptom — the sheet WAS open, just transparent.
   const modal=document.getElementById('test-modal');
   modal.style.cssText='display:flex;align-items:flex-end;justify-content:center';
-  requestAnimationFrame(()=>modal.classList.add('sheet-in'));
+  void modal.offsetHeight; // force layout — commits the display change
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>modal.classList.add('sheet-in'));
+  });
+  }catch(err){
+    console.error('openCoachTestModal:',err);
+    toast('Log test failed to open: '+(err.message||'').slice(0,60),'err');
+  }
 }
 
 async function submitTest(){
