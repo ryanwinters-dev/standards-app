@@ -3279,6 +3279,9 @@ function renderWorkoutBuilder(){
       const exName=displayEx?.name||ex?.name||PF[item.pid];
       const isOverridden=overrideExId!=null&&displayEx!=null;
       const changeKey=`${wbDay}_${ci}_${xi}`;
+      // The circuit's 1–3 patterns — the swap picker scopes to these,
+      // tapped slot's pattern first.
+      const circuitPids=[...new Set(circuit.exercises.map(x=>x.pid))].join(',');
       const changes=wbPendingChanges[changeKey]||{};
 
       const intent=displayEx?.intent||ex?.intent||'Control';
@@ -3291,7 +3294,7 @@ function renderWorkoutBuilder(){
             ${exName}
             ${isOverridden?`<span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;color:var(--gm);border:1px solid rgba(0,229,255,0.4);padding:2px 6px;border-radius:2px">CUSTOM</span>`:''}
           </div>
-          <button class="wb-swap-btn" onclick="openExPicker('${item.pid}','${item.type}','${changeKey}')">Swap</button>
+          <button class="wb-swap-btn" onclick="openExPicker('${item.pid}','${item.type}','${changeKey}','${circuitPids}')">Swap</button>
         </div>
         <div class="wb-ex-fields">
           <div class="wb-field">
@@ -3342,13 +3345,28 @@ let wbPickerPid=null;
 let wbPickerType=null;
 let wbPickerKey=null;
 
-function openExPicker(pid,type,changeKey){
+let wbPickerPool=[];
+function openExPicker(pid,type,changeKey,circuitPids){
   wbPickerPid=pid;
   wbPickerType=type;
   wbPickerKey=changeKey;
-  const exercises=EX.filter(e=>e.pattern_id===pid);
+  // Scope the list to the circuit's selectable patterns (1–3), with the
+  // tapped slot's pattern first so the most likely swaps lead. Falls back
+  // to the single pattern if no pool was passed (older call sites).
+  const pool=(circuitPids?circuitPids.split(','):[pid]).filter(Boolean);
+  const ordered=[pid,...pool.filter(p=>p!==pid)];
+  wbPickerPool=ordered;
+  const exercises=[];
+  ordered.forEach(p=>{
+    EX.filter(e=>e.pattern_id===p).forEach(e=>exercises.push(e));
+  });
   renderExPicker(exercises);
-  document.getElementById('wb-ex-picker').style.display='flex';
+  // Counter-z open — the picker was pinned at static z:200, buried under
+  // the Programme overlay's counter z. Same arithmetic as everything else.
+  openOverlay('wb-ex-picker',{display:'flex',bg:'rgba(0,0,0,.7)'});
+  const modal=document.getElementById('wb-ex-picker');
+  modal.style.alignItems='flex-end';
+  modal.style.justifyContent='center';
   document.getElementById('wb-search').value='';
   document.getElementById('wb-search').focus();
 }
@@ -3360,18 +3378,29 @@ function renderExPicker(exercises){
     list.innerHTML=`<div style="padding:20px;text-align:center;color:var(--mt);font-size:13px">No exercises found</div>`;
     return;
   }
-  list.innerHTML=exercises.map(ex=>`
-    <div class="wb-ex-picker-item" onclick="selectExercise('${ex.id}')">
+  // Group under pattern headers when the pool spans several patterns
+  const multi=new Set(exercises.map(e=>e.pattern_id)).size>1;
+  let h='';let lastPid=null;
+  exercises.forEach(ex=>{
+    if(multi&&ex.pattern_id!==lastPid){
+      lastPid=ex.pattern_id;
+      h+=`<div style="padding:10px 16px 4px;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gm);position:sticky;top:0;background:var(--bg2)">${PF[ex.pattern_id]||ex.pattern_id}</div>`;
+    }
+    h+=`<div class="wb-ex-picker-item" onclick="selectExercise('${ex.id}')">
       <div class="wb-ex-picker-name">${ex.name}</div>
       <div class="wb-ex-picker-meta">${ex.type||''} · L${ex.level_focus||'?'} · ${ex.intent||''} · ${ex.equipment||''}</div>
-    </div>`).join('');
+    </div>`;
+  });
+  list.innerHTML=h;
 }
 
-function filterExPicker(query){
-  const q=query.toLowerCase();
-  const exercises=EX.filter(e=>e.pattern_id===wbPickerPid&&
-    (!q||e.name.toLowerCase().includes(q)||e.type?.toLowerCase().includes(q))
-  );
+function filterExPicker(q){
+  const query=(q||'').toLowerCase();
+  const pool=wbPickerPool.length?wbPickerPool:[wbPickerPid];
+  const exercises=[];
+  pool.forEach(p=>{
+    EX.filter(e=>e.pattern_id===p&&(!query||e.name.toLowerCase().includes(query)||String(e.equipment||'').toLowerCase().includes(query))).forEach(e=>exercises.push(e));
+  });
   renderExPicker(exercises);
 }
 
@@ -3383,7 +3412,7 @@ function selectExercise(exId){
 
 function closeExPicker(e){
   if(e&&e.target!==document.getElementById('wb-ex-picker'))return;
-  document.getElementById('wb-ex-picker').style.display='none';
+  closeOverlay('wb-ex-picker');
 }
 
 async function saveAllOverrides(){
