@@ -1639,7 +1639,7 @@
           <div class="lp-price-tier">Athlete — Free</div>
           <div class="lp-price-amount"><sup>£</sup>0</div>
           <div class="lp-price-per">forever</div>
-          <div class="lp-price-desc">Self-directed training with the STANDARDS framework.</div>
+          <div class="lp-price-desc">Know your level. Free forever — including if your coach runs you on [RADAR].</div>
           <ul class="lp-price-features">
             <li class="lp-price-feature">Full 4-day programme engine</li>
             <li class="lp-price-feature">Movement standards tracking</li>
@@ -1648,34 +1648,21 @@
           </ul>
           <button class="lp-price-btn lp-price-btn-outline" onclick="openAuthModal('signup')">Get started free</button>
         </div>
-        <!-- Coached -->
-        <div class="lp-price-card featured">
-          <div class="lp-price-tag">Most popular</div>
-          <div class="lp-price-tier">Coached Athlete</div>
-          <div class="lp-price-amount"><sup>£</sup>15</div>
-          <div class="lp-price-per">per month</div>
-          <div class="lp-price-desc">Everything in Free, plus direct access to your STANDARDS coach.</div>
-          <ul class="lp-price-features">
-            <li class="lp-price-feature">Everything in Free</li>
-            <li class="lp-price-feature">Video assessment reviews</li>
-            <li class="lp-price-feature">Coach-assigned levels</li>
-            <li class="lp-price-feature">Personalised progression notes</li>
-          </ul>
-          <button class="lp-price-btn lp-price-btn-dark" onclick="openAuthModal('signup')">Start with a coach</button>
-        </div>
         <!-- Coach licence -->
-        <div class="lp-price-card">
+        <div class="lp-price-card featured">
+          <div class="lp-price-tag">For coaches &amp; self-coached</div>
           <div class="lp-price-tier">Coach Licence</div>
           <div class="lp-price-amount"><sup>£</sup>49</div>
           <div class="lp-price-per">per month</div>
-          <div class="lp-price-desc">Run your entire client base on the STANDARDS platform.</div>
+          <div class="lp-price-desc">Authority over the standard — shape programming for yourself or your athletes, and verify levels.</div>
           <ul class="lp-price-features">
-            <li class="lp-price-feature">Up to 20 active athletes</li>
-            <li class="lp-price-feature">Full coach dashboard</li>
-            <li class="lp-price-feature">Log sessions & tests for clients</li>
-            <li class="lp-price-feature">Client wellness & progress data</li>
+            <li class="lp-price-feature">Everything in Free</li>
+            <li class="lp-price-feature">Verify athlete levels</li>
+            <li class="lp-price-feature">Full coach dashboard &amp; Coach's Eye</li>
+            <li class="lp-price-feature">Build &amp; override programmes</li>
+            <li class="lp-price-feature">Up to 20 active athletes — they pay nothing</li>
           </ul>
-          <button class="lp-price-btn lp-price-btn-outline" onclick="openAuthModal('signup')">Apply for coach access</button>
+          <button class="lp-price-btn lp-price-btn-dark" onclick="openAuthModal('signup')">Apply for coach access</button>
         </div>
       </div>
     </div>
@@ -4233,6 +4220,9 @@ function openSettings(){
   renderSettings();
   document.getElementById('settings-page').classList.add('active');
   loadResearchConsent();
+  // Pairing state is fetched fresh each time settings opens, then the
+  // panel re-renders — so a coach code entered on another device shows.
+  loadMyCoach().then(renderSettings);
 }
 
 // ── RESEARCH CONSENT ──
@@ -4269,8 +4259,10 @@ function closeSettings(){
 function renderSettings(){
   const name=CU.user_metadata?.full_name||'';
   const email=CU.email||'';
-  const tierLabel={free:'Free plan',coached:'Coached Athlete — £15/mo',coach:'Coach Licence — £49/mo'}[USER_TIER]||'Free plan';
-  const tierCol={free:'var(--mt)',coached:'var(--gm)',coach:'var(--dk)'}[USER_TIER];
+  // Free to know your level; paid to hold authority over it. A coached
+  // athlete pays nothing — their coach holds the licence.
+  const tierLabel={free:'Free — know your level',coached:'Coached — included with your coach',coach:'Coach Licence — £49/mo'}[USER_TIER]||'Free — know your level';
+  const tierCol={free:'var(--mt)',coached:'var(--gm)',coach:'var(--gm)'}[USER_TIER];
   const avatarHtml=USER_AVATAR_URL
     ?`<img src="${USER_AVATAR_URL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
     :`<span>${gi(name||email)}</span>`;
@@ -4313,6 +4305,38 @@ function renderSettings(){
         <button class="settings-toggle${USER_IS_PUBLIC?' on':''}" onclick="togglePublicProfile()" id="toggle-public"></button>
       </div>
       <div style="padding:8px 14px 10px;font-size:10px;color:var(--mt);line-height:1.5;font-family:var(--mono)">Wellness data — sleep, stress, energy, weight — is never shared, on or off.</div>
+    </div>
+  </div>
+
+  <!-- Coach -->
+  <div class="settings-section">
+    <div class="settings-section-label">Coach</div>
+    <div class="settings-group">
+      ${MY_COACH?`
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:700;color:var(--dk)">${MY_COACH.name}</div>
+            <div style="font-size:11px;color:var(--mt);margin-top:2px">Your coach · can verify your levels ${vMark(10)}</div>
+          </div>
+          <button onclick="leaveCoach()" style="padding:7px 12px;background:transparent;border:1px solid var(--warn-border);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);cursor:pointer">Leave</button>
+        </div>`
+      :`
+        ${MY_INVITES.length?MY_INVITES.map(iv=>`
+          <div style="padding:12px 14px;border-bottom:1px solid var(--br);background:var(--gl)">
+            <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:4px">Invitation</div>
+            <div style="font-size:13px;color:var(--dk);margin-bottom:10px">A coach has invited you to join their roster.</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-pass" style="flex:1" onclick="confirmJoinCoach('${iv.coach_id}','Your coach')">Review &amp; join</button>
+              <button onclick="declineInvite('${iv.coach_id}')" style="flex:1;padding:9px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl);color:var(--mt);font-size:11px;font-weight:700;font-family:var(--mono);cursor:pointer">Decline</button>
+            </div>
+          </div>`).join(''):''}
+        <div style="padding:12px 14px">
+          <div style="font-size:12px;color:var(--mt);line-height:1.5;margin-bottom:10px">Training with a coach? Enter their code to join their roster — they can then verify your levels ${vMark(10)}.</div>
+          <div style="display:flex;gap:8px">
+            <input id="coach-code-input" placeholder="COACH CODE" maxlength="10" style="flex:1;text-transform:uppercase;letter-spacing:.14em;font-family:var(--mono);margin:0"/>
+            <button class="btn-pass" style="flex-shrink:0;padding:0 18px" onclick="joinCoachByCode()">Join</button>
+          </div>
+        </div>`}
     </div>
   </div>
 
@@ -4986,17 +5010,33 @@ async function load(){
 
     if(IS_COACH){
       // Coach data loads after athlete views are already rendered
-      const[allProfiles,allAP,pending,allSets]=await Promise.all([
-        q(sb.from('profiles').select('id,full_name,email,role,is_public').neq('id',CU.id)),
-        q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified')),
-        q(sb.from('assessments').select('*').is('passed',null).order('assessed_at',{ascending:false})),
-        q(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').order('logged_at',{ascending:false}).limit(300)),
-      ]);
+      // ROSTER IS SCOPED. Previously this fetched every profile in the
+      // database, so every coach saw every athlete. A coach now sees only
+      // athletes who have joined them (profiles.coach_id).
+      const allProfiles=await q(sb.from('profiles').select('id,full_name,email,role,is_public').eq('coach_id',CU.id));
+      const rosterIds=allProfiles.map(p=>p.id);
+      // The coach's own join code + any outstanding invitations.
+      q(sb.from('profiles').select('coach_code').eq('id',CU.id).maybeSingle()).then(r=>{
+        COACH_CODE=r?.coach_code||null;
+      }).catch(()=>{});
+      q(sb.from('coach_invites').select('*').eq('coach_id',CU.id)).then(r=>{
+        COACH_INVITES=r||[];
+      }).catch(()=>{COACH_INVITES=[];});
+
+      const[allAP,pending,allSets]=rosterIds.length?await Promise.all([
+        q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified').in('athlete_id',rosterIds)),
+        q(sb.from('assessments').select('*').is('passed',null).in('athlete_id',rosterIds).order('assessed_at',{ascending:false})),
+        q(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').in('athlete_id',rosterIds).order('logged_at',{ascending:false}).limit(300)),
+      ]):[[],[],[]];
       const am={};
       allProfiles.forEach(p=>{
-        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{},is_public:p.is_public!==false,isCoach:p.role==='coach'};
+        am[p.id]={id:p.id,name:p.full_name||p.email||'Athlete',scores:{},verified:{},is_public:p.is_public!==false,isCoach:p.role==='coach'};
       });
-      allAP.forEach(r=>{if(am[r.athlete_id])am[r.athlete_id].scores[r.pattern_id]=r.current_level;});
+      allAP.forEach(r=>{
+        if(!am[r.athlete_id])return;
+        am[r.athlete_id].scores[r.pattern_id]=r.current_level;
+        if(r.verified)am[r.athlete_id].verified[r.pattern_id]=true;
+      });
       ALL_ATHLETES=Object.values(am);
       ALL_PENDING=pending;
       try{
@@ -9115,24 +9155,103 @@ async function inviteAthlete(){
   const msg=document.getElementById('invite-msg');
   if(!name||!email){msg.textContent='Please enter both name and email.';msg.className='msg err';return;}
   if(!email.includes('@')){msg.textContent='Please enter a valid email address.';msg.className='msg err';return;}
-  msg.textContent='Adding to roster…';msg.className='msg';
-
-  // Pre-register the athlete so they're recognised on signup
-  const{error:profileErr}=await sb.from('profiles').upsert({
-    email,full_name:name,role:'athlete',is_public:true
-  },{onConflict:'email',ignoreDuplicates:false});
-  if(profileErr&&!profileErr.message.includes('duplicate')){
-    msg.textContent='Error: '+profileErr.message;msg.className='msg err';return;
-  }
-
-  // The invite itself is personal — from the coach, not a robot.
+  msg.textContent='Creating invitation…';msg.className='msg';
+  // An invitation, not an assignment. The athlete accepts it themselves —
+  // we never write to another person's profile.
+  const{error}=await sb.from('coach_invites')
+    .upsert({coach_id:CU.id,athlete_email:email,athlete_name:name},{onConflict:'coach_id,athlete_email'});
+  if(error){msg.textContent='Error: '+error.message;msg.className='msg err';return;}
+  COACH_INVITES=[...COACH_INVITES.filter(x=>x.athlete_email!==email),{coach_id:CU.id,athlete_email:email,athlete_name:name}];
   const firstName=name.split(' ')[0];
-  const inviteText=`${firstName} — you're in.\n\nI'm putting you on [RADAR], the system I use to measure and programme movement. It builds your training from what your body can actually do — 8 patterns, 5 levels, no guesswork.\n\nSign up here with this email (${email}):\n${window.location.origin}\n\nTakes 2 minutes. Your first session with me is your assessment — that's where your levels get set. From then on, every workout is built for exactly where you are.\n\nKNOW YOUR LEVEL.`;
-  try{await navigator.clipboard.writeText(inviteText);}catch(e){}
-  msg.innerHTML=`✓ ${name} added to your roster.<br><span style="color:var(--gm)">Personal invite copied to clipboard</span> — send it to them on WhatsApp. They sign up with <b>${email}</b> and land straight on your roster.`;
-  msg.className='msg ok';
+  const text=`${firstName} — I'm putting you on [RADAR], the system I use to measure and progress movement.\n\nSign up with this email (${email}) and you'll see my invitation waiting: ${location.origin}\n\nIt takes two minutes.`;
+  try{await navigator.clipboard.writeText(text);}catch(e){}
+  msg.textContent='✓ Invitation created — message copied, send it to them.';msg.className='msg ok';
   document.getElementById('invite-name').value='';
   document.getElementById('invite-email').value='';
+}
+
+function copyCoachCode(){
+  if(!COACH_CODE){toast('No code yet — run the pairing SQL','err');return;}
+  navigator.clipboard.writeText(COACH_CODE).then(()=>toast('Code copied','ok')).catch(()=>toast(COACH_CODE,'ok'));
+}
+
+// ── ATHLETE SIDE: joining, accepting, leaving ───────────────────────
+async function loadMyCoach(){
+  try{
+    const[{data:me},{data:inv}]=await Promise.all([
+      sb.from('profiles').select('coach_id').eq('id',CU.id).maybeSingle(),
+      sb.from('coach_invites').select('*'),
+    ]);
+    MY_INVITES=inv||[];
+    MY_COACH=null;
+    if(me?.coach_id){
+      const{data:c}=await sb.from('profiles').select('id,full_name,email').eq('id',me.coach_id).maybeSingle();
+      if(c)MY_COACH={id:c.id,name:c.full_name||c.email||'Coach'};
+    }
+  }catch(e){MY_INVITES=[];}
+}
+
+async function joinCoachByCode(){
+  const input=document.getElementById('coach-code-input');
+  const code=(input?.value||'').trim().toUpperCase();
+  if(!code){toast('Enter your coach\'s code','err');return;}
+  const{data:coach}=await sb.from('profiles').select('id,full_name,email').eq('coach_code',code).maybeSingle();
+  if(!coach){toast('No coach found with that code','err');return;}
+  confirmJoinCoach(coach.id,coach.full_name||coach.email||'Coach');
+}
+
+// Explicit consent screen — the athlete is granting access to their
+// training data, so they see exactly what that means before agreeing.
+function confirmJoinCoach(coachId,coachName){
+  const ov=document.createElement('div');
+  ov.id='join-coach-overlay';
+  ov.style.cssText='display:none';
+  ov.innerHTML=`<div style="max-width:400px;margin:auto;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s4)">
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:6px">Join a coach</div>
+    <div style="font-size:20px;font-weight:700;color:var(--dk);margin-bottom:12px">${coachName}</div>
+    <div style="font-size:12px;color:var(--mt);line-height:1.6;margin-bottom:8px">If you join, ${coachName.split(' ')[0]} will be able to:</div>
+    <ul style="margin:0 0 14px 18px;padding:0;font-size:12px;color:var(--mt);line-height:1.9">
+      <li>See your training, levels and check-ins</li>
+      <li>Log tests and sessions for you</li>
+      <li>Build and change your programme</li>
+      <li>Verify your levels ${vMark(11)}</li>
+    </ul>
+    <div style="font-size:11px;color:var(--mt);margin-bottom:16px">You can leave at any time, and your data stays yours.</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="closeJoinCoach()" style="flex:1;padding:11px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl);color:var(--mt);font-size:12px;font-weight:700;font-family:var(--mono);cursor:pointer">Cancel</button>
+      <button class="btn-pass" style="flex:1" onclick="doJoinCoach('${coachId}')">Join</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  openOverlay(ov,{display:'flex',bg:'rgba(0,0,0,.85)',extra:'align-items:center;justify-content:center;padding:20px'});
+}
+function closeJoinCoach(){document.querySelectorAll('#join-coach-overlay').forEach(el=>el.remove());}
+
+async function doJoinCoach(coachId){
+  // The athlete writes their OWN profile row — that IS the consent.
+  const{error}=await sb.from('profiles').update({coach_id:coachId}).eq('id',CU.id);
+  if(error){toast('Could not join: '+error.message.slice(0,60),'err');return;}
+  // Clear any outstanding invitation from this coach.
+  try{await sb.from('coach_invites').delete().eq('coach_id',coachId);}catch(e){}
+  closeJoinCoach();
+  await loadMyCoach();
+  toast('You\'re on the roster','ok');
+  renderSettings();
+}
+
+async function leaveCoach(){
+  if(!confirm('Leave your coach? They will no longer see your training. Your data stays yours.'))return;
+  const{error}=await sb.from('profiles').update({coach_id:null}).eq('id',CU.id);
+  if(error){toast('Could not leave: '+error.message.slice(0,60),'err');return;}
+  await loadMyCoach();
+  toast('You have left the roster','ok');
+  renderSettings();
+}
+
+async function declineInvite(coachId){
+  try{await sb.from('coach_invites').delete().eq('coach_id',coachId);}catch(e){}
+  await loadMyCoach();
+  renderSettings();
 }
 
 function rCoach(){
@@ -9220,7 +9339,16 @@ function rCoach(){
     <button onclick="toggleInviteForm()" class="cal-toggle-btn">+ Invite</button>
   </div>
   <div id="invite-form-card" style="display:none;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s4);margin-bottom:var(--s2)">
-    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:var(--s3)">Invite an Athlete</div>
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm);margin-bottom:var(--s3)">Add an Athlete</div>
+    <div style="background:var(--bg3);border:1px solid var(--gml);border-radius:var(--rl);padding:12px;margin-bottom:var(--s3)">
+      <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:6px">In person — share your code</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;color:var(--gm);flex:1">${COACH_CODE||'—'}</div>
+        <button onclick="copyCoachCode()" style="padding:7px 12px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Copy</button>
+      </div>
+      <div style="font-size:10px;color:var(--mt);margin-top:6px;line-height:1.5">They enter this under Settings → Coach. They join instantly.</div>
+    </div>
+    <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Remote — invite by email</div>
     <input type="text" id="invite-name" placeholder="Full name" style="margin-bottom:8px"/>
     <input type="email" id="invite-email" placeholder="athlete@email.com" style="margin-bottom:10px"/>
     <button class="btn btn-full btn-gm" onclick="inviteAthlete()">Send Invitation</button>
@@ -10498,7 +10626,26 @@ function closePatternPage(){
 
 // ── LEADERBOARD ──
 let lbVerifiedOnly=false;
+let COACH_CODE=null;
+let COACH_INVITES=[];
+let MY_INVITES=[];
+let MY_COACH=null;
 function toggleLBVerified(){lbVerifiedOnly=!lbVerifiedOnly;rLB();}
+// The verified switch that sits at the head of a board. Same component on
+// every leaderboard so the behaviour reads identically wherever you are.
+function lbVerifiedToggle(){
+  const on=lbVerifiedOnly;
+  return`<div onclick="toggleLBVerified()" style="display:flex;align-items:center;gap:10px;background:${on?'var(--gl)':'var(--bg2)'};border:1px solid ${on?'var(--gml)':'var(--br)'};border-radius:var(--rl);padding:10px 12px;margin-bottom:10px;cursor:pointer">
+    ${vMark(14)}
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:${on?'var(--gm)':'var(--dk)'}">Verified only</div>
+      <div style="font-size:10px;color:var(--mt);margin-top:1px">${on?'Coach-verified levels only':'Showing all levels, proven or not'}</div>
+    </div>
+    <div style="width:38px;height:22px;border-radius:11px;background:${on?'var(--gm)':'var(--bg3)'};border:1px solid ${on?'var(--gm)':'var(--br)'};position:relative;flex-shrink:0;transition:background .15s">
+      <div style="position:absolute;top:2px;left:${on?'18px':'2px'};width:16px;height:16px;border-radius:50%;background:${on?'var(--bg)':'var(--mt)'};transition:left .15s"></div>
+    </div>
+  </div>`;
+}
 
 function rLB(){
   const nameLookup={...(window.NAME_LOOKUP||{})};
@@ -10541,16 +10688,8 @@ function rLB(){
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf" style="display:flex;flex-wrap:wrap;gap:4px;padding:0 0 12px">
     ${['all',...PATS].map(f=>`<button class="lbfb${lbF===f&&!lbBmFilter?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}
-    <button class="lbfb${lbVerifiedOnly?' act':''}" onclick="toggleLBVerified()" style="${lbVerifiedOnly?'':'border-color:var(--gml);color:var(--gm)'};display:inline-flex;align-items:center;gap:5px">${vMark(11)} Verified</button>
     ${BENCHMARKS.map(b=>`<button class="lbfb${lbBmFilter===b.id?' act':''}" onclick="sLBBm('${b.id}')" style="${lbBmFilter===b.id?'':'border-color:rgba(0,255,148,0.3);color:var(--pass)'}">${b.name.replace(' Run','').replace('km','k').replace('m SkiErg','m Ski')}</button>`).join('')}
   </div>`;
-
-  if(lbVerifiedOnly){
-    h+=`<div style="display:flex;align-items:flex-start;gap:8px;background:var(--gl);border:1px solid var(--gml);border-radius:var(--rl);padding:10px 12px;margin-bottom:12px">
-      ${vMark(13)}
-      <div style="font-size:11px;color:var(--mt);line-height:1.5">Counting <strong style="color:var(--gm)">coach-verified levels only</strong>. Self-logged levels still count toward your movement score — they just aren't proven yet.</div>
-    </div>`;
-  }
 
   // Benchmark leaderboard
   if(lbBmFilter){
@@ -10559,6 +10698,10 @@ function rLB(){
     renderBenchmarkLeaderboard();
     return;
   }
+
+  // Verified switch sits at the head of the board itself, so it reads as a
+  // property of the board rather than another filter chip.
+  h+=lbVerifiedToggle();
 
   // Rank movement since last visit (per filter)
   let prevRanks={};
@@ -10620,7 +10763,7 @@ function rLB(){
             ${avCircle(a,i===1?48:40,rings[i])}
             <div style="font-size:11px;font-weight:700;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${a.name.split(' ')[0]}${me2?' ·you':''}</div>
             <div style="width:100%;height:${heights[i]}px;background:linear-gradient(180deg,var(--bg3),var(--bg2));border:1px solid ${i===1?'var(--gml)':'var(--br)'};border-bottom:none;border-radius:var(--r) var(--r) 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
-              <div style="display:flex;align-items:center;gap:3px"><div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${rings[i]}">${a.ds}</div>${a.allVerified?vMark(10):''}</div>
+              <div style="display:flex;align-items:center;gap:3px">${a.allVerified?vMark(10):''}<div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${rings[i]}">${a.ds}</div></div>
               <div style="font-size:8px;font-weight:700;font-family:var(--mono);color:var(--mt)">#${places[i]}</div>
             </div>
           </div>`;
@@ -10656,7 +10799,7 @@ function rLB(){
           ${mb}
         </div>
         <div class="lbs">
-          <div class="lbsn" style="display:flex;align-items:center;gap:4px;justify-content:flex-end">${a.ds}${a.allVerified?vMark(11):''}</div>
+          <div class="lbsn" style="display:flex;align-items:center;gap:4px;justify-content:flex-end">${a.allVerified?vMark(11):''}${a.ds}</div>
           <div class="lbsd">/ ${a.ms}</div>
         </div>
         ${canTap&&!me?`<span style="font-size:16px;color:var(--br);padding-left:4px">›</span>`:''}
