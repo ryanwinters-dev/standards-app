@@ -4738,7 +4738,8 @@ function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athlete
     </div>`).join('')}
   </div>`:'';
 
-  const avatarHtml=avatarUrl?`<img src="${avatarUrl}">`:gi(name);
+  // onerror: a 403 from a private bucket degrades to initials, not a broken image
+  const avatarHtml=avatarUrl?`<img src="${avatarUrl}" onerror="this.parentElement.textContent='${(gi(name)||'').replace(/'/g,'')}'">`:gi(name);
 
   return`
   <div class="prof-hdr" style="cursor:default">
@@ -4941,17 +4942,19 @@ async function load(){
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}).limit(500)),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).order('session',{ascending:true}).limit(60)),
-      q(sb.from('profiles').select('id,full_name,is_public')),
+      q(sb.from('profiles').select('id,full_name,is_public,avatar_url')),
     ]);
     AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
     // Attach is_public to AAP rows for leaderboard use
     const pubMap={};
     window.NAME_LOOKUP={};
+    window.AVATAR_LOOKUP={};
     (pubProfiles||[]).forEach(p=>{
       pubMap[p.id]=p.is_public!==false;
       // Names were fetched here all along and thrown away — the boards fell
       // back to 'Athlete' for anyone outside the coach's roster.
       if(p.full_name)window.NAME_LOOKUP[p.id]=p.full_name.split(' ')[0];
+      if(p.avatar_url)window.AVATAR_LOOKUP[p.id]=p.avatar_url;
     });
     AAP=AAP.map(r=>({...r,is_public:pubMap[r.athlete_id]!==false}));
     USER_SUB=null;USER_TIER='free';
@@ -10227,6 +10230,16 @@ function rLB(){
   try{prevRanks=JSON.parse(localStorage.getItem(`lb_prev_${CU.id}_${lbF}`))||{};}catch(e){}
   const curRanks={};
   aths.forEach((a,i)=>{curRanks[a.id]=i+1;});
+  // Avatar with graceful fallback: image when we have a URL AND it loads;
+  // initials circle otherwise. onerror covers 403s from a private bucket so
+  // a storage misconfig degrades to initials instead of a broken circle.
+  const avCircle=(a,size,ring)=>{
+    const av=(window.AVATAR_LOOKUP||{})[a.id]||(a.id===CU.id?USER_AVATAR_URL:null);
+    const c=AVC[a.ci];
+    const initials=`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c.bg};color:${c.fg};display:${av?'none':'flex'};align-items:center;justify-content:center;font-weight:700;font-size:${Math.round(size*0.32)}px;${ring?`border:2px solid ${ring};`:''}flex-shrink:0">${gi(a.name)}</div>`;
+    if(!av)return initials;
+    return`<img src="${av}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;${ring?`border:2px solid ${ring};`:''}flex-shrink:0" alt=""/>${initials}`;
+  };
   const deltaBadge=id=>{
     const prev=prevRanks[id],cur=curRanks[id];
     if(!prev||prev===cur)return'';
@@ -10269,7 +10282,7 @@ function rLB(){
           const c=AVC[a.ci];const me2=a.id===CU.id;
           const canTap=a.isPublic||me2||IS_COACH;
           return`<div ${canTap&&!me2?`onclick="openPubProfile('${a.id}')"`:''} style="flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:5px;${canTap&&!me2?'cursor:pointer':''}">
-            <div style="width:${i===1?48:40}px;height:${i===1?48:40}px;border-radius:50%;background:${c.bg};color:${c.fg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${i===1?15:12}px;border:2px solid ${rings[i]}">${gi(a.name)}</div>
+            ${avCircle(a,i===1?48:40,rings[i])}
             <div style="font-size:11px;font-weight:700;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${a.name.split(' ')[0]}${me2?' ·you':''}</div>
             <div style="width:100%;height:${heights[i]}px;background:linear-gradient(180deg,var(--bg3),var(--bg2));border:1px solid ${i===1?'var(--gml)':'var(--br)'};border-bottom:none;border-radius:var(--r) var(--r) 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
               <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${rings[i]}">${a.ds}</div>
@@ -10301,7 +10314,7 @@ function rLB(){
         onmouseleave="${canTap&&!me?`this.style.borderColor='rgba(255,255,255,0.06)'`:''}"
       >
         <div class="lbrk ${rc}">${i+1}</div>
-        <div class="lbav" style="background:${c.bg};color:${c.fg}">${init}</div>
+        <div class="lbav" style="background:transparent;padding:0;display:flex;align-items:center;justify-content:center">${avCircle(a,34,null)}</div>
         <div class="lbi">
           <div class="lbn">${a.name}${deltaBadge(a.id)}${me?` <span style="font-size:10px;color:var(--gm);font-family:var(--mono)">(you)</span>`:''}${coachBadge}${lockIcon}</div>
           <div class="lbns">${lbF==='all'?'Overall movement profile':fl[lbF]+' pattern'}</div>
