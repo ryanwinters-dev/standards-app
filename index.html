@@ -4507,10 +4507,14 @@ async function uploadAvatar(input){
     if(error)throw error;
     const{data}=sb.storage.from('avatars').getPublicUrl(path);
     USER_AVATAR_URL=data.publicUrl+'?t='+Date.now();
-    sb.from('profiles').update({avatar_url:USER_AVATAR_URL}).eq('id',CU.id).then(()=>{});
-    // Save to profile metadata
+    // profiles.avatar_url is what EVERYONE ELSE reads (leaderboard, public
+    // profiles) — this write failing silently is why avatars showed for
+    // their owner (metadata) but nobody else. Await it and say so if it fails.
+    const{error:profErr}=await sb.from('profiles').update({avatar_url:USER_AVATAR_URL}).eq('id',CU.id);
+    if(profErr){toast('Photo saved for you, but not visible to others yet: '+profErr.message.slice(0,50),'warn');}
+    // Save to auth metadata too (self-view across sessions)
     await sb.auth.updateUser({data:{avatar_url:USER_AVATAR_URL}});
-    toast('✓ Photo updated','ok');
+    if(!profErr)toast('✓ Photo updated','ok');
     updateTopbarAvatar();
     renderSettings();
     rProfile();
