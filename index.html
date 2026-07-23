@@ -4223,6 +4223,11 @@ function openSettings(){
   // Pairing state is fetched fresh each time settings opens, then the
   // panel re-renders — so a coach code entered on another device shows.
   loadMyCoach().then(renderSettings);
+  if(IS_COACH&&!COACH_CODE){
+    sb.from('profiles').select('coach_code').eq('id',CU.id).maybeSingle()
+      .then(({data})=>{if(data?.coach_code){COACH_CODE=data.coach_code;renderSettings();}})
+      .catch(()=>{});
+  }
 }
 
 // ── RESEARCH CONSENT ──
@@ -4380,26 +4385,22 @@ function renderSettings(){
         <div class="settings-row-icon" style="background:var(--gl)">💳</div>
         <div class="settings-row-body">
           <div class="settings-row-title">${tierLabel}</div>
-          <div class="settings-row-sub" style="color:${tierCol}">${USER_TIER==='free'?'Upgrade to unlock coaching features':'Active subscription'}</div>
+          <div class="settings-row-sub" style="color:${tierCol}">${
+            USER_TIER==='coach'?'Authority over the standard'
+            :USER_TIER==='coached'?'Your coach holds the licence — you pay nothing'
+            :'Assessment, programme, levels and ranks — free forever'}</div>
         </div>
       </div>
       ${USER_TIER==='free'?`
-      <div class="settings-row" onclick="startCheckout('coached');closeSettings()">
-        <div class="settings-row-icon" style="background:var(--gl)">⬆️</div>
-        <div class="settings-row-body">
-          <div class="settings-row-title">Upgrade to Coached</div>
-          <div class="settings-row-sub">£15/month · Video reviews, coach-assigned levels</div>
-        </div>
-        <span class="settings-row-arrow">›</span>
-      </div>
       <div class="settings-row" onclick="startCheckout('coach');closeSettings()">
-        <div class="settings-row-icon" style="background:var(--bg3)">🏆</div>
+        <div class="settings-row-icon" style="background:var(--bg3)">◆</div>
         <div class="settings-row-body">
           <div class="settings-row-title">Coach Licence</div>
-          <div class="settings-row-sub">£49/month · Full coaching platform</div>
+          <div class="settings-row-sub">£49/month · Shape your own programming, or coach others and verify their levels</div>
         </div>
         <span class="settings-row-arrow">›</span>
-      </div>`:`
+      </div>`:USER_TIER==='coached'?`
+      <div style="padding:10px 14px;font-size:11px;color:var(--mt);line-height:1.5;font-family:var(--mono)">Everything you can see and do stays free. Leaving your coach doesn't cost you your levels or your data.</div>`:`
       <div class="settings-row" onclick="openBillingPortal()">
         <div class="settings-row-icon" style="background:var(--bg3)">⚙️</div>
         <div class="settings-row-body">
@@ -4410,6 +4411,21 @@ function renderSettings(){
       </div>`}
     </div>
   </div>
+
+  ${IS_COACH?`
+  <!-- Coach code -->
+  <div class="settings-section">
+    <div class="settings-section-label">Your Join Code</div>
+    <div class="settings-group">
+      <div style="padding:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="flex:1;font-size:26px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;color:var(--gm)">${COACH_CODE||'—'}</div>
+          <button onclick="copyCoachCode()" style="padding:8px 14px;background:transparent;border:1px solid var(--br);border-radius:var(--r);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);cursor:pointer">Copy</button>
+        </div>
+        <div style="font-size:11px;color:var(--mt);line-height:1.5">Athletes enter this under Settings → Coach to join your roster. They keep full free access — you hold the licence.</div>
+      </div>
+    </div>
+  </div>`:''}
 
   <!-- Preferences -->
   <div class="settings-section">
@@ -4965,7 +4981,7 @@ async function load(){
       if(p.avatar_url)window.AVATAR_LOOKUP[p.id]=p.avatar_url;
     });
     AAP=AAP.map(r=>({...r,is_public:pubMap[r.athlete_id]!==false}));
-    USER_SUB=null;USER_TIER='free';
+    USER_SUB=null;USER_TIER=IS_COACH?'coach':'free';
     AP={};AP_VERIFIED={};
     myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;if(r.verified)AP_VERIFIED[r.pattern_id]=true;});
 
@@ -4994,7 +5010,9 @@ async function load(){
       sb.from('profiles').select('is_public').eq('id',CU.id).maybeSingle().then(r=>r).catch(()=>({data:null})),
     ]).then(([subRes,profRes])=>{
       USER_SUB=subRes.data||null;
-      USER_TIER=subRes.data?.tier||'free';
+      // A coach account reads as Coach Licence regardless of billing state —
+      // founder and comped accounts have no subscriptions row.
+      USER_TIER=subRes.data?.tier||(IS_COACH?'coach':'free');
       // Default true if no row exists yet
       USER_IS_PUBLIC=profRes.data?.is_public!==false;
       rProfile();
