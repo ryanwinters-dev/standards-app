@@ -2307,7 +2307,7 @@ function openSymmetryBreakdown(){
     ov=document.createElement('div');
     ov.id='spotlight-overlay';
     ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:260;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
-    ov.onclick=e=>{if(e.target===ov)ov.style.display='none';};
+    ov.onclick=e=>{if(e.target===ov)closeOverlay('spotlight-overlay');};
     document.body.appendChild(ov);
   }
   const sym=getSymmetryScore();
@@ -2340,12 +2340,12 @@ function openSymmetryBreakdown(){
         <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">Symmetry Breakdown</div>
         <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk)">${sym?sym.score+'/100':'—'}</div>
       </div>
-      <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
+      <button onclick="closeOverlay('spotlight-overlay')" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
     </div>
     ${rows}
     <div style="font-size:10px;color:var(--mt);line-height:1.5;margin-top:var(--s2);font-family:var(--mono)">Lagging sides are targeted automatically — Bridge slots on flagged patterns bias to unilateral work.</div>
   </div>`;
-  ov.style.display='block';
+  openOverlay(ov,{display:'block',z:260,bg:'rgba(0,0,0,.9)',pad:'calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))'});
 }
 
 // Overall symmetry score: 100 − mean asymmetry across patterns with data.
@@ -3187,13 +3187,7 @@ async function openWorkoutBuilder(athleteIdOverride){
     wbSessionNotes[key]=n.note;
   });
 
-  const wbOv=document.getElementById('wb-overlay');
-  if(wbOv){
-    // Same reparent pattern — escape any inherited containing block.
-    if(wbOv.parentElement!==document.body||wbOv.nextElementSibling)document.body.appendChild(wbOv);
-    wbOv.style.cssText='';
-    void wbOv.offsetHeight;
-  }
+  openOverlay('wb-overlay',{display:'flex',z:200,cls:'active'});
 
   document.getElementById('wb-title').textContent=`${a.name} — Programme`;
   renderWorkoutBuilder();
@@ -3201,7 +3195,7 @@ async function openWorkoutBuilder(athleteIdOverride){
 }
 
 function closeWorkoutBuilder(){
-  document.getElementById('wb-overlay').classList.remove('active');
+  closeOverlay('wb-overlay',{cls:'active'});
 }
 
 function renderWorkoutBuilder(){
@@ -3767,7 +3761,7 @@ function openMovementTestLog(){
         <span style="font-size:18px;color:var(--mt);flex-shrink:0">›</span>
       </div>`;
     }).join('')}`;
-  overlay.classList.add('open');
+  openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
 }
 
 function openBenchmarkLog(){
@@ -3796,7 +3790,7 @@ function openBenchmarkLog(){
         <span style="font-size:18px;color:var(--mt)">›</span>
       </div>`;
     }).join('')}`;
-  overlay.classList.add('open');
+  openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
 }
 
 function _openBmLogSheet(bm,pb,benchmarkId){
@@ -3828,13 +3822,13 @@ function _openBmLogSheet(bm,pb,benchmarkId){
     </div>
     <button class="bm-btn" onclick="submitBenchmarkResult()">Save result</button>
     <div id="bm-log-msg" style="text-align:center;font-size:12px;font-family:var(--mono);margin-top:10px;min-height:16px"></div>`;
-  overlay.classList.add('open');
+  openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
   setTimeout(()=>document.getElementById('bm-mm')?.focus(),300);
 }
 
 function closeBenchmarkLogSheet(e){
   if(e&&e.target!==document.getElementById('bm-log-overlay'))return;
-  document.getElementById('bm-log-overlay')?.classList.remove('open');
+  closeOverlay('bm-log-overlay',{cls:'open'});
 }
 
 async function submitBenchmarkResult(){
@@ -4191,11 +4185,11 @@ function openBenchmarkOnboarding(){
 
 
 function openLogSheet(){
-  document.getElementById('log-sheet-overlay').classList.add('open');
+  openOverlay('log-sheet-overlay',{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
 }
 function closeLogSheet(e){
   if(e&&e.target!==document.getElementById('log-sheet-overlay'))return;
-  document.getElementById('log-sheet-overlay').classList.remove('open');
+  closeOverlay('log-sheet-overlay',{cls:'open'});
 }
 // openBenchmarkLog defined in benchmark section
 
@@ -6879,7 +6873,7 @@ function openMoveSession(w,d){
     <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Move ${d===4?'Benchmark':'Day '+(d+1)} — Week ${w}</div>
     ${opts}
     ${getSchedOverride(w,d)?`<div onclick="setSessionSchedule(${w},${d},null)" style="padding:13px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--mono);color:var(--warn);cursor:pointer">Reset to default day</div>`:''}`;
-  overlay.classList.add('open');
+  openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
 }
 let sessOpen=false;
 function openSessionDetail(d){
@@ -7399,6 +7393,41 @@ function buildDay5Tab(bmDay5){
   return h;
 }
 
+// ═══ OVERLAY PRIMITIVE ═══
+// Every modal open in the app routes through here. Kills the residue
+// problem structurally instead of per-surface. See openClientPage for
+// the diagnostic history — this is that fix generalised.
+function openOverlay(id,opts){
+  const el=(typeof id==='string')?document.getElementById(id):id;
+  if(!el)return null;
+  opts=opts||{};
+  const cls=opts.cls||null;                    // e.g. 'active' | 'open' | 'sheet-in'
+  const display=opts.display||'block';         // 'block' | 'flex'
+  const z=opts.z||400;                          // stacking tier (default: above everything)
+  const bg=opts.bg||null;                       // optional inline background (for legacy modals whose CSS lived on the ID)
+  const pad=opts.pad||null;                     // optional inline padding (some overlays have safe-area padding baked in)
+  // 1. Reparent — source-order wins against equal z, escapes containing blocks.
+  if(el.parentElement!==document.body||el.nextElementSibling)document.body.appendChild(el);
+  // 2. Full cssText reset — no residue from prior opens survives.
+  let extras=bg?`;background:${bg}`:'';
+  if(pad)extras+=`;padding:${pad}`;
+  el.style.cssText=`display:${display};position:fixed;inset:0;z-index:${z};overflow-y:auto${extras}`;
+  // 3. Force sync reflow — the paint commits NOW.
+  void el.offsetHeight;
+  // 4. Add class last so class-based rules apply to a committed element.
+  if(cls)el.classList.add(cls);
+  return el;
+}
+function closeOverlay(id,opts){
+  const el=(typeof id==='string')?document.getElementById(id):id;
+  if(!el)return;
+  opts=opts||{};
+  const cls=opts.cls||null;
+  if(cls)el.classList.remove(cls);
+  el.classList.remove('active','open','sheet-in');
+  el.style.cssText='display:none';
+}
+
 // ── KEYBOARD-AWARE NAV DOCK ──
 // When any text/number input focuses (mobile keyboard up), the bottom nav
 // hides so it can't ride the keyboard to mid-screen. Restores on blur.
@@ -7583,7 +7612,7 @@ function openSpotlightDetail(key){
   const hero=d.photo
     ?`<div style="height:280px;background-image:url('${d.photo}');background-size:cover;background-position:center;position:relative">
         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.95) 0%,rgba(8,8,8,.25) 45%,rgba(8,8,8,.15) 100%)"></div>
-        <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(8,8,8,.6);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:14px;cursor:pointer;backdrop-filter:blur(4px)">✕</button>
+        <button onclick="closeOverlay('spotlight-overlay')" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(8,8,8,.6);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:14px;cursor:pointer;backdrop-filter:blur(4px)">✕</button>
         <div style="position:absolute;left:var(--s4);right:var(--s4);bottom:var(--s3)">
           <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;color:var(--gm)">${sessLabel}</div>
           <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:#fff;line-height:1.15">${dayName||dt.toLocaleDateString('en-GB',{weekday:'long'})}</div>
@@ -7592,7 +7621,7 @@ function openSpotlightDetail(key){
       </div>`
     :`<div style="height:190px;background:linear-gradient(150deg,var(--bg3),var(--bg2));position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
-        <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--br);color:var(--mt);font-size:14px;cursor:pointer">✕</button>
+        <button onclick="closeOverlay('spotlight-overlay')" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--br);color:var(--mt);font-size:14px;cursor:pointer">✕</button>
         <div style="font-size:40px;font-weight:700;font-family:var(--mono);color:var(--gm);line-height:1">${volStr}<span style="font-size:16px;color:var(--mt)">kg</span></div>
         <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mt);margin-top:4px">total moved</div>
         <div style="position:absolute;left:var(--s4);bottom:var(--s3)">
@@ -9047,10 +9076,7 @@ function openTestModal(pid){
 }
 function closeTestModal(e){
   if(e&&e.target!==e.currentTarget)return;
-  const modal=document.getElementById('test-modal');
-  if(!modal)return;
-  modal.classList.remove('sheet-in');
-  modal.style.cssText='display:none';
+  closeOverlay('test-modal',{cls:'sheet-in'});
 }
 function handleVideoSelect(input){
   const file=input.files[0];if(!file)return;
@@ -9266,7 +9292,7 @@ function openSignalGroup(kind){
       <span style="font-size:13px;font-weight:600;color:var(--dk);flex:1">${a.name}</span>
       <span style="font-size:18px;color:var(--mt)">›</span>
     </div>`).join(''):'<div style="text-align:center;color:var(--mt);font-size:12px;padding:16px 0">No athletes in this group.</div>'}`;
-  overlay.classList.add('open');
+  openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
 }
 
 function openReviewQueue(){
@@ -9287,7 +9313,7 @@ function openReviewQueue(){
     <div style="width:36px;height:4px;border-radius:2px;background:var(--br);margin:0 auto 16px"></div>
     <div style="font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:12px">Review Queue · ${ALL_PENDING.length} test${ALL_PENDING.length===1?'':'s'}</div>
     ${items||'<div style="text-align:center;color:var(--mt);font-size:12px;padding:16px 0">All caught up.</div>'}`;
-  overlay.classList.add('open');
+  openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
 }
 
 function openCoachsEye(){
@@ -9785,7 +9811,7 @@ function openCoachTestModal(seedPid,seedLvl,athleteIdOverride){
           <span style="font-size:18px;color:var(--mt);flex-shrink:0">›</span>
         </div>`;
       }).join('')}`;
-    overlay.classList.add('open');
+    openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
   }catch(err){
     console.error('openCoachTestModal:',err);
     toast('Log test failed to open: '+(err.message||'').slice(0,60),'err');
@@ -9823,7 +9849,7 @@ function openCoachTestForPattern(pid,seedLvl,athleteIdOverride){
         <span style="font-size:18px;color:var(--mt);flex-shrink:0">›</span>
       </div>`;
     }).join('')}`;
-  overlay.classList.add('open');
+  openOverlay(overlay,{display:'flex',z:250,cls:'open',bg:'rgba(0,0,0,.6)'});
 }
 
 // Actually open the traditional test-modal form, pre-seeded with pattern + level.
@@ -9849,14 +9875,11 @@ function _openCoachTestForm(a,pid,lvl){
         sel.innerHTML+=`<option value="${val}"${val===seedKey?' selected':''}>${PF[p]} — Level ${s.level} (${s.test_exercise})</option>`;
       });
     });
+    openOverlay('test-modal',{display:'flex',z:400,cls:'sheet-in',bg:'rgba(0,0,0,0.5)'});
+    // Re-apply the flex-end alignment lost when cssText resets
     const modal=document.getElementById('test-modal');
-    // Nuclear pattern (matches the client-page fix): reparent to <body>
-    // to escape any transformed/filtered ancestor. No transition — snap
-    // open, snap close. Snapping never fails to paint.
-    if(modal.parentElement!==document.body||modal.nextElementSibling)document.body.appendChild(modal);
-    modal.classList.add('sheet-in');
-    modal.style.cssText='display:flex;align-items:flex-end;justify-content:center;z-index:400';
-    void modal.offsetHeight;
+    modal.style.alignItems='flex-end';
+    modal.style.justifyContent='center';
   }catch(err){
     console.error('_openCoachTestForm:',err);
     toast('Test form failed to open: '+(err.message||'').slice(0,60),'err');
@@ -9965,17 +9988,10 @@ function openCoachWorkout(athleteIdOverride){
   coachWorkoutOpenCircuits={};
   document.getElementById('cwm-title').textContent=`${a.name}'s Workout`;
   renderCoachWorkout();
-  const modal=document.getElementById('coach-workout-modal');
-  // Same nuclear pattern — reparent to body, force paint, no transition.
-  if(modal.parentElement!==document.body||modal.nextElementSibling)document.body.appendChild(modal);
-  modal.style.cssText='display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;overflow-y:auto';
-  void modal.offsetHeight;
+  openOverlay('coach-workout-modal',{display:'block',z:400,bg:'rgba(0,0,0,.5)'});
 }
 
-function closeCoachWorkout(){
-  const modal=document.getElementById('coach-workout-modal');
-  if(modal)modal.style.cssText='display:none';
-}
+function closeCoachWorkout(){closeOverlay('coach-workout-modal');}
 
 function renderCoachWorkout(){
   // ═══ COACH WORKOUT — athlete-flow structure ═══
@@ -10434,7 +10450,7 @@ function openPatternPage(pid,athleteId,isCoach){
   }
 
   document.getElementById('pp-body').innerHTML=h;
-  document.getElementById('pattern-page').style.display='block';
+  openOverlay('pattern-page',{display:'block',z:190,bg:'var(--bg)'});
   document.getElementById('pp-body').scrollTop=0;
 }
 
@@ -10445,7 +10461,7 @@ function setPatternLevel(lvl,pid,athleteId,isCoach){
 }
 
 function closePatternPage(){
-  document.getElementById('pattern-page').style.display='none';
+  closeOverlay('pattern-page');
   patternPageOpenLevel=null;
   patternPagePid=null;
 }
