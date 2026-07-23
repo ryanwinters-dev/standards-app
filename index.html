@@ -4242,7 +4242,7 @@ function openCoachDashboard(){
       body.appendChild(document.getElementById('v-coach'));
     }
   }
-  overlay.style.display='flex';
+  openOverlay(overlay,{display:'flex',bg:'var(--bg)',extra:'flex-direction:column;overflow:hidden'});
   // Make v-coach visible and render
   const vc=document.getElementById('v-coach');
   if(vc){vc.style.display='block';}
@@ -7397,20 +7397,30 @@ function buildDay5Tab(bmDay5){
 // Every modal open in the app routes through here. Kills the residue
 // problem structurally instead of per-surface. See openClientPage for
 // the diagnostic history — this is that fix generalised.
+// Monotonic z counter: every open gets a HIGHER z than anything before it,
+// so the newest surface always sits on top. This is what kills the
+// "buttons only work after pressing back" bug for good: the client page at
+// a fixed z:400 was burying every modal opened from it (pattern 190,
+// programme 200, log-test sheet 250, spotlight 260) — rendered, invisible,
+// revealed only when Back removed the cover. No hand-picked z can ever
+// recreate that failure now, on any surface, current or future.
+let _overlayZTop=500;
 function openOverlay(id,opts){
   const el=(typeof id==='string')?document.getElementById(id):id;
   if(!el)return null;
   opts=opts||{};
   const cls=opts.cls||null;                    // e.g. 'active' | 'open' | 'sheet-in'
   const display=opts.display||'block';         // 'block' | 'flex'
-  const z=opts.z||400;                          // stacking tier (default: above everything)
+  const z=++_overlayZTop;                       // ALWAYS above everything currently open
   const bg=opts.bg||null;                       // optional inline background (for legacy modals whose CSS lived on the ID)
   const pad=opts.pad||null;                     // optional inline padding (some overlays have safe-area padding baked in)
+  const extra=opts.extra||null;                 // optional extra css (e.g. 'flex-direction:column')
   // 1. Reparent — source-order wins against equal z, escapes containing blocks.
   if(el.parentElement!==document.body||el.nextElementSibling)document.body.appendChild(el);
   // 2. Full cssText reset — no residue from prior opens survives.
   let extras=bg?`;background:${bg}`:'';
   if(pad)extras+=`;padding:${pad}`;
+  if(extra)extras+=`;${extra}`;
   el.style.cssText=`display:${display};position:fixed;inset:0;z-index:${z};overflow-y:auto${extras}`;
   // 3. Force sync reflow — the paint commits NOW.
   void el.offsetHeight;
@@ -8816,7 +8826,7 @@ function openProfileOverlay(id,title,contentFn){
     overlay.appendChild(body);
     document.body.appendChild(overlay);
   }
-  overlay.style.display='flex';
+  openOverlay(overlay,{display:'flex',bg:'var(--bg)',extra:'flex-direction:column;overflow:hidden'});
   const body=document.getElementById('prof-overlay-body-'+id);
   if(body)body.innerHTML=contentFn();
 }
@@ -9320,7 +9330,7 @@ function openCoachsEye(){
   document.querySelectorAll('#coachs-eye-overlay').forEach(el=>el.remove());
   const ov=document.createElement('div');
   ov.id='coachs-eye-overlay';
-  ov.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;overflow:hidden';
+  ov.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:'+(++_overlayZTop)+';display:flex;flex-direction:column;overflow:hidden';
   const now=Date.now(),day=864e5;
   const signals=ALL_ATHLETES.map(a=>{
     const sets=ALL_CLIENT_SETS[a.id]||[];
@@ -9440,7 +9450,7 @@ async function openClientPage(athleteId){
   document.querySelectorAll('#client-page').forEach(el=>el.remove());
   const page=document.createElement('div');
   page.id='client-page';
-  page.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column';
+  page.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:'+(++_overlayZTop)+';display:flex;flex-direction:column';
   page.innerHTML=`
     <div class="client-page-topbar">
       <button class="back-btn" onclick="closeClientPage()">← Back</button>
@@ -10208,7 +10218,7 @@ function openTestVideo(url,patternLabel,level,passed){
     </div>
     <video src="${url}" controls playsinline autoplay style="width:100%;background:#000;display:block;max-height:70vh"></video>
   </div>`;
-  ov.style.display='block';
+  openOverlay(ov,{display:'block',bg:'rgba(0,0,0,.92)',pad:'calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))'});
 }
 function closeTestVideo(){
   const ov=document.getElementById('test-video-overlay');
@@ -10707,6 +10717,6 @@ function gi(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().sli
 </div>
 
 <!-- TOAST -->
-<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--brm);color:var(--dk);padding:10px 18px;border-radius:var(--r);font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;z-index:300;transition:transform .25s ease,opacity .25s ease;opacity:0;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--brm);color:var(--dk);padding:10px 18px;border-radius:var(--r);font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;z-index:100000;transition:transform .25s ease,opacity .25s ease;opacity:0;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center"></div>
 </body>
 </html>
