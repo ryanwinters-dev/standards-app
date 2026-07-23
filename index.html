@@ -4678,7 +4678,7 @@ async function openPubProfile(athleteId){
     // Community view: radar, benchmarks, activity — NEVER wellness data.
     const[apRes,setsRes,profRes,bmRes,photoRes]=await Promise.all([
       sb.from('athlete_profiles').select('pattern_id,current_level').eq('athlete_id',athleteId),
-      sb.from('workout_sets').select('exercise_id,session_date,reps_achieved,load_kg,side').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(400),
+      sb.from('workout_sets').select('exercise_id,exercise_key,pattern_id,session_date,reps_achieved,load_kg,side,week_number,day_index,logged_at').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(400),
       sb.from('profiles').select('full_name,email,is_public,avatar_url').eq('id',athleteId).maybeSingle(),
       sb.from('benchmark_results').select('benchmark_id,score_seconds').eq('athlete_id',athleteId),
       sb.from('session_photos').select('session_date,photo_url,week_number,day_index').eq('athlete_id',athleteId),
@@ -9464,9 +9464,10 @@ function buildClientPage(client){
 
     <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">What's next</div>
     ${nextSection}
-    ${actionRow}
 
     ${buildActivitySpotlight(client.sets,client.photos,client.name)}
+
+    ${actionRow}
   </div>`;
 }
 function closeClientPage(){
