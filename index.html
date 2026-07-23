@@ -1916,6 +1916,17 @@
       <span class="ci-label">Morning Energy (1–10)</span>
       <div class="ci-scale" id="ci-am-energy-scale"></div>
     </div>
+    <hr class="ci-divider"/>
+    <div class="ci-field" style="display:block">
+      <span class="ci-label" style="display:block;margin-bottom:8px">Progress Photo <span style="color:var(--mt);font-weight:400">· optional, private to you</span></span>
+      <input type="file" id="ci-am-photo-input" accept="image/*" style="display:none" onchange="stageProgressPhoto(this)"/>
+      <div id="ci-am-photo-preview" style="display:none;margin-bottom:8px">
+        <img id="ci-am-photo-img" style="width:100%;max-height:220px;object-fit:cover;border-radius:var(--rl);border:1px solid var(--br);display:block"/>
+      </div>
+      <button type="button" id="ci-am-photo-btn" onclick="document.getElementById('ci-am-photo-input').click()"
+        style="width:100%;padding:11px;background:var(--bg3);border:1px dashed var(--br);border-radius:var(--rl);color:var(--mt);font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;cursor:pointer">+ Add photo</button>
+      <div style="font-size:10px;color:var(--mt);margin-top:6px;line-height:1.5;font-family:var(--mono)">Stored privately. Never shown on your profile, ranks, or to your coach.</div>
+    </div>
     <button class="btn btn-full btn-gm" style="margin-top:8px" onclick="submitCheckin('am')">Save Morning Check-In</button>
     <div class="msg" id="ci-am-msg"></div>
   </div>
@@ -5189,6 +5200,8 @@ function rHome(){
     const pmDone=CHECKINS.some(c=>c.checkin_date===ds&&c.session==='pm');
     days7.push({ds,amDone,pmDone,isToday:i===0});
   }
+  // Third touchpoint: did they actually train today?
+  const trainedToday=(SETS||[]).some(s=>(s.session_date||s.logged_at?.split('T')[0])===todayStr);
   const todayAM=days7[6].amDone;
   const todayPM=days7[6].pmDone;
 
@@ -5276,6 +5289,54 @@ function rHome(){
     <!-- Scrollable content -->
     <div class="home-scroll">
 
+      <!-- DAILY PROGRESSION — the three touchpoints as one sequence.
+           Completed steps collapse to a slim line, the current one is
+           raised and actionable, upcoming ones sit dimmed. Nothing is
+           hard-locked: the progression motivates, it never obstructs. -->
+      ${(()=>{
+        const steps=[
+          {key:'am',   icon:'☀', label:'Morning check-in', done:todayAM,      action:`openCIModal('am')`,  cta:'Log AM'},
+          {key:'train',icon:'⚡', label:'Training',         done:trainedToday, action:`showTab('workout',document.querySelectorAll('.nav-tab')[1])`, cta:'Start session'},
+          {key:'pm',   icon:'🌙', label:'Evening check-in', done:todayPM,      action:`openCIModal('pm')`,  cta:'Log PM'},
+        ];
+        const doneCount=steps.filter(s=>s.done).length;
+        const activeIdx=steps.findIndex(s=>!s.done);
+        const allDone=doneCount===3;
+        const pct=Math.round((doneCount/3)*100);
+        return`<div style="background:${allDone?'linear-gradient(135deg,rgba(0,255,148,0.06),var(--bg2))':'var(--bg2)'};border:1px solid ${allDone?'var(--pass-border)':'var(--br)'};border-radius:var(--rl);padding:var(--s3);margin-bottom:var(--s3)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:${allDone?'var(--pass)':'var(--mt)'}">${allDone?'Day complete':'Today'}</span>
+            <span style="font-size:10px;font-weight:700;font-family:var(--mono);color:${allDone?'var(--pass)':'var(--gm)'}">${doneCount}/3</span>
+          </div>
+          <div style="height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:12px">
+            <div style="width:${pct}%;height:100%;background:${allDone?'var(--pass)':'var(--gm)'};border-radius:2px;transition:width .35s cubic-bezier(.4,0,.2,1)"></div>
+          </div>
+          ${steps.map((s,idx)=>{
+            const isActive=idx===activeIdx;
+            if(s.done){
+              return`<div style="display:flex;align-items:center;gap:9px;padding:5px 0">
+                <span style="width:16px;height:16px;border-radius:50%;background:var(--pass-dim);border:1px solid var(--pass-border);color:var(--pass);font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">✓</span>
+                <span style="font-size:12px;color:var(--mt);text-decoration:line-through;text-decoration-color:var(--br)">${s.label}</span>
+              </div>`;
+            }
+            if(isActive){
+              return`<div onclick="${s.action}" style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--gml);border-radius:var(--rl);padding:11px 12px;margin:6px 0;cursor:pointer">
+                <span style="font-size:16px;flex-shrink:0">${s.icon}</span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:700;color:var(--dk)">${s.label}</div>
+                  <div style="font-size:10px;font-family:var(--mono);color:var(--gm);margin-top:1px">${s.cta} →</div>
+                </div>
+                <span style="font-size:16px;color:var(--gm);flex-shrink:0">›</span>
+              </div>`;
+            }
+            return`<div style="display:flex;align-items:center;gap:9px;padding:5px 0;opacity:.4">
+              <span style="width:16px;height:16px;border-radius:50%;border:1px solid var(--br);flex-shrink:0"></span>
+              <span style="font-size:12px;color:var(--mt)">${s.label}</span>
+            </div>`;
+          }).join('')}
+        </div>`;
+      })()}
+
       <!-- OCTAGON HERO — the primary visual, first thing every session -->
       <div class="home-viz-wrap">
         <div class="home-viz-slides" id="home-slides">
@@ -5336,33 +5397,6 @@ function rHome(){
         <div class="home-stat-card">
           <div class="home-stat-val">${assessed.length}<span style="font-size:12px;color:var(--mt)">/8</span></div>
           <div class="home-stat-label">Assessed</div>
-        </div>
-      </div>
-
-      <!-- Check-in card -->
-      <div class="home-section-label">Daily Check-In</div>
-      <div class="home-ci-card">
-        <!-- AM row -->
-        <div class="home-ci-row">
-          <button class="home-ci-btn${todayAM?' done-am':''}" onclick="openCIModal('am')">
-            <span class="home-ci-btn-icon">☀</span>
-            <span class="home-ci-btn-label">${todayAM?'✓ AM':'AM'}</span>
-          </button>
-          <div class="home-ci-pips">
-            ${days7.map(day=>`<div class="home-ci-pip${day.amDone?' am':day.isToday?' today-empty':''}"></div>`).join('')}
-          </div>
-          <span class="home-ci-status">${todayAM?'Done':'Pending'}</span>
-        </div>
-        <!-- PM row -->
-        <div class="home-ci-row">
-          <button class="home-ci-btn${todayPM?' done-pm':''}" onclick="openCIModal('pm')">
-            <span class="home-ci-btn-icon">🌙</span>
-            <span class="home-ci-btn-label">${todayPM?'✓ PM':'PM'}</span>
-          </button>
-          <div class="home-ci-pips">
-            ${days7.map(day=>`<div class="home-ci-pip${day.pmDone?' pm':day.isToday&&hour>=17?' today-empty':''}"></div>`).join('')}
-          </div>
-          <span class="home-ci-status">${todayPM?'Done':hour>=17?'Pending':'Later'}</span>
         </div>
       </div>
 
@@ -5704,6 +5738,52 @@ function closeCIModal(session,e){
 // Legacy alias — keep for any old onclick references
 function openCheckin(){openCIModal('am');}
 
+// ── PROGRESS PHOTO (private) ────────────────────────────────────────
+// Held in memory until the check-in saves, so an abandoned modal never
+// leaves an orphan file in storage.
+let _stagedProgressPhoto=null;
+function stageProgressPhoto(input){
+  const file=input.files?.[0];
+  if(!file)return;
+  if(file.size>8*1024*1024){toast('Photo must be under 8MB','err');input.value='';return;}
+  _stagedProgressPhoto=file;
+  const img=document.getElementById('ci-am-photo-img');
+  const wrap=document.getElementById('ci-am-photo-preview');
+  const btn=document.getElementById('ci-am-photo-btn');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    if(img)img.src=e.target.result;
+    if(wrap)wrap.style.display='block';
+    if(btn)btn.textContent='Replace photo';
+  };
+  reader.readAsDataURL(file);
+}
+function clearProgressPhoto(){
+  _stagedProgressPhoto=null;
+  const wrap=document.getElementById('ci-am-photo-preview');
+  const btn=document.getElementById('ci-am-photo-btn');
+  const input=document.getElementById('ci-am-photo-input');
+  if(wrap)wrap.style.display='none';
+  if(btn)btn.textContent='+ Add photo';
+  if(input)input.value='';
+}
+// Uploads to the PRIVATE bucket under {user_id}/ — storage RLS keys on
+// that prefix, so nobody else can read it. Returns the path, not a URL.
+async function uploadProgressPhoto(dateISO){
+  if(!_stagedProgressPhoto)return null;
+  try{
+    const ext=(_stagedProgressPhoto.name.split('.').pop()||'jpg').toLowerCase();
+    const path=`${CU.id}/${dateISO}_${Date.now()}.${ext}`;
+    const{error}=await sb.storage.from('progress-photos')
+      .upload(path,_stagedProgressPhoto,{contentType:_stagedProgressPhoto.type,upsert:true});
+    if(error)throw error;
+    return path;
+  }catch(e){
+    toast('Photo upload failed — check-in still saved','warn');
+    return null;
+  }
+}
+
 async function submitCheckin(session){
   const dt=document.getElementById(`ci-${session}-date`)?.value;
   const msgEl=document.getElementById(`ci-${session}-msg`);
@@ -5716,6 +5796,8 @@ async function submitCheckin(session){
     row.hours_slept=parseFloat(document.getElementById('ci-am-sleep')?.value)||null;
     row.resting_hr=parseInt(document.getElementById('ci-am-rhr')?.value)||null;
     row.energy=ciScales.am?.energy||null;
+    const photoPath=await uploadProgressPhoto(dt);
+    if(photoPath)row.photo_path=photoPath;
   } else {
     row.calories=parseInt(document.getElementById('ci-pm-calories')?.value)||null;
     row.protein_g=parseInt(document.getElementById('ci-pm-protein')?.value)||null;
@@ -5729,6 +5811,7 @@ async function submitCheckin(session){
   const{error}=await sb.from('checkins').upsert(row,{onConflict:'athlete_id,checkin_date,session'});
   if(error){if(msgEl){msgEl.textContent='Error: '+error.message;msgEl.className='msg err';}return;}
   if(msgEl){msgEl.textContent='✓ Saved';msgEl.className='msg ok';}
+  if(session==='am')clearProgressPhoto();
 
   const{data}=await sb.from('checkins').select('*').eq('athlete_id',CU.id)
     .order('checkin_date',{ascending:false}).order('session',{ascending:true}).limit(60);
