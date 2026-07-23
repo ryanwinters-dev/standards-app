@@ -3139,7 +3139,11 @@ let wbSessionNotes={}; // {day_index: note, null: general}
 let wbDay=0;
 let wbPickerCallback=null;
 let wbPendingChanges={}; // track tempo/reps overrides
-let wbCircuitPatterns={}; // {day_ci: [pid1, pid2?, pid3?]}
+let wbCircuitPatterns={};
+// Derived, refreshed on every builder render: circuitKey → effective
+// pattern pool. The exercise picker reads this so it always reflects the
+// chips as they are RIGHT NOW, not as they were when the row was drawn.
+let wbCircuitPools={}; // {day_ci: [pid1, pid2?, pid3?]}
 let wbCircuitNames={}; // {day_ci: 'custom name'}
 let wbDayTitles={}; // {day_index: 'custom title'}
 
@@ -3242,7 +3246,8 @@ function renderWorkoutBuilder(){
   // Circuits
   day.circuits.forEach((circuit,ci)=>{
     const circuitKey=`${wbDay}_${ci}`;
-    const currentPatterns=wbCircuitPatterns[circuitKey]||circuit.exercises.map(e=>e.pid);
+    const currentPatterns=wbCircuitPatterns[circuitKey]||[...new Set(circuit.exercises.map(e=>e.pid))];
+    wbCircuitPools[circuitKey]=currentPatterns;
     const defaultCircuitName=circuit.name;
     const circuitName=wbCircuitNames[circuitKey]||defaultCircuitName;
 
@@ -3279,9 +3284,6 @@ function renderWorkoutBuilder(){
       const exName=displayEx?.name||ex?.name||PF[item.pid];
       const isOverridden=overrideExId!=null&&displayEx!=null;
       const changeKey=`${wbDay}_${ci}_${xi}`;
-      // The circuit's 1–3 patterns — the swap picker scopes to these,
-      // tapped slot's pattern first.
-      const circuitPids=[...new Set(circuit.exercises.map(x=>x.pid))].join(',');
       const changes=wbPendingChanges[changeKey]||{};
 
       const intent=displayEx?.intent||ex?.intent||'Control';
@@ -3294,7 +3296,7 @@ function renderWorkoutBuilder(){
             ${exName}
             ${isOverridden?`<span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;color:var(--gm);border:1px solid rgba(0,229,255,0.4);padding:2px 6px;border-radius:2px">CUSTOM</span>`:''}
           </div>
-          <button class="wb-swap-btn" onclick="openExPicker('${item.pid}','${item.type}','${changeKey}','${circuitPids}')">Swap</button>
+          <button class="wb-swap-btn" onclick="openExPicker('${item.pid}','${item.type}','${changeKey}','${circuitKey}')">Swap</button>
         </div>
         <div class="wb-ex-fields">
           <div class="wb-field">
@@ -3346,29 +3348,46 @@ let wbPickerType=null;
 let wbPickerKey=null;
 
 let wbPickerPool=[];
-function openExPicker(pid,type,changeKey,circuitPids){
+
+// Exercises for a pattern pool, in pool order — the single place the
+// picker's list is built, used by both open and search.
+function wbPoolExercises(pool,query){
+  const q=(query||'').toLowerCase();
+  const out=[];
+  pool.forEach(pid=>{
+    EX.filter(e=>e.pattern_id===pid).forEach(e=>{
+      if(!q||e.name.toLowerCase().includes(q)||String(e.equipment||'').toLowerCase().includes(q))out.push(e);
+    });
+  });
+  return out;
+}
+
+function openExPicker(pid,type,changeKey,circuitKey){
   wbPickerPid=pid;
   wbPickerType=type;
   wbPickerKey=changeKey;
-  // Scope the list to the circuit's selectable patterns (1–3), with the
-  // tapped slot's pattern first so the most likely swaps lead. Falls back
-  // to the single pattern if no pool was passed (older call sites).
-  const pool=(circuitPids?circuitPids.split(','):[pid]).filter(Boolean);
-  const ordered=[pid,...pool.filter(p=>p!==pid)];
-  wbPickerPool=ordered;
-  const exercises=[];
-  ordered.forEach(p=>{
-    EX.filter(e=>e.pattern_id===p).forEach(e=>exercises.push(e));
-  });
-  renderExPicker(exercises);
-  // Counter-z open — the picker was pinned at static z:200, buried under
-  // the Programme overlay's counter z. Same arithmetic as everything else.
+  // Read the circuit's CURRENT chip selection. Highlighting Squat now
+  // genuinely puts squat exercises in the list, because this resolves at
+  // open time instead of trusting a snapshot from when the row was drawn.
+  const selected=wbCircuitPools[circuitKey];
+  const pool=(selected&&selected.length)?selected.slice():[pid];
+  // Tapped slot's pattern leads when it's still one of the selected ones.
+  wbPickerPool=pool.includes(pid)?[pid,...pool.filter(p=>p!==pid)]:pool;
+
+  renderExPicker(wbPoolExercises(wbPickerPool));
   openOverlay('wb-ex-picker',{display:'flex',bg:'rgba(0,0,0,.7)'});
   const modal=document.getElementById('wb-ex-picker');
   modal.style.alignItems='flex-end';
   modal.style.justifyContent='center';
-  document.getElementById('wb-search').value='';
-  document.getElementById('wb-search').focus();
+
+  const search=document.getElementById('wb-search');
+  if(search)search.value='';
+  // NO autofocus. Forcing focus raised the keyboard on open, which fired
+  // the kb-open handler, hid the nav dock and shifted the whole layout
+  // mid-tap — that shift is what made the list feel "non-responsive".
+  // The keyboard now appears only when the coach taps the search field.
+  const list=document.getElementById('wb-picker-list');
+  if(list)list.scrollTop=0;
 }
 
 function renderExPicker(exercises){
@@ -3395,13 +3414,8 @@ function renderExPicker(exercises){
 }
 
 function filterExPicker(q){
-  const query=(q||'').toLowerCase();
   const pool=wbPickerPool.length?wbPickerPool:[wbPickerPid];
-  const exercises=[];
-  pool.forEach(p=>{
-    EX.filter(e=>e.pattern_id===p&&(!query||e.name.toLowerCase().includes(query)||String(e.equipment||'').toLowerCase().includes(query))).forEach(e=>exercises.push(e));
-  });
-  renderExPicker(exercises);
+  renderExPicker(wbPoolExercises(pool,q));
 }
 
 function selectExercise(exId){
