@@ -7572,8 +7572,15 @@ function openSpotlightDetail(key){
   // ═══ SESSION SPOTLIGHT — champion the session ═══
   // Hero image (or branded fallback), identity over the picture, a stat
   // strip that headlines the work, podium top lifts, pattern chips.
-  const d=window._SPOT[key];
-  if(!d)return;
+  let d=window._SPOT[key];
+  if(!d){
+    // Rescue: payload map may have been rebuilt under a different owner
+    // suffix while the DOM kept the old key — match the session portion.
+    const sessPart=key.replace(/_[^_]*$/,'');
+    const alt=Object.keys(window._SPOT).find(k=>k.startsWith(sessPart));
+    if(alt)d=window._SPOT[alt];
+  }
+  if(!d){toast('Session detail unavailable — reopen this page','warn');return;}
   let ov=document.getElementById('spotlight-overlay');
   if(!ov){
     ov=document.createElement('div');
@@ -9129,7 +9136,7 @@ function rCoach(){
     const el=document.getElementById(id);
     if(!el)return;
     el.classList.remove('open','sheet-in','active');
-    if(el.style.display==='flex')el.style.cssText='display:none';
+    if(el.style.display==='flex'||el.style.display==='block')el.style.cssText='display:none';
   });
 
   const now=Date.now(),day=864e5;
