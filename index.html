@@ -2302,14 +2302,12 @@ function readiness(){
 
 // Full symmetry breakdown — every pattern's L/R picture, not just the worst.
 function openSymmetryBreakdown(){
-  let ov=document.getElementById('spotlight-overlay');
-  if(!ov){
-    ov=document.createElement('div');
-    ov.id='spotlight-overlay';
-    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:260;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
-    ov.onclick=e=>{if(e.target===ov)closeOverlay('spotlight-overlay');};
-    document.body.appendChild(ov);
-  }
+  document.querySelectorAll('#symmetry-overlay').forEach(el=>el.remove());
+  const ov=document.createElement('div');
+  ov.id='symmetry-overlay';
+  ov.style.cssText='display:none';
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  document.body.appendChild(ov);
   const sym=getSymmetryScore();
   const rows=PATS.map(pid=>{
     const a=typeof getPatternAsymmetry==='function'?getPatternAsymmetry(pid):null;
@@ -2340,7 +2338,7 @@ function openSymmetryBreakdown(){
         <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">Symmetry Breakdown</div>
         <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--dk)">${sym?sym.score+'/100':'—'}</div>
       </div>
-      <button onclick="closeOverlay('spotlight-overlay')" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
+      <button onclick="closeSpotlightDetail()" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
     </div>
     ${rows}
     <div style="font-size:10px;color:var(--mt);line-height:1.5;margin-top:var(--s2);font-family:var(--mono)">Lagging sides are targeted automatically — Bridge slots on flagged patterns bias to unilateral work.</div>
@@ -7581,14 +7579,16 @@ function openSpotlightDetail(key){
     if(alt)d=window._SPOT[alt];
   }
   if(!d){toast('Session detail unavailable — reopen this page','warn');return;}
-  let ov=document.getElementById('spotlight-overlay');
-  if(!ov){
-    ov=document.createElement('div');
-    ov.id='spotlight-overlay';
-    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:260;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
-    ov.onclick=e=>{if(e.target===ov)ov.style.display='none';};
-    document.body.appendChild(ov);
-  }
+  // Nuclear: fresh element every open, destroyed on close. This function
+  // previously SHARED its element id with the symmetry view and reused the
+  // element across opens — which is how a July-12 session card could float
+  // stale over the wrong page. Neither is possible now.
+  document.querySelectorAll('#spotlight-overlay').forEach(el=>el.remove());
+  const ov=document.createElement('div');
+  ov.id='spotlight-overlay';
+  ov.style.cssText='display:none';
+  ov.onclick=e=>{if(e.target===ov)closeSpotlightDetail();};
+  document.body.appendChild(ov);
 
   const vol=d.rows.reduce((t,s)=>t+((s.reps_achieved||0)*(s.load_kg||0)),0);
   const volStr=vol>999?(vol/1000).toFixed(1)+'k':String(Math.round(vol));
@@ -7629,7 +7629,7 @@ function openSpotlightDetail(key){
   const hero=d.photo
     ?`<div style="height:280px;background-image:url('${d.photo}');background-size:cover;background-position:center;position:relative">
         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.95) 0%,rgba(8,8,8,.25) 45%,rgba(8,8,8,.15) 100%)"></div>
-        <button onclick="closeOverlay('spotlight-overlay')" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(8,8,8,.6);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:14px;cursor:pointer;backdrop-filter:blur(4px)">✕</button>
+        <button onclick="closeSpotlightDetail()" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(8,8,8,.6);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:14px;cursor:pointer;backdrop-filter:blur(4px)">✕</button>
         <div style="position:absolute;left:var(--s4);right:var(--s4);bottom:var(--s3)">
           <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;color:var(--gm)">${sessLabel}</div>
           <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:#fff;line-height:1.15">${dayName||dt.toLocaleDateString('en-GB',{weekday:'long'})}</div>
@@ -7638,7 +7638,7 @@ function openSpotlightDetail(key){
       </div>`
     :`<div style="height:190px;background:linear-gradient(150deg,var(--bg3),var(--bg2));position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
-        <button onclick="closeOverlay('spotlight-overlay')" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--br);color:var(--mt);font-size:14px;cursor:pointer">✕</button>
+        <button onclick="closeSpotlightDetail()" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--br);color:var(--mt);font-size:14px;cursor:pointer">✕</button>
         <div style="font-size:40px;font-weight:700;font-family:var(--mono);color:var(--gm);line-height:1">${volStr}<span style="font-size:16px;color:var(--mt)">kg</span></div>
         <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mt);margin-top:4px">total moved</div>
         <div style="position:absolute;left:var(--s4);bottom:var(--s3)">
@@ -7679,7 +7679,7 @@ function openSpotlightDetail(key){
       </div>
     </div>
   </div>`;
-  ov.style.display='block';
+  openOverlay(ov,{display:'block',bg:'rgba(0,0,0,.9)',pad:'calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))'});
 }
 
 // ── SESSION PHOTOS ──
@@ -10226,6 +10226,11 @@ function openTestVideo(url,patternLabel,level,passed){
     <video src="${url}" controls playsinline autoplay style="width:100%;background:#000;display:block;max-height:70vh"></video>
   </div>`;
   openOverlay(ov,{display:'block',bg:'rgba(0,0,0,.92)',pad:'calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))'});
+}
+function closeSpotlightDetail(){
+  // Removes both detail overlays — session spotlight and symmetry view —
+  // so any ✕ or backdrop tap fully clears whichever is open.
+  document.querySelectorAll('#spotlight-overlay,#symmetry-overlay').forEach(el=>el.remove());
 }
 function closeTestVideo(){
   const ov=document.getElementById('test-video-overlay');
