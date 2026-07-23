@@ -731,8 +731,8 @@
 
     /* ── TEST MODAL ── */
     .test-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:220;display:none;align-items:flex-end;justify-content:center}
-    .test-modal{transform:translateY(24px);opacity:0;transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .2s ease}
-    .test-overlay.sheet-in .test-modal{transform:translateY(0);opacity:1}
+    
+    
     .test-modal{background:var(--bg2);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
     .video-upload{border:2px dashed var(--br);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px}
     .video-upload:hover{border-color:var(--gm);background:var(--gl)}
@@ -3186,6 +3186,14 @@ async function openWorkoutBuilder(athleteIdOverride){
     const key=n.day_index===-1?'general':n.day_index;
     wbSessionNotes[key]=n.note;
   });
+
+  const wbOv=document.getElementById('wb-overlay');
+  if(wbOv){
+    // Same reparent pattern — escape any inherited containing block.
+    if(wbOv.parentElement!==document.body||wbOv.nextElementSibling)document.body.appendChild(wbOv);
+    wbOv.style.cssText='';
+    void wbOv.offsetHeight;
+  }
 
   document.getElementById('wb-title').textContent=`${a.name} — Programme`;
   renderWorkoutBuilder();
@@ -9042,12 +9050,7 @@ function closeTestModal(e){
   const modal=document.getElementById('test-modal');
   if(!modal)return;
   modal.classList.remove('sheet-in');
-  setTimeout(()=>{
-    // FULLY reset — an inline cssText from open() will otherwise keep the
-    // overlay taking the viewport at display:flex with pointer-events
-    // active, silently swallowing every click behind it.
-    modal.style.cssText='display:none';
-  },220);
+  modal.style.cssText='display:none';
 }
 function handleVideoSelect(input){
   const file=input.files[0];if(!file)return;
@@ -9847,11 +9850,13 @@ function _openCoachTestForm(a,pid,lvl){
       });
     });
     const modal=document.getElementById('test-modal');
-    modal.style.cssText='display:flex;align-items:flex-end;justify-content:center';
+    // Nuclear pattern (matches the client-page fix): reparent to <body>
+    // to escape any transformed/filtered ancestor. No transition — snap
+    // open, snap close. Snapping never fails to paint.
+    if(modal.parentElement!==document.body||modal.nextElementSibling)document.body.appendChild(modal);
+    modal.classList.add('sheet-in');
+    modal.style.cssText='display:flex;align-items:flex-end;justify-content:center;z-index:400';
     void modal.offsetHeight;
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>modal.classList.add('sheet-in'));
-    });
   }catch(err){
     console.error('_openCoachTestForm:',err);
     toast('Test form failed to open: '+(err.message||'').slice(0,60),'err');
@@ -9941,9 +9946,17 @@ async function submitTest(){
   },1500);
 }
 
-function openCoachWorkout(){
-  const a=ALL_ATHLETES.find(x=>x.id===profContext.athleteId);
-  if(!a)return;
+function openCoachWorkout(athleteIdOverride){
+  const targetId=athleteIdOverride||profContext.athleteId||coachLogClientId;
+  if(!targetId){toast('Open a client first','err');return;}
+  let a=ALL_ATHLETES.find(x=>x.id===targetId);
+  if(!a&&profContext&&profContext.athleteId===targetId){
+    a={id:targetId,name:coachLogClientName||'Athlete',scores:profContext.scores||{}};
+  }
+  if(!a&&coachLogClientId===targetId){
+    a={id:targetId,name:coachLogClientName||'Athlete',scores:coachLogClientScores||{}};
+  }
+  if(!a){toast('Athlete not found — reopen the client','err');return;}
   coachLogClientId=a.id;
   coachLogClientName=a.name;
   coachLogClientScores=a.scores||{};
@@ -9952,12 +9965,16 @@ function openCoachWorkout(){
   coachWorkoutOpenCircuits={};
   document.getElementById('cwm-title').textContent=`${a.name}'s Workout`;
   renderCoachWorkout();
-  document.getElementById('coach-workout-modal').style.display='block';
+  const modal=document.getElementById('coach-workout-modal');
+  // Same nuclear pattern — reparent to body, force paint, no transition.
+  if(modal.parentElement!==document.body||modal.nextElementSibling)document.body.appendChild(modal);
+  modal.style.cssText='display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;overflow-y:auto';
+  void modal.offsetHeight;
 }
 
 function closeCoachWorkout(){
-  document.getElementById('coach-workout-modal').style.display='none';
-  coachLogClientId=null;
+  const modal=document.getElementById('coach-workout-modal');
+  if(modal)modal.style.cssText='display:none';
 }
 
 function renderCoachWorkout(){
