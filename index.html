@@ -4652,7 +4652,7 @@ async function openPubProfile(athleteId){
   try{
     // Community view: radar, benchmarks, activity — NEVER wellness data.
     const[apRes,setsRes,profRes,bmRes,photoRes]=await Promise.all([
-      sb.from('athlete_profiles').select('pattern_id,current_level').eq('athlete_id',athleteId),
+      sb.from('athlete_profiles').select('pattern_id,current_level,verified').eq('athlete_id',athleteId),
       sb.from('workout_sets').select('exercise_id,exercise_key,pattern_id,session_date,reps_achieved,load_kg,side,week_number,day_index,logged_at').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(400),
       sb.from('profiles').select('full_name,email,is_public,avatar_url').eq('id',athleteId).maybeSingle(),
       sb.from('benchmark_results').select('benchmark_id,score_seconds').eq('athlete_id',athleteId),
@@ -4670,21 +4670,25 @@ async function openPubProfile(athleteId){
     if(msgBtn){msgBtn.style.display='block';msgBtn.onclick=()=>dmUser(athleteId,name);}
 
     const scores={};
-    (apRes.data||[]).forEach(r=>{scores[r.pattern_id]=r.current_level;});
+    const pubVerified={};
+    (apRes.data||[]).forEach(r=>{
+      scores[r.pattern_id]=r.current_level;
+      if(r.verified)pubVerified[r.pattern_id]=true;
+    });
     const photos={};
     (photoRes.data||[]).forEach(r=>{
       const key=(r.week_number!=null&&r.day_index!=null)?`w${r.week_number}d${r.day_index}`:r.session_date;
       photos[key]=r.photo_url;
     });
 
-    body.innerHTML=buildPubProfileBody(name,scores,setsRes.data||[],bmRes.data||[],photos,profRes.data?.avatar_url||null,athleteId);
+    body.innerHTML=buildPubProfileBody(name,scores,setsRes.data||[],bmRes.data||[],photos,profRes.data?.avatar_url||null,athleteId,pubVerified);
   }catch(err){
     body.innerHTML=`<div class="empty"><div class="ei">⚠️</div>${err.message}</div>`;
   }
 }
 
 // Pure renderer — testable offline, no data access.
-function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athleteId){
+function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athleteId,verified){
   const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
 
   const savedAP={...AP};
@@ -4701,6 +4705,7 @@ function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athlete
       <span class="prof-radar-bar-label">${PL[pid]}</span>
       <div class="prof-radar-bar-track"><div class="prof-radar-bar-fill" style="width:${Math.round((lv/5)*100)}%;background:${col}"></div></div>
       <span class="prof-radar-bar-val" style="color:${col}">${lv}</span>
+      ${lv>0&&verified&&verified[pid]?vMark(11):''}
     </div>`;
   }).join('');
 
@@ -4917,7 +4922,7 @@ async function load(){
     // Load all personal data in one parallel batch
     const[myAP,aap,logs,sets,checkins,pubProfiles]=await Promise.all([
       q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
-      q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
+      q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified')),
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}).limit(500)),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).order('session',{ascending:true}).limit(60)),
@@ -4937,7 +4942,8 @@ async function load(){
     });
     AAP=AAP.map(r=>({...r,is_public:pubMap[r.athlete_id]!==false}));
     USER_SUB=null;USER_TIER='free';
-    AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
+    AP={};AP_VERIFIED={};
+    myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;if(r.verified)AP_VERIFIED[r.pattern_id]=true;});
 
     // Render athlete views — isolated so UI errors don't kill load
     const safeRender=(fn,name)=>{try{fn();}catch(e){console.error(`${name} render error:`,e);}};
@@ -4982,7 +4988,7 @@ async function load(){
       // Coach data loads after athlete views are already rendered
       const[allProfiles,allAP,pending,allSets]=await Promise.all([
         q(sb.from('profiles').select('id,full_name,email,role,is_public').neq('id',CU.id)),
-        q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level')),
+        q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified')),
         q(sb.from('assessments').select('*').is('passed',null).order('assessed_at',{ascending:false})),
         q(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').order('logged_at',{ascending:false}).limit(300)),
       ]);
@@ -7366,6 +7372,25 @@ function buildDay5Tab(bmDay5){
   return h;
 }
 
+// ═══ VERIFICATION ═══
+// A level is always awarded instantly — free to know your level. What
+// varies is provenance. A level judged by an accredited coach carries
+// the circled V; a self-logged level carries nothing. Faking is not
+// prevented, it's made worthless: an unmarked L5 beside a verified L3
+// reads as unproven rather than impressive.
+function vMark(size,label){
+  const s=size||13;
+  return`<span title="${label||'Coach-verified'}" style="display:inline-flex;align-items:center;justify-content:center;width:${s}px;height:${s}px;min-width:${s}px;border-radius:50%;border:1px solid var(--gm);color:var(--gm);font-size:${Math.max(7,Math.round(s*0.6))}px;font-weight:700;font-family:var(--mono);line-height:1;flex-shrink:0;vertical-align:middle">V</span>`;
+}
+// Is the level this athlete currently holds in this pattern coach-verified?
+// Reads the denormalised flag on athlete_profiles (see radar_verification.sql).
+function isVerified(pid,scoresSource){
+  const src=scoresSource||AP_VERIFIED;
+  return !!(src&&src[pid]);
+}
+// pattern_id → true, for the signed-in athlete. Populated on load.
+let AP_VERIFIED={};
+
 // ═══ OVERLAY PRIMITIVE ═══
 // Every modal open in the app routes through here. Kills the residue
 // problem structurally instead of per-surface. See openClientPage for
@@ -8612,7 +8637,7 @@ function closeDemoModal(e){
 }
 
 // ── PROFILE ──
-function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
+function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins,verified){
   if(!scores)scores=AP;
   if(!logs)logs=LOGS;
   if(!sets)sets=SETS;
@@ -8620,7 +8645,11 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
   if(!pendingTests)pendingTests=[];
   if(!athleteId)athleteId=CU?.id;
   if(!checkins)checkins=CHECKINS;
-  profContext={scores,logs,sets,isCoach,pendingTests,athleteId,checkins};
+  // Provenance map (pattern_id → true when coach-verified). Viewing your
+  // own profile falls back to the signed-in athlete's; a coach viewing a
+  // client gets the client's, set by openClientPage.
+  if(!verified)verified=isCoach?(profContext.verified||{}):AP_VERIFIED;
+  profContext={scores,logs,sets,isCoach,pendingTests,athleteId,checkins,verified};
 
   const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
 
@@ -8672,6 +8701,7 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins){
         <div class="pc-level-row">
           <span class="pc-level" style="color:${col}">${lv}</span>
           <span class="pc-of5">/5</span>
+          ${lv>0&&verified[pid]?vMark(12):''}
         </div>
         ${pending&&isCoach?`<div class="pc-pending"><div class="pc-pending-label">⏳ Pending</div></div>`:''}
         <div class="pc-bar"><div class="pc-bar-fill" style="width:${Math.round((lv/5)*100)}%;background:${col}"></div></div>
@@ -9455,7 +9485,7 @@ async function openClientPage(athleteId){
     // Everything the three surfaces need, in one round trip
     const[profRes,apsRes,pendingRes,allTestsRes,setsRes,checkinsRes,photosRes]=await Promise.all([
       sb.from('profiles').select('id,full_name,email,avatar_url').eq('id',athleteId).maybeSingle(),
-      sb.from('athlete_profiles').select('pattern_id,current_level,updated_at').eq('athlete_id',athleteId),
+      sb.from('athlete_profiles').select('pattern_id,current_level,updated_at,verified').eq('athlete_id',athleteId),
       sb.from('assessments').select('*').eq('athlete_id',athleteId).is('passed',null).order('assessed_at',{ascending:false}),
       sb.from('assessments').select('*').eq('athlete_id',athleteId).order('assessed_at',{ascending:false}).limit(60),
       sb.from('workout_sets').select('*').eq('athlete_id',athleteId).order('logged_at',{ascending:false}).limit(500),
@@ -9474,6 +9504,7 @@ async function openClientPage(athleteId){
       email:profRes.data.email,
       avatar:profRes.data.avatar_url||null,
       scores:Object.fromEntries((apsRes.data||[]).map(r=>[r.pattern_id,r.current_level])),
+      verified:Object.fromEntries((apsRes.data||[]).filter(r=>r.verified).map(r=>[r.pattern_id,true])),
       pending:pendingRes.data||[],
       tests:allTestsRes.data||[],
       sets:setsRes.data||[],
@@ -9504,7 +9535,7 @@ async function openClientPage(athleteId){
     });
     // profContext must reflect the client so openPatternPage reads the
     // right scores + pending list when the coach drills into a pattern.
-    profContext={scores:client.scores,logs:client.tests,sets:client.sets,isCoach:true,pendingTests:client.pending,athleteId:client.id,checkins:client.checkins,photos:client.photos};
+    profContext={scores:client.scores,logs:client.tests,sets:client.sets,isCoach:true,pendingTests:client.pending,athleteId:client.id,checkins:client.checkins,photos:client.photos,verified:client.verified};
 
     body.innerHTML=buildClientPage(client);
 
@@ -9623,16 +9654,6 @@ function buildClientPage(client){
   </div>`;
 
   // ═══ 2. OVERVIEW — collapsible movement score, matching profile pattern ═══
-  const patternBars=PATS.map(pid=>{
-    const lv=client.scores[pid]||0;
-    const col=LC[lv]||'var(--mt)';
-    const pct=Math.round((lv/5)*100);
-    return`<div class="prof-radar-bar-row" onclick="openPatternPage('${pid}','${client.id}',true)" style="cursor:pointer">
-      <span class="prof-radar-bar-label">${PL[pid]}</span>
-      <div class="prof-radar-bar-track"><div class="prof-radar-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-      <span class="prof-radar-bar-val" style="color:${col}">${lv}</span>
-    </div>`;
-  }).join('');
 
   // ═══ 2. OVERVIEW — 8 pattern tiles primary, radar as collapsible view below ═══
   // Tiles are the way in: tap → pattern ladder → previous tests, videos, ladder.
@@ -9644,7 +9665,10 @@ function buildClientPage(client){
     return`<div onclick="openPatternPage('${pid}','${client.id}',true)"
       style="background:var(--bg2);border:1px solid ${lv>0?col:'var(--br)'};border-radius:var(--rl);padding:12px 10px;text-align:center;cursor:pointer;position:relative;overflow:hidden">
       ${lv>0?`<div style="position:absolute;top:0;left:0;right:0;height:2px;background:${col}"></div>`:''}
-      <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:${lv>0?col:'var(--mt)'};line-height:1">${lv}</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px">
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:${lv>0?col:'var(--mt)'};line-height:1">${lv}</div>
+        ${lv>0&&client.verified&&client.verified[pid]?vMark(11):''}
+      </div>
       <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);margin-top:4px">${PL[pid]}</div>
     </div>`;
   }).join('');
@@ -9940,6 +9964,7 @@ async function submitTest(){
     if(lv>current){
       await sb.from('athlete_profiles').upsert({
         athlete_id:targetId,pattern_id:pid,current_level:lv,
+        verified:true,verified_by:CU.id,
         passed_at:new Date().toISOString(),updated_at:new Date().toISOString()
       },{onConflict:'athlete_id,pattern_id'});
       const a=ALL_ATHLETES.find(x=>x.id===targetId);
@@ -10139,8 +10164,12 @@ async function logCoachCircuit(ck,dayIndex,exercises){
 
 async function setLevel(athleteId,patId,newLevel){
   if(newLevel<0||newLevel>5)return;
+  // A coach setting someone else's level is a verification event.
+  // Setting your own is self-logged, however senior you are.
+  const byCoach=!!(IS_COACH&&athleteId!==CU.id);
   const{error}=await sb.from('athlete_profiles').upsert({
     athlete_id:athleteId,pattern_id:patId,current_level:newLevel,
+    verified:byCoach&&newLevel>0,verified_by:byCoach&&newLevel>0?CU.id:null,
     passed_at:newLevel>0?new Date().toISOString():null,
     updated_at:new Date().toISOString()
   },{onConflict:'athlete_id,pattern_id'});
@@ -10152,13 +10181,17 @@ async function setLevel(athleteId,patId,newLevel){
 }
 
 async function judgeTest(assessmentId,athleteId,patId,level,pass){
-  const{error}=await sb.from('assessments').update({passed:pass}).eq('id',assessmentId);
+  // Stamp WHO judged it. Without this the single most important
+  // verification event — a coach reviewing a submitted video — produced
+  // a record indistinguishable from a self-logged one.
+  const{error}=await sb.from('assessments').update({passed:pass,coach_id:CU.id}).eq('id',assessmentId);
   if(error){toast('Failed to update test: '+error.message);return;}
   if(pass){
     const current=ALL_ATHLETES.find(x=>x.id===athleteId)?.scores[patId]||0;
     if(level>current){
       const{error:upErr}=await sb.from('athlete_profiles').upsert({
         athlete_id:athleteId,pattern_id:patId,current_level:level,
+        verified:true,verified_by:CU.id,
         passed_at:new Date().toISOString(),updated_at:new Date().toISOString()
       },{onConflict:'athlete_id,pattern_id'});
       if(upErr){toast('Failed to update level: '+upErr.message);return;}
@@ -10294,7 +10327,7 @@ function openPatternPage(pid,athleteId,isCoach){
             const latest=attempts[0]; // logs are pre-sorted desc
             return`<button onclick="event.stopPropagation();openTestVideo('${latest.video_url.replace(/'/g,"\\'")}','${PF[pid]}',${lvl},${latest.passed===true?1:0})" style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;color:var(--gm);background:rgba(0,229,255,0.08);border:0.5px solid var(--gml);padding:3px 8px;border-radius:99px;cursor:pointer;flex-shrink:0">▶ Video</button>`;
           })()}
-          ${current?`<span style="font-size:10px;font-weight:600;color:${lvlCol};background:rgba(0,0,0,0.4);padding:2px 7px;border-radius:99px;border:0.5px solid ${lvlCol}">Current</span>`:''}
+          ${current?`<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:${lvlCol};background:rgba(0,0,0,0.4);padding:2px 7px;border-radius:99px;border:0.5px solid ${lvlCol}">Current${(isCoach?(profContext.verified||{}):AP_VERIFIED)[pid]?' '+vMark(11):''}</span>`:''}
           <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
         </div>
       </div>`;
@@ -10464,6 +10497,9 @@ function closePatternPage(){
 }
 
 // ── LEADERBOARD ──
+let lbVerifiedOnly=false;
+function toggleLBVerified(){lbVerifiedOnly=!lbVerifiedOnly;rLB();}
+
 function rLB(){
   const nameLookup={...(window.NAME_LOOKUP||{})};
   ALL_ATHLETES.forEach(a=>{if(a.name)nameLookup[a.id]=a.name;});
@@ -10472,27 +10508,49 @@ function rLB(){
   const am={};
   AAP.forEach(r=>{
     const id=r.athlete_id;
-    if(!am[id])am[id]={id,name:nameLookup[id]||'Athlete',scores:{},isPublic:r.is_public!==false};
+    if(!am[id])am[id]={id,name:nameLookup[id]||'Athlete',scores:{},verified:{},isPublic:r.is_public!==false};
     am[id].scores[r.pattern_id]=r.current_level;
+    if(r.verified)am[id].verified[r.pattern_id]=true;
   });
-  if(!am[CU.id])am[CU.id]={id:CU.id,name:nameLookup[CU.id]||'Me',scores:{},isPublic:USER_IS_PUBLIC,isCoach:IS_COACH};
+  if(!am[CU.id])am[CU.id]={id:CU.id,name:nameLookup[CU.id]||'Me',scores:{},verified:{...AP_VERIFIED},isPublic:USER_IS_PUBLIC,isCoach:IS_COACH};
   else{am[CU.id].isPublic=USER_IS_PUBLIC;am[CU.id].isCoach=IS_COACH;}
   ALL_ATHLETES.forEach(a=>{
-    if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{},isPublic:a.is_public!==false,isCoach:a.isCoach||false};
+    if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{},verified:{},isPublic:a.is_public!==false,isCoach:a.isCoach||false};
   });
 
-  let aths=Object.values(am).map((a,i)=>({
-    ...a,
-    ds:lbF==='all'?PATS.reduce((s,p)=>s+(a.scores[p]||0),0):(a.scores[lbF]||0),
-    ms:lbF==='all'?40:5,
-    ci:i%AVC.length
-  })).sort((a,b)=>b.ds-a.ds);
+  // Verified-only turns this into a proven-capability board: the score
+  // counts coach-verified levels only, and athletes with nothing verified
+  // drop off. Self-logged levels still exist — they just don't score here.
+  const vOnly=lbVerifiedOnly;
+  const lvlOf=(a,p)=>(vOnly&&!a.verified?.[p])?0:(a.scores[p]||0);
+  let aths=Object.values(am).map((a,i)=>{
+    const assessed=PATS.filter(p=>(a.scores[p]||0)>0);
+    return{
+      ...a,
+      ds:lbF==='all'?PATS.reduce((s,p)=>s+lvlOf(a,p),0):lvlOf(a,lbF),
+      ms:lbF==='all'?40:5,
+      // Fully verified = every level they hold was judged by a coach.
+      allVerified:lbF==='all'
+        ?(assessed.length>0&&assessed.every(p=>a.verified?.[p]))
+        :!!a.verified?.[lbF],
+      ci:i%AVC.length
+    };
+  }).sort((a,b)=>b.ds-a.ds);
+  if(vOnly)aths=aths.filter(a=>a.ds>0);
 
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
   let h=`<div class="lbf" style="display:flex;flex-wrap:wrap;gap:4px;padding:0 0 12px">
     ${['all',...PATS].map(f=>`<button class="lbfb${lbF===f&&!lbBmFilter?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}
+    <button class="lbfb${lbVerifiedOnly?' act':''}" onclick="toggleLBVerified()" style="${lbVerifiedOnly?'':'border-color:var(--gml);color:var(--gm)'};display:inline-flex;align-items:center;gap:5px">${vMark(11)} Verified</button>
     ${BENCHMARKS.map(b=>`<button class="lbfb${lbBmFilter===b.id?' act':''}" onclick="sLBBm('${b.id}')" style="${lbBmFilter===b.id?'':'border-color:rgba(0,255,148,0.3);color:var(--pass)'}">${b.name.replace(' Run','').replace('km','k').replace('m SkiErg','m Ski')}</button>`).join('')}
   </div>`;
+
+  if(lbVerifiedOnly){
+    h+=`<div style="display:flex;align-items:flex-start;gap:8px;background:var(--gl);border:1px solid var(--gml);border-radius:var(--rl);padding:10px 12px;margin-bottom:12px">
+      ${vMark(13)}
+      <div style="font-size:11px;color:var(--mt);line-height:1.5">Counting <strong style="color:var(--gm)">coach-verified levels only</strong>. Self-logged levels still count toward your movement score — they just aren't proven yet.</div>
+    </div>`;
+  }
 
   // Benchmark leaderboard
   if(lbBmFilter){
@@ -10562,7 +10620,7 @@ function rLB(){
             ${avCircle(a,i===1?48:40,rings[i])}
             <div style="font-size:11px;font-weight:700;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${a.name.split(' ')[0]}${me2?' ·you':''}</div>
             <div style="width:100%;height:${heights[i]}px;background:linear-gradient(180deg,var(--bg3),var(--bg2));border:1px solid ${i===1?'var(--gml)':'var(--br)'};border-bottom:none;border-radius:var(--r) var(--r) 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
-              <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${rings[i]}">${a.ds}</div>
+              <div style="display:flex;align-items:center;gap:3px"><div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${rings[i]}">${a.ds}</div>${a.allVerified?vMark(10):''}</div>
               <div style="font-size:8px;font-weight:700;font-family:var(--mono);color:var(--mt)">#${places[i]}</div>
             </div>
           </div>`;
@@ -10598,7 +10656,7 @@ function rLB(){
           ${mb}
         </div>
         <div class="lbs">
-          <div class="lbsn">${a.ds}</div>
+          <div class="lbsn" style="display:flex;align-items:center;gap:4px;justify-content:flex-end">${a.ds}${a.allVerified?vMark(11):''}</div>
           <div class="lbsd">/ ${a.ms}</div>
         </div>
         ${canTap&&!me?`<span style="font-size:16px;color:var(--br);padding-left:4px">›</span>`:''}
