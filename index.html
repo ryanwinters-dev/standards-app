@@ -4946,7 +4946,13 @@ async function load(){
     AAP=aap;LOGS=logs;SETS=sets;CHECKINS=checkins;
     // Attach is_public to AAP rows for leaderboard use
     const pubMap={};
-    (pubProfiles||[]).forEach(p=>{pubMap[p.id]=p.is_public!==false;});
+    window.NAME_LOOKUP={};
+    (pubProfiles||[]).forEach(p=>{
+      pubMap[p.id]=p.is_public!==false;
+      // Names were fetched here all along and thrown away — the boards fell
+      // back to 'Athlete' for anyone outside the coach's roster.
+      if(p.full_name)window.NAME_LOOKUP[p.id]=p.full_name.split(' ')[0];
+    });
     AAP=AAP.map(r=>({...r,is_public:pubMap[r.athlete_id]!==false}));
     USER_SUB=null;USER_TIER='free';
     AP={};myAP.forEach(r=>{AP[r.pattern_id]=r.current_level;});
@@ -7497,48 +7503,107 @@ function buildActivitySpotlight(sets,photos,ownerName){
   <div class="spot-row">${cards}</div>`;
 }
 function openSpotlightDetail(key){
+  // ═══ SESSION SPOTLIGHT — champion the session ═══
+  // Hero image (or branded fallback), identity over the picture, a stat
+  // strip that headlines the work, podium top lifts, pattern chips.
   const d=window._SPOT[key];
   if(!d)return;
   let ov=document.getElementById('spotlight-overlay');
   if(!ov){
     ov=document.createElement('div');
     ov.id='spotlight-overlay';
-    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:260;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
+    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:260;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))';
     ov.onclick=e=>{if(e.target===ov)ov.style.display='none';};
     document.body.appendChild(ov);
   }
+
   const vol=d.rows.reduce((t,s)=>t+((s.reps_achieved||0)*(s.load_kg||0)),0);
-  const exIds=[...new Set(d.rows.map(s=>s.exercise_id).filter(Boolean))];
-  // top lifts by best load
+  const volStr=vol>999?(vol/1000).toFixed(1)+'k':String(Math.round(vol));
+  const totalReps=d.rows.reduce((t,s)=>t+(s.reps_achieved||0),0);
+  const patterns=[...new Set(d.rows.map(s=>s.pattern_id).filter(Boolean))];
+  const dt=new Date(d.date+'T12:00');
+  const sessLabel=(d.week!=null&&d.day!=null)?(d.day===4?`W${d.week} · BENCHMARK`:`W${d.week} · DAY ${d.day+1}`):'SESSION';
+  const dayNames=['Push + Squat','Pull + Hinge','Push + Squat','Pull + Hinge','Benchmark'];
+  const dayName=(d.day!=null&&dayNames[d.day])?dayNames[d.day]:'';
+  // Session duration when timestamps span meaningfully
+  const times=d.rows.map(s=>new Date(s.logged_at).getTime()).filter(t=>!isNaN(t));
+  const durMin=times.length>1?Math.round((Math.max(...times)-Math.min(...times))/60000):0;
+
+  // Top lifts — podium
   const best={};
   d.rows.forEach(s=>{
-    if(!s.exercise_id||!s.load_kg)return;
-    if(!best[s.exercise_id]||s.load_kg>best[s.exercise_id].load_kg)best[s.exercise_id]=s;
+    const k=s.exercise_id||s.exercise_key;
+    if(!k||!s.load_kg)return;
+    if(!best[k]||s.load_kg>best[k].load_kg)best[k]=s;
   });
-  const top=Object.values(best).sort((a,b)=>b.load_kg-a.load_kg).slice(0,3).map(s=>{
+  const medals=['var(--gd)','#C0C4CC','#B08D57'];
+  const top=Object.values(best).sort((a,b)=>b.load_kg-a.load_kg).slice(0,3).map((s,i)=>{
     const exo=EX.find(e=>e.id==s.exercise_id);
-    return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--br)">
-      <span style="font-size:12px;color:var(--dk)">${exo?.name||'Exercise'}</span>
-      <span style="font-size:12px;font-family:var(--mono);color:var(--gm)">${s.load_kg}kg × ${s.reps_achieved}${s.side?` <span class="set-side ${s.side==='L'?'sl':'sr'}">${s.side}</span>`:''}</span>
+    const nm=exo?.name||(typeof s.exercise_key==='string'?s.exercise_key.split('-').pop().replace(/([A-Z])/g,' $1').trim():'Exercise');
+    return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--br)">
+      <span style="width:20px;height:20px;border-radius:50%;border:1px solid ${medals[i]};color:${medals[i]};font-size:10px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--dk);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</span>
+      <span style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--gm);flex-shrink:0">${s.load_kg}<span style="font-size:10px;color:var(--mt)">kg</span> × ${s.reps_achieved}${s.side?` <span class="set-side ${s.side==='L'?'sl':'sr'}">${s.side}</span>`:''}</span>
     </div>`;
   }).join('');
-  const dt=new Date(d.date+'T12:00');
-  ov.innerHTML=`<div style="max-width:420px;margin:auto;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
-    ${d.photo?`<div style="height:220px;background-image:url('${d.photo}');background-size:cover;background-position:center"></div>`:''}
-    <div style="padding:var(--s4)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s2)">
-        <div>
-          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gm)">${d.name?d.name.split(' ')[0]+"'s session":'Session'}${(d.week!=null&&d.day!=null)?` · W${d.week} ${d.day===4?'BM':'D'+(d.day+1)}`:''}</div>
-          <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--dk)">${dt.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
+
+  // Pattern chips with set counts
+  const patChips=patterns.map(pid=>{
+    const n=d.rows.filter(s=>s.pattern_id===pid).length;
+    return`<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--gl);border:1px solid var(--gml);border-radius:99px;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--gm)">${PL[pid]||pid}<span style="color:var(--mt)">${n}</span></span>`;
+  }).join(' ');
+
+  const hero=d.photo
+    ?`<div style="height:280px;background-image:url('${d.photo}');background-size:cover;background-position:center;position:relative">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.95) 0%,rgba(8,8,8,.25) 45%,rgba(8,8,8,.15) 100%)"></div>
+        <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(8,8,8,.6);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:14px;cursor:pointer;backdrop-filter:blur(4px)">✕</button>
+        <div style="position:absolute;left:var(--s4);right:var(--s4);bottom:var(--s3)">
+          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;color:var(--gm)">${sessLabel}</div>
+          <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:#fff;line-height:1.15">${dayName||dt.toLocaleDateString('en-GB',{weekday:'long'})}</div>
+          <div style="font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.65);margin-top:2px">${dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}${d.name?` · ${d.name}`:''}</div>
         </div>
-        <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="background:var(--bg3);border:1px solid var(--br);border-radius:var(--r);color:var(--mt);padding:6px 10px;font-size:11px;cursor:pointer">✕</button>
+      </div>`
+    :`<div style="height:190px;background:linear-gradient(150deg,var(--bg3),var(--bg2));position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
+        <button onclick="document.getElementById('spotlight-overlay').style.display='none'" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--br);color:var(--mt);font-size:14px;cursor:pointer">✕</button>
+        <div style="font-size:40px;font-weight:700;font-family:var(--mono);color:var(--gm);line-height:1">${volStr}<span style="font-size:16px;color:var(--mt)">kg</span></div>
+        <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mt);margin-top:4px">total moved</div>
+        <div style="position:absolute;left:var(--s4);bottom:var(--s3)">
+          <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;color:var(--gm)">${sessLabel}</div>
+          <div style="font-size:15px;font-weight:700;font-family:var(--mono);color:var(--dk)">${dayName||''}</div>
+          <div style="font-size:10px;font-family:var(--mono);color:var(--mt)">${dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}${d.name?` · ${d.name}`:''}</div>
+        </div>
+      </div>`;
+
+  ov.innerHTML=`<div style="max-width:440px;margin:auto;background:var(--bg2);border:1px solid var(--brm);border-radius:var(--rl);overflow:hidden" onclick="event.stopPropagation()">
+    ${hero}
+    <div style="padding:var(--s3) var(--s4) var(--s4)">
+      <div style="display:grid;grid-template-columns:repeat(${durMin>0?4:3},1fr);gap:8px;margin-bottom:var(--s3)">
+        <div style="text-align:center;padding:10px 4px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl)">
+          <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk)">${d.rows.length}</div>
+          <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Sets</div>
+        </div>
+        <div style="text-align:center;padding:10px 4px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl)">
+          <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--gm)">${volStr}</div>
+          <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">kg moved</div>
+        </div>
+        <div style="text-align:center;padding:10px 4px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl)">
+          <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk)">${totalReps}</div>
+          <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Reps</div>
+        </div>
+        ${durMin>0?`<div style="text-align:center;padding:10px 4px;background:var(--bg3);border:1px solid var(--br);border-radius:var(--rl)">
+          <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--dk)">${durMin}<span style="font-size:11px;color:var(--mt)">m</span></div>
+          <div style="font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt)">Duration</div>
+        </div>`:''}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s1);margin-bottom:var(--s3)">
-        <div class="preview-stat"><div class="preview-stat-val">${d.rows.length}</div><div class="preview-stat-label">Sets</div></div>
-        <div class="preview-stat"><div class="preview-stat-val" style="color:var(--gm)">${vol>999?(vol/1000).toFixed(1)+'k':Math.round(vol)}</div><div class="preview-stat-label">Volume kg</div></div>
-        <div class="preview-stat"><div class="preview-stat-val">${exIds.length}</div><div class="preview-stat-label">Exercises</div></div>
+
+      ${patChips?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:var(--s3)">${patChips}</div>`:''}
+
+      ${top?`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Top lifts</div>${top}`:''}
+
+      <div style="display:flex;align-items:center;justify-content:center;margin-top:var(--s3);opacity:.5">
+        <span style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.2em;color:var(--mt)">[RADAR]</span>
       </div>
-      ${top?`<div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">Top Lifts</div>${top}`:''}
     </div>
   </div>`;
   ov.style.display='block';
@@ -10120,8 +10185,8 @@ function closePatternPage(){
 
 // ── LEADERBOARD ──
 function rLB(){
-  const nameLookup={};
-  ALL_ATHLETES.forEach(a=>{nameLookup[a.id]=a.name;});
+  const nameLookup={...(window.NAME_LOOKUP||{})};
+  ALL_ATHLETES.forEach(a=>{if(a.name)nameLookup[a.id]=a.name;});
   nameLookup[CU.id]=(CU.user_metadata?.full_name||CU.email).split(' ')[0];
 
   const am={};
