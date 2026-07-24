@@ -4739,6 +4739,89 @@ async function openPubProfile(athleteId){
 }
 
 // Pure renderer — testable offline, no data access.
+// ═══ PUBLIC PATTERN LADDER ═══
+// Someone else's ladder for one pattern, read-only. This is where the
+// social layer stops being a scoreboard and becomes evidence: a level
+// with footage attached is a claim you can actually check. Self-contained
+// — fetches its own data and never touches the viewer's profContext.
+async function openPubLadder(athleteId,pid,athleteName){
+  document.querySelectorAll('#pub-ladder-overlay').forEach(el=>el.remove());
+  const ov=document.createElement('div');
+  ov.id='pub-ladder-overlay';
+  ov.style.cssText='display:none';
+  ov.innerHTML=`<div style="max-width:640px;margin:0 auto;width:100%;height:100%;display:flex;flex-direction:column">
+    <div style="background:var(--bg2);border-bottom:1px solid var(--br);padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(56px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <button onclick="closePubLadder()" style="background:transparent;border:none;color:var(--gm);font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;padding:6px 8px 6px 0">← Back</button>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(athleteName||'Athlete')} · ${PF[pid]||pid}</div>
+      </div>
+    </div>
+    <div id="pub-ladder-body" style="flex:1;overflow-y:auto;padding:16px"></div>
+  </div>`;
+  document.body.appendChild(ov);
+  openOverlay(ov,{display:'flex',bg:'var(--bg)',extra:'flex-direction:column'});
+
+  const body=document.getElementById('pub-ladder-body');
+  body.innerHTML=`<div style="padding:40px;text-align:center;color:var(--mt);font-size:12px;font-family:var(--mono)">Loading…</div>`;
+
+  const[apRes,aRes]=await Promise.all([
+    sb.from('athlete_profiles').select('current_level,verified').eq('athlete_id',athleteId).eq('pattern_id',pid).maybeSingle(),
+    sb.from('assessments').select('level_tested,passed,video_url,assessed_at,notes,coach_id')
+      .eq('athlete_id',athleteId).eq('pattern_id',pid).eq('passed',true)
+      .order('assessed_at',{ascending:false}),
+  ]);
+
+  const held=apRes.data?.current_level||0;
+  const isV=!!apRes.data?.verified;
+  const tests=aRes.data||[];
+  // Newest passed attempt per level — that's the one worth showing.
+  const byLevel={};
+  tests.forEach(t=>{if(!byLevel[t.level_tested])byLevel[t.level_tested]=t;});
+
+  const withVideo=Object.values(byLevel).filter(t=>t.video_url).length;
+
+  let h=`<div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid ${held?'var(--gml)':'var(--br)'};border-radius:var(--rl);padding:var(--s4);margin-bottom:var(--s3);position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,${held?LC[held]:'var(--br)'},transparent)"></div>
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:4px">${PF[pid]||pid}</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:38px;font-weight:700;font-family:var(--mono);color:${held?LC[held]:'var(--mt)'};line-height:1">${held}</span>
+      <span style="font-size:14px;color:var(--mt)">/ 5</span>
+      ${held&&isV?vMark(16):''}
+    </div>
+    <div style="font-size:11px;color:var(--mt);font-family:var(--mono);margin-top:6px">${
+      !held?'Not yet assessed'
+      :isV?'Coach-verified'
+      :'Self-logged — not yet verified'}${withVideo?` · ${withVideo} on video`:''}</div>
+  </div>`;
+
+  h+=`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">The ladder</div>`;
+
+  for(let lvl=5;lvl>=1;lvl--){
+    const std=STD.find(s=>s.pattern_id===pid&&s.level===lvl);
+    const done=held>=lvl;
+    const t=byLevel[lvl];
+    const hasVid=!!t?.video_url;
+    const col=LC[lvl];
+    h+=`<div style="background:var(--bg2);border:${held===lvl?'1.5px solid '+col:'1px solid var(--br)'};border-radius:var(--rl);padding:12px 14px;margin-bottom:8px;opacity:${done?1:.5}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${std?.test_exercise?'6px':'0'}">
+        <span style="width:26px;height:26px;border-radius:50%;border:1px solid ${done?col:'var(--br)'};background:${done?'rgba(0,0,0,.35)':'transparent'};color:${done?col:'var(--mt)'};font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0">${lvl}</span>
+        <span style="flex:1;min-width:0;font-size:13px;font-weight:${done?'700':'400'};color:${done?'var(--dk)':'var(--mt)'}">${std?.test_exercise||'Level '+lvl}</span>
+        ${held===lvl&&isV?vMark(12):''}
+        ${hasVid?`<button onclick="openTestVideo('${String(t.video_url).replace(/'/g,"\\'")}','${PF[pid]||pid}',${lvl},${t.coach_id?1:0})" style="flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:4px 9px;background:var(--gl);border:1px solid var(--gml);border-radius:99px;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--gm);cursor:pointer">▶ Watch</button>`:''}
+      </div>
+      ${std?.pass_criteria?`<div style="font-size:11px;color:var(--mt);line-height:1.5;padding-left:36px">${std.pass_criteria}</div>`:''}
+    </div>`;
+  }
+
+  if(!withVideo&&held){
+    h+=`<div style="text-align:center;padding:14px;font-size:11px;color:var(--mt);line-height:1.6">No footage on these levels yet.<br>Video is what turns a level into proof.</div>`;
+  }
+  body.innerHTML=h;
+}
+function closePubLadder(){
+  document.querySelectorAll('#pub-ladder-overlay').forEach(el=>el.remove());
+}
+
 function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athleteId,verified){
   const tot=PATS.reduce((s,p)=>s+(scores[p]||0),0);
 
@@ -4749,14 +4832,16 @@ function buildPubProfileBody(name,scores,sets,bmResults,photos,avatarUrl,athlete
   Object.keys(AP).forEach(k=>delete AP[k]);
   Object.assign(AP,savedAP);
 
+  const safeName=String(name||'Athlete').replace(/'/g,"\\'");
   const radarBars=PATS.map(pid=>{
     const lv=scores[pid]||0;
     const col=LC[lv]||'var(--mt)';
-    return`<div class="prof-radar-bar-row">
+    return`<div class="prof-radar-bar-row" onclick="openPubLadder('${athleteId}','${pid}','${safeName}')" style="cursor:pointer">
       <span class="prof-radar-bar-label">${PL[pid]}</span>
       <div class="prof-radar-bar-track"><div class="prof-radar-bar-fill" style="width:${Math.round((lv/5)*100)}%;background:${col}"></div></div>
       <span class="prof-radar-bar-val" style="color:${col}">${lv}</span>
       ${lv>0&&verified&&verified[pid]?vMark(11):''}
+      <span style="font-size:13px;color:var(--br);flex-shrink:0;padding-left:2px">›</span>
     </div>`;
   }).join('');
 
@@ -4973,7 +5058,7 @@ async function load(){
     // Load all personal data in one parallel batch
     const[myAP,aap,logs,sets,checkins,pubProfiles]=await Promise.all([
       q(sb.from('athlete_profiles').select('*').eq('athlete_id',CU.id)),
-      q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified')),
+      q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified,passed_at')),
       q(sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false})),
       q(sb.from('workout_sets').select('*').eq('athlete_id',CU.id).order('logged_at',{ascending:false}).limit(500)),
       q(sb.from('checkins').select('*').eq('athlete_id',CU.id).order('checkin_date',{ascending:false}).order('session',{ascending:true}).limit(60)),
@@ -5053,7 +5138,7 @@ async function load(){
       }).catch(()=>{COACH_INVITES=[];});
 
       const[allAP,pending,allSets]=rosterIds.length?await Promise.all([
-        q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified').in('athlete_id',rosterIds)),
+        q(sb.from('athlete_profiles').select('athlete_id,pattern_id,current_level,verified,passed_at').in('athlete_id',rosterIds)),
         q(sb.from('assessments').select('*').is('passed',null).in('athlete_id',rosterIds).order('assessed_at',{ascending:false})),
         q(sb.from('workout_sets').select('athlete_id,exercise_id,pattern_id,session_date,reps_achieved,load_kg,reps_target_high,logged_at').in('athlete_id',rosterIds).order('logged_at',{ascending:false}).limit(300)),
       ]):[[],[],[]];
@@ -10760,6 +10845,18 @@ function closePatternPage(){
 
 // ── LEADERBOARD ──
 let lbVerifiedOnly=false;
+// Ranks opens as a hub of paths, not a single board. 'board' is the
+// leaderboard you land on after choosing one.
+let lbView='hub';
+function lbOpenBoard(filter,verifiedOnly,bmId){
+  lbView='board';
+  if(filter!==undefined)lbF=filter;
+  if(verifiedOnly!==undefined)lbVerifiedOnly=!!verifiedOnly;
+  lbBmFilter=bmId||null;
+  rLB();
+  const v=document.getElementById('v-leaderboard');if(v)v.scrollTop=0;
+}
+function lbBackToHub(){lbView='hub';lbBmFilter=null;rLB();}
 let COACH_CODE=null;
 let COACH_INVITES=[];
 let MY_INVITES=[];
@@ -10781,6 +10878,109 @@ function lbVerifiedToggle(){
   </div>`;
 }
 
+// ═══ RANKS HUB ═══
+// A dashboard of paths rather than one board: where you stand, what the
+// community has just proven, and several ways in. Every card is a route.
+function buildRanksHub(am,nameLookup){
+  const me=am[CU.id];
+  const scoreOf=a=>PATS.reduce((s,p)=>s+(a.scores[p]||0),0);
+  const ranked=Object.values(am).filter(a=>a.isPublic!==false||a.id===CU.id)
+    .map(a=>({...a,ds:scoreOf(a)}))
+    .sort((x,y)=>y.ds-x.ds);
+  const myIdx=ranked.findIndex(a=>a.id===CU.id);
+  const myScore=me?scoreOf(me):0;
+  const myVerified=me?PATS.filter(p=>me.verified?.[p]).length:0;
+
+  // Community-wide: what's been proven lately
+  const now=Date.now();
+  const recent=(AAP||[])
+    .filter(r=>r.passed_at&&r.current_level>0&&(now-new Date(r.passed_at).getTime())<21*864e5)
+    .sort((a,b)=>new Date(b.passed_at)-new Date(a.passed_at))
+    .slice(0,10);
+
+  const totalVerified=(AAP||[]).filter(r=>r.verified).length;
+  const totalLevels=(AAP||[]).filter(r=>r.current_level>0).length;
+
+  let h='';
+
+  // ── Your standing ──
+  h+=`<div style="background:linear-gradient(135deg,var(--bg3) 0%,var(--bg2) 100%);border:1px solid var(--brm);border-radius:var(--rl);padding:var(--s4);margin-bottom:var(--s3);position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gm),transparent)"></div>
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gm);margin-bottom:8px">Your standing</div>
+    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <div><span style="font-size:34px;font-weight:700;font-family:var(--mono);color:var(--dk);line-height:1">#${myIdx>=0?myIdx+1:'—'}</span><span style="font-size:12px;color:var(--mt)"> of ${ranked.length}</span></div>
+      <div style="height:26px;width:1px;background:var(--br)"></div>
+      <div><span style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--gm)">${myScore}</span><span style="font-size:11px;color:var(--mt)">/40</span></div>
+      <div style="display:flex;align-items:center;gap:5px">${vMark(12)}<span style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--dk)">${myVerified}</span><span style="font-size:10px;color:var(--mt)">verified</span></div>
+    </div>
+  </div>`;
+
+  // ── Recently proven — the social feed ──
+  if(recent.length){
+    h+=`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Recently proven</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:var(--s3);scrollbar-width:none">
+      ${recent.map(r=>{
+        const a=am[r.athlete_id];
+        const nm=a?.name||nameLookup[r.athlete_id]||'Athlete';
+        const av=(window.AVATAR_LOOKUP||{})[r.athlete_id];
+        const days=Math.floor((now-new Date(r.passed_at).getTime())/864e5);
+        const when=days===0?'today':days===1?'1d':days+'d';
+        const col=LC[r.current_level]||'var(--mt)';
+        return`<div onclick="openPubProfile('${r.athlete_id}')" style="flex-shrink:0;width:132px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:11px;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+            ${av?`<img src="${av}" onerror="this.style.display='none'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0"/>`:`<div style="width:24px;height:24px;border-radius:50%;background:var(--bg3);color:var(--dk);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${gi(nm)}</div>`}
+            <span style="font-size:11px;font-weight:600;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="font-size:17px;font-weight:700;font-family:var(--mono);color:${col};line-height:1">L${r.current_level}</span>
+            ${r.verified?vMark(11):''}
+          </div>
+          <div style="font-size:9px;font-family:var(--mono);color:var(--mt);margin-top:4px">${PL[r.pattern_id]||r.pattern_id} · ${when}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // ── Boards ──
+  h+=`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Boards</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:var(--s3)">
+    <div onclick="lbOpenBoard('all',false)" style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:14px;cursor:pointer">
+      <div style="font-size:13px;font-weight:700;color:var(--dk);margin-bottom:3px">Overall</div>
+      <div style="font-size:10px;color:var(--mt);font-family:var(--mono)">${ranked.length} ranked · all levels</div>
+    </div>
+    <div onclick="lbOpenBoard('all',true)" style="background:var(--gl);border:1px solid var(--gml);border-radius:var(--rl);padding:14px;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">${vMark(12)}<span style="font-size:13px;font-weight:700;color:var(--gm)">Verified</span></div>
+      <div style="font-size:10px;color:var(--mt);font-family:var(--mono)">${totalVerified} of ${totalLevels} levels proven</div>
+    </div>
+  </div>`;
+
+  // ── By pattern ──
+  h+=`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">By pattern</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:var(--s3)">
+    ${PATS.map(pid=>{
+      const top=Object.values(am).filter(a=>a.isPublic!==false||a.id===CU.id)
+        .map(a=>a.scores[pid]||0).sort((x,y)=>y-x)[0]||0;
+      const mine=me?.scores[pid]||0;
+      return`<div onclick="lbOpenBoard('${pid}',false)" style="background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:11px 8px;text-align:center;cursor:pointer">
+        <div style="font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mt);margin-bottom:5px">${PL[pid]}</div>
+        <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${mine?LC[mine]:'var(--mt)'};line-height:1">${mine}</div>
+        <div style="font-size:8px;font-family:var(--mono);color:var(--mt);margin-top:3px">top ${top}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // ── Benchmarks ──
+  if((BENCHMARKS||[]).length){
+    h+=`<div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:8px">Benchmarks</div>`;
+    h+=BENCHMARKS.map(b=>`<div onclick="lbOpenBoard('all',false,'${b.id}')" style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--br);border-radius:var(--rl);padding:12px 14px;margin-bottom:6px;cursor:pointer">
+      <span style="flex:1;font-size:13px;font-weight:600;color:var(--dk)">${b.name}</span>
+      <span style="font-size:16px;color:var(--br)">›</span>
+    </div>`).join('');
+  }
+
+  return h;
+}
+
 function rLB(){
   const nameLookup={...(window.NAME_LOOKUP||{})};
   ALL_ATHLETES.forEach(a=>{if(a.name)nameLookup[a.id]=a.name;});
@@ -10798,6 +10998,12 @@ function rLB(){
   ALL_ATHLETES.forEach(a=>{
     if(!am[a.id])am[a.id]={id:a.id,name:a.name,scores:{},verified:{},isPublic:a.is_public!==false,isCoach:a.isCoach||false};
   });
+
+  // ═══ HUB — the dashboard you land on ═══
+  if(lbView==='hub'){
+    document.getElementById('v-leaderboard').innerHTML=buildRanksHub(am,nameLookup);
+    return;
+  }
 
   // Verified-only turns this into a proven-capability board: the score
   // counts coach-verified levels only, and athletes with nothing verified
@@ -10820,7 +11026,11 @@ function rLB(){
   if(vOnly)aths=aths.filter(a=>a.ds>0);
 
   const fl={all:'All',Squat:'Squat',Hinge:'Hinge',HPush:'H.Push',VPush:'V.Push',HPull:'H.Pull',VPull:'V.Pull',Carry:'Carry',Core:'Core'};
-  let h=`<div class="lbf" style="display:flex;flex-wrap:wrap;gap:4px;padding:0 0 12px">
+  let h=`<div onclick="lbBackToHub()" style="display:flex;align-items:center;gap:8px;padding:6px 0 12px;cursor:pointer">
+    <span style="font-size:12px;font-weight:700;font-family:var(--mono);color:var(--gm)">← Ranks</span>
+    <span style="font-size:11px;color:var(--mt);font-family:var(--mono)">${lbBmFilter?(BENCHMARKS.find(b=>b.id===lbBmFilter)?.name||'Benchmark'):lbF==='all'?(lbVerifiedOnly?'Verified board':'Overall board'):(PF[lbF]||lbF)}</span>
+  </div>`;
+  h+=`<div class="lbf" style="display:flex;flex-wrap:wrap;gap:4px;padding:0 0 12px">
     ${['all',...PATS].map(f=>`<button class="lbfb${lbF===f&&!lbBmFilter?' act':''}" onclick="sLBF('${f}')">${fl[f]}</button>`).join('')}
     ${BENCHMARKS.map(b=>`<button class="lbfb${lbBmFilter===b.id?' act':''}" onclick="sLBBm('${b.id}')" style="${lbBmFilter===b.id?'':'border-color:rgba(0,255,148,0.3);color:var(--pass)'}">${b.name.replace(' Run','').replace('km','k').replace('m SkiErg','m Ski')}</button>`).join('')}
   </div>`;
