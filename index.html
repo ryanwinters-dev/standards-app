@@ -7387,6 +7387,15 @@ function toggleWuPhase(phase){
   rWorkout();
 }
 
+// Collapsible circuit sections in the day view. This was referenced by the
+// warm-up and accessory headers but never defined — every tap on one of
+// those headers silently did nothing. Same shape as toggleWuPhase, and it
+// matches how addSet already writes openCircuits.
+function toggleCircuit(key){
+  openCircuits[key]=!openCircuits[key];
+  rWorkout();
+}
+
 function buildAccCircuitPage(circuit,i){
   if(!circuit)return`<div class="circuit-page"><div class="empty">No circuit.</div></div>`;
   const ck=`acc-d${curDay}-${i}`;
