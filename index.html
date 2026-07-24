@@ -10121,6 +10121,16 @@ function _openCoachTestForm(a,pid,lvl){
     toast('Test form failed to open: '+(err.message||'').slice(0,60),'err');
   }
 }
+// Does this athlete have a coach to judge their tests?
+// Fails SAFE: on error we return true, so a submission goes to review
+// rather than auto-awarding a level nobody checked.
+async function athleteHasCoach(){
+  try{
+    const{data}=await sb.from('profiles').select('coach_id').eq('id',CU.id).maybeSingle();
+    return !!data?.coach_id;
+  }catch(e){return true;}
+}
+
 async function submitTest(){
   // Determine if coach logging for client or athlete logging for self
   const forClient=!!coachLogClientId&&document.getElementById('test-modal-title').textContent.includes('—')&&!document.getElementById('test-modal-title').textContent.includes('Log Test —')||
@@ -10165,18 +10175,36 @@ async function submitTest(){
     }catch(err){me.textContent='Video upload failed: '+err.message;me.className='msg err';submitBtn.disabled=false;return;}
   }
 
+  // A solo athlete has nobody to review their test. Leaving it pending
+  // would mean they can never level up — which contradicts "free to know
+  // your level". So it awards immediately as UNVERIFIED: no Ⓥ, visibly
+  // unproven. A coached athlete still goes to their coach's review queue,
+  // because that judgement is the product.
+  const soloSelfLog=!coachLogClientId&&!(await athleteHasCoach());
+
   const{error}=await sb.from('assessments').insert({
     athlete_id:targetId,
     coach_id:coachLogClientId?CU.id:null,
     pattern_id:pid,
     level_tested:lv,
-    passed:coachLogClientId?true:null, // coach logs are auto-passed
+    passed:(coachLogClientId||soloSelfLog)?true:null,
     notes:nt||null,
     video_url:videoUrl,
     assessed_at:dt?new Date(dt).toISOString():new Date().toISOString()
   });
 
   if(error){me.textContent='Error: '+error.message;me.className='msg err';submitBtn.disabled=false;return;}
+
+  // Solo self-log: award the level, explicitly unverified.
+  if(soloSelfLog&&lv>(AP[pid]||0)){
+    await sb.from('athlete_profiles').upsert({
+      athlete_id:CU.id,pattern_id:pid,current_level:lv,
+      verified:false,verified_by:null,
+      passed_at:new Date().toISOString(),updated_at:new Date().toISOString()
+    },{onConflict:'athlete_id,pattern_id'});
+    AP[pid]=lv;
+    delete AP_VERIFIED[pid];
+  }
 
   // If coach logging, also update athlete_profiles immediately
   if(coachLogClientId){
@@ -10192,7 +10220,12 @@ async function submitTest(){
     }
     me.textContent=`✓ Level ${lv} logged for ${coachLogClientName}`;me.className='msg ok';
   } else {
-    me.textContent='✓ Submitted — awaiting coach review';me.className='msg ok';
+    // Tell the truth about what just happened — an unverified level is a
+    // real level, and the athlete should know it's theirs but unproven.
+    me.textContent=soloSelfLog
+      ?`✓ Level ${lv} recorded — unverified until a coach confirms it`
+      :'✓ Submitted — awaiting coach review';
+    me.className='msg ok';
     const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
     LOGS=data||[];
   }
