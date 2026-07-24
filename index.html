@@ -6145,6 +6145,12 @@ async function submitFullAssessment(){
   const today=new Date().toISOString();
   let successCount=0,videosAttempted=0,videosUploaded=0;
 
+  // Same rule as a single test log: an athlete with no coach has nobody to
+  // review this, so it awards immediately as UNVERIFIED. Without this they
+  // finish onboarding, submit all eight patterns, and sit on 0/40 forever —
+  // the worst possible first run, and the one every un-coached signup got.
+  const soloAssess=!(await athleteHasCoach());
+
   for(const pid of PATS){
     const data=assessData[pid];
     let videoUrl=null;
@@ -6169,20 +6175,33 @@ async function submitFullAssessment(){
       athlete_id:CU.id,
       pattern_id:pid,
       level_tested:1,
-      passed:null,
+      passed:soloAssess?true:null,
       notes:data.notes||null,
       video_url:videoUrl,
       assessed_at:today,
     });
 
-    if(!error)successCount++;
+    if(!error){
+      successCount++;
+      if(soloAssess){
+        await sb.from('athlete_profiles').upsert({
+          athlete_id:CU.id,pattern_id:pid,current_level:1,
+          verified:false,verified_by:null,
+          passed_at:today,updated_at:today
+        },{onConflict:'athlete_id,pattern_id'});
+        AP[pid]=Math.max(AP[pid]||0,1);
+        delete AP_VERIFIED[pid];
+      }
+    }
     msg.textContent=`Submitting… ${successCount}/${PATS.length}`;
   }
 
   if(successCount>0){
-    msg.textContent=videosAttempted>0&&videosUploaded<videosAttempted
-      ?`✓ Submitted — ${videosUploaded}/${videosAttempted} videos uploaded. Your coach can assess the rest in person.`
-      :'✓ Assessment submitted! Your coach will review and assign your levels.';
+    msg.textContent=soloAssess
+      ?`✓ Level 1 recorded across ${successCount} patterns — unverified until a coach confirms them.`
+      :(videosAttempted>0&&videosUploaded<videosAttempted
+        ?`✓ Submitted — ${videosUploaded}/${videosAttempted} videos uploaded. Your coach can assess the rest in person.`
+        :'✓ Assessment submitted! Your coach will review and assign your levels.');
     msg.className='msg ok';
     // Reload logs
     const{data}=await sb.from('assessments').select('*').eq('athlete_id',CU.id).order('assessed_at',{ascending:false});
@@ -6190,7 +6209,7 @@ async function submitFullAssessment(){
     setTimeout(()=>{
       closeAssessment();
       rHome();rProfile();
-      toast('✓ Assessment submitted to your coach','ok');
+      toast(soloAssess?'✓ Levels recorded — get them verified by a coach':'✓ Assessment submitted to your coach','ok');
     },2000);
   } else {
     msg.textContent='Something went wrong. Please try again.';
@@ -8984,7 +9003,17 @@ function rProfile(scores,logs,sets,isCoach,pendingTests,athleteId,checkins,verif
         <div class="prof-radar-expanded" id="prof-radar-expanded">${profileRadar}</div>
       </div>`:''}
 
-      <div class="home-section-label" style="margin-top:var(--s3)">Patterns · ${assessedCount}/8 assessed</div>
+      <div class="home-section-label" style="margin-top:var(--s3);display:flex;align-items:center;justify-content:space-between">
+        <span>Patterns · ${assessedCount}/8 assessed</span>
+        ${(()=>{
+          // A fact about their standing, not a prompt. Seeing "2 of 8
+          // proven" does the persuading on its own — no button, no badge,
+          // no nagging. It disappears entirely once everything is verified.
+          const vCount=PATS.filter(p=>(scores[p]||0)>0&&verified[p]).length;
+          if(!assessedCount||vCount===assessedCount)return'';
+          return`<span style="display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;color:var(--mt);text-transform:none">${vMark(11)}${vCount} of ${assessedCount} proven</span>`;
+        })()}
+      </div>
       ${patGrid}
 
       ${bmStrip?`<div class="home-section-label" style="margin-top:var(--s3)">Benchmarks</div>${bmStrip}`:''}
@@ -10678,6 +10707,16 @@ function openPatternPage(pid,athleteId,isCoach){
           <span style="font-size:12px;color:var(--mt)">${isOpen?'▲':'▼'}</span>
         </div>
       </div>`;
+
+    // A one-line note on the level they hold, inside the card that
+    // already has their attention. Stated as provenance, never as a
+    // nag — and only on their own ladder, never on someone else's.
+    if(current&&!isCoach&&lv>0){
+      const isV=!!AP_VERIFIED[pid];
+      h+=`<div style="padding:0 14px 11px;margin-top:-4px">
+        <span style="font-size:10px;font-family:var(--mono);color:var(--mt)">${isV?'Coach-verified':'Self-logged · a coach can verify this'}</span>
+      </div>`;
+    }
 
     // ── EXPANDED CARD CONTENT ──
     if(isOpen){
